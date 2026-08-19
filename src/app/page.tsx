@@ -13,7 +13,7 @@ const tools = [
     proPrice: "₹29 Pro",
     desc: "Merge, split, compress, and convert PDFs instantly.",
     features: ["Merge PDF", "Split PDF", "Compress PDF", "Image to PDF"],
-    path: "/pdf-tools", // 👈 Added active link
+    path: "/pdf-tools",
   },
   {
     id: 2,
@@ -25,6 +25,7 @@ const tools = [
     proPrice: "₹29 One-time",
     desc: "Create ATS-friendly resumes with beautiful templates.",
     features: ["3 Templates", "Live Preview", "Download as PDF", "No Watermark"],
+    path: "/resume-maker", // 👈 Added active link
   },
   {
     id: 3,
@@ -36,7 +37,7 @@ const tools = [
     proPrice: "Unlimited",
     desc: "Reduce image size without losing quality.",
     features: ["Compress up to 80%", "Batch Processing", "High Quality", "No Upload Limit"],
-    path: "/image-compressor", // 👈 Active link
+    path: "/image-compressor",
   },
   {
     id: 4,
@@ -48,6 +49,7 @@ const tools = [
     proPrice: "Free in Pro",
     desc: "Instant answers to all your tool-related queries.",
     features: ["24/7 Support", "Smart Suggestions", "Quick Replies"],
+    path: "/chatbot", // 👈 Added active link
   },
 ];
 
