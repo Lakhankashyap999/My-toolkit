@@ -1,7 +1,6 @@
 // @ts-nocheck
 "use client";
 import { useState, useRef } from "react";
-import Link from "next/link";
 import { PDFDocument } from "pdf-lib";
 
 export default function CompressPdfPage() {
@@ -96,10 +95,14 @@ export default function CompressPdfPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
       <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></Link>
-          <Link href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">← Back to PDF Tools</Link>
+          <a href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></a>
+          <div className="flex items-center gap-4">
+            <a href="/" className="text-sm text-gray-600 hover:text-blue-600">← Back to Home</a>
+            <a href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">PDF Tools</a>
+          </div>
         </div>
       </nav>
+
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-4">🗜️ Compress PDF</h1>
@@ -107,6 +110,7 @@ export default function CompressPdfPage() {
             Reduce PDF file size. Free, fast, and private — processed in your browser.
           </p>
         </div>
+
         <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
           <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" id="pdf-upload" ref={fileInputRef} />
           <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-3">
@@ -115,13 +119,16 @@ export default function CompressPdfPage() {
             <span className="text-sm text-gray-500 dark:text-gray-400">Select a PDF file</span>
           </label>
         </div>
+
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-4 mb-6 text-sm">{error}</div>}
         {resultInfo && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl p-4 mb-6 text-sm">{resultInfo}</div>}
+
         <div className="flex justify-center">
           <button onClick={handleCompress} disabled={isCompressing || !file} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition">
             {isCompressing ? "Compressing..." : "Compress PDF"}
           </button>
         </div>
+
         <div className="mt-10 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
           💡 <strong>Note:</strong> Our compression re-saves the PDF with optimized settings. For heavily image-based PDFs, reduction may be minimal. Processed entirely in your browser.
         </div>

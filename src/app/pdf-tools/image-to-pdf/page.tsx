@@ -1,7 +1,6 @@
 // @ts-nocheck
 "use client";
 import { useState, useRef } from "react";
-import Link from "next/link";
 import { PDFDocument } from "pdf-lib";
 
 export default function ImageToPdfPage() {
@@ -88,8 +87,11 @@ export default function ImageToPdfPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
       <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></Link>
-          <Link href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">← Back to PDF Tools</Link>
+          <a href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></a>
+          <div className="flex items-center gap-4">
+            <a href="/" className="text-sm text-gray-600 hover:text-blue-600">← Back to Home</a>
+            <a href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">PDF Tools</a>
+          </div>
         </div>
       </nav>
       <div className="max-w-3xl mx-auto px-4 py-12">
