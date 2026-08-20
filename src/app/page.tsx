@@ -534,10 +534,10 @@ export default function Home() {
               © {new Date().getFullYear()} ToolBox. All rights reserved.
             </div>
             <div className="flex gap-5 text-[13px] text-[#6e6e73] dark:text-white/50">
-              <a href="#" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Contact</a>
-            </div>
+  <a href="/privacy" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Privacy</a>
+  <a href="/terms" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Terms</a>
+  <a href="/contact" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Contact</a>
+</div>
           </div>
         </div>
       </footer>

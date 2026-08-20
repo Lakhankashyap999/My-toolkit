@@ -1543,11 +1543,11 @@ const navLinks = [
 function Home() {
     _s();
     const $ = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$compiler$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["c"])(72);
-    if ($[0] !== "d37290eb69ded51dc04ca52d15f41afb449bee0ad1a0b466a280664d93b3e5c0") {
+    if ($[0] !== "fbff696c7a7a93365766aefeee8388a5b91e574c1d6436e0fa5ee005688b4453") {
         for(let $i = 0; $i < 72; $i += 1){
             $[$i] = Symbol.for("react.memo_cache_sentinel");
         }
-        $[0] = "d37290eb69ded51dc04ca52d15f41afb449bee0ad1a0b466a280664d93b3e5c0";
+        $[0] = "fbff696c7a7a93365766aefeee8388a5b91e574c1d6436e0fa5ee005688b4453";
     }
     const [selectedTool, setSelectedTool] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [showModal, setShowModal] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -2947,7 +2947,7 @@ function Home() {
                                 className: "flex gap-5 text-[13px] text-[#6e6e73] dark:text-white/50",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
-                                        href: "#",
+                                        href: "/privacy",
                                         className: "hover:text-[#0071e3] dark:hover:text-white transition-colors",
                                         children: "Privacy"
                                     }, void 0, false, {
@@ -2956,22 +2956,22 @@ function Home() {
                                         columnNumber: 303
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
-                                        href: "#",
+                                        href: "/terms",
                                         className: "hover:text-[#0071e3] dark:hover:text-white transition-colors",
                                         children: "Terms"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/page.tsx",
                                         lineNumber: 639,
-                                        columnNumber: 399
+                                        columnNumber: 406
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
-                                        href: "#",
+                                        href: "/contact",
                                         className: "hover:text-[#0071e3] dark:hover:text-white transition-colors",
                                         children: "Contact"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/page.tsx",
                                         lineNumber: 639,
-                                        columnNumber: 493
+                                        columnNumber: 505
                                     }, this)
                                 ]
                             }, void 0, true, {
