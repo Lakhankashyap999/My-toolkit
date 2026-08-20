@@ -8,10 +8,7 @@ export async function POST(req: NextRequest) {
     const images = formData.getAll("images") as File[];
 
     if (!images || images.length === 0) {
-      return NextResponse.json(
-        { error: "At least one image is required." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "At least one image is required." }, { status: 400 });
     }
 
     const pdfDoc = await PDFDocument.create();
@@ -48,9 +45,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Image to PDF error:", error);
-    return NextResponse.json(
-      { error: "Failed to convert images to PDF. Please try again." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to convert images to PDF. Please try again." }, { status: 500 });
   }
 }

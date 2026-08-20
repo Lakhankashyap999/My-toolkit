@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
@@ -22,25 +23,15 @@ export default function CompressPdfPage() {
   };
 
   const handleCompress = async () => {
-    if (!file) {
-      setError("Please upload a PDF file.");
-      return;
-    }
-
+    if (!file) { setError("Please upload a PDF file."); return; }
     setIsCompressing(true);
     setError("");
     setResultInfo("");
-
     try {
       const formData = new FormData();
       formData.append("file", file);
+      const response = await fetch("/api/compress-pdf", { method: "POST", body: formData });
 
-      const response = await fetch("/api/compress-pdf", {
-        method: "POST",
-        body: formData,
-      });
-
-      // Safe error handling: response may not be JSON
       if (!response.ok) {
         const text = await response.text();
         let errorMessage = "Compression failed";
@@ -58,7 +49,6 @@ export default function CompressPdfPage() {
       const originalSize = file.size;
       const compressedSize = blob.size;
       const percent = Math.round((1 - compressedSize / originalSize) * 100);
-
       setResultInfo(`Original: ${formatSize(originalSize)} → Compressed: ${formatSize(compressedSize)} (${percent > 0 ? `saved ${percent}%` : "no significant change"})`);
 
       const a = document.createElement("a");
@@ -91,15 +81,11 @@ export default function CompressPdfPage() {
           <Link href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">← Back to PDF Tools</Link>
         </div>
       </nav>
-
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-4">🗜️ Compress PDF</h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Reduce PDF file size. Note: Compression effectiveness depends on the PDF content.
-          </p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Reduce PDF file size. Compression effectiveness depends on the PDF content.</p>
         </div>
-
         <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
           <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" id="pdf-upload" ref={fileInputRef} />
           <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-3">
@@ -108,20 +94,11 @@ export default function CompressPdfPage() {
             <span className="text-sm text-gray-500 dark:text-gray-400">Select a PDF file</span>
           </label>
         </div>
-
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-4 mb-6 text-sm">{error}</div>}
         {resultInfo && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl p-4 mb-6 text-sm">{resultInfo}</div>}
-
         <div className="flex justify-center">
-          <button
-            onClick={handleCompress}
-            disabled={isCompressing || !file}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition"
-          >
-            {isCompressing ? "Compressing..." : "Compress PDF"}
-          </button>
+          <button onClick={handleCompress} disabled={isCompressing || !file} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition">{isCompressing ? "Compressing..." : "Compress PDF"}</button>
         </div>
-
         <div className="mt-10 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
           💡 <strong>Note:</strong> Our compression re-saves the PDF with optimized settings. For heavily image-based PDFs, reduction may be minimal.
         </div>

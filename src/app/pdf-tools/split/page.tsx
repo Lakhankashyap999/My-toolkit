@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
@@ -21,29 +22,16 @@ export default function SplitPdfPage() {
   };
 
   const handleExtract = async () => {
-    if (!file) {
-      setError("Please upload a PDF file.");
-      return;
-    }
-    if (!pageInput.trim()) {
-      setError("Please enter page numbers to extract (e.g., 1,3-5).");
-      return;
-    }
-
+    if (!file) { setError("Please upload a PDF file."); return; }
+    if (!pageInput.trim()) { setError("Please enter page numbers to extract (e.g., 1,3-5)."); return; }
     setIsProcessing(true);
     setError("");
-
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("pages", pageInput);
+      const response = await fetch("/api/extract-pages", { method: "POST", body: formData });
 
-      const response = await fetch("/api/extract-pages", {
-        method: "POST",
-        body: formData,
-      });
-
-      // Safe error handling: response may not be JSON
       if (!response.ok) {
         const text = await response.text();
         let errorMessage = "Extraction failed";
@@ -84,11 +72,8 @@ export default function SplitPdfPage() {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-4">✂️ Split / Extract Pages</h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Extract specific pages from your PDF. Enter page numbers like <code>1,3-5</code>.
-          </p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Extract specific pages from your PDF. Enter page numbers like <code>1,3-5</code>.</p>
         </div>
-
         <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
           <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" id="pdf-upload" ref={fileInputRef} />
           <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-3">
@@ -97,33 +82,17 @@ export default function SplitPdfPage() {
             <span className="text-sm text-gray-500 dark:text-gray-400">Select a PDF file</span>
           </label>
         </div>
-
         {file && (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 shadow-sm">
             <label className="block text-sm font-medium mb-2">Pages to Extract</label>
-            <input
-              type="text"
-              value={pageInput}
-              onChange={(e) => setPageInput(e.target.value)}
-              placeholder="e.g., 1,3-5"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
+            <input type="text" value={pageInput} onChange={(e) => setPageInput(e.target.value)} placeholder="e.g., 1,3-5" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white" />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate pages with commas. Use hyphens for ranges.</p>
           </div>
         )}
-
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-4 mb-6 text-sm">{error}</div>}
-
         <div className="flex justify-center">
-          <button
-            onClick={handleExtract}
-            disabled={isProcessing || !file}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition"
-          >
-            {isProcessing ? "Extracting..." : "Extract Pages"}
-          </button>
+          <button onClick={handleExtract} disabled={isProcessing || !file} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition">{isProcessing ? "Extracting..." : "Extract Pages"}</button>
         </div>
-
         <div className="mt-10 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
           💡 <strong>Privacy:</strong> Files are processed securely and deleted immediately after extraction.
         </div>

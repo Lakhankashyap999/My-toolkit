@@ -1,8 +1,19 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { verifyProToken } from "@/lib/proAuth";
 
 export async function POST(req: NextRequest) {
+  // Token verification
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  if (!verifyProToken(token)) {
+    return NextResponse.json(
+      { error: "Pro subscription required." },
+      { status: 401 }
+    );
+  }
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
@@ -25,7 +36,6 @@ export async function POST(req: NextRequest) {
     const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     const pages = pdfDoc.getPages();
 
-    // Helper: hex to rgb
     const hexToRgb = (hex: string) => {
       const clean = hex.replace("#", "");
       const r = parseInt(clean.substring(0, 2), 16) / 255;
@@ -34,12 +44,10 @@ export async function POST(req: NextRequest) {
       return { r, g, b };
     };
 
-    // 1. Add Text
     if (addText.trim()) {
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const { r, g, b } = hexToRgb(textColor);
       const color = rgb(r, g, b);
-
       for (const page of pages) {
         const { width, height } = page.getSize();
         const xPos = addTextX || width / 2 - (addText.length * textSize) / 4;
@@ -48,12 +56,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Add Watermark
     if (watermark.trim()) {
       const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const { r, g, b } = hexToRgb("#888888");
       const color = rgb(r, g, b);
-
       for (const page of pages) {
         const { width, height } = page.getSize();
         const textWidth = watermark.length * watermarkSize * 0.6;
@@ -71,7 +77,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Delete Pages
     if (deletePagesInput.trim()) {
       const pagesToDelete: number[] = [];
       const parts = deletePagesInput.split(",");
@@ -99,7 +104,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. Rotate Pages
     if (rotateAngle !== 0) {
       for (const page of pdfDoc.getPages()) {
         const currentRotation = page.getRotation().angle;
@@ -116,10 +120,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Edit error:", error);
-    return NextResponse.json(
-      { error: "Failed to edit PDF. Please try again." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to edit PDF. Please try again." }, { status: 500 });
   }
 }
 

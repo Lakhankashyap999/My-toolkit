@@ -1,12 +1,13 @@
+// @ts-nocheck
 "use client";
 import Link from "next/link";
 
 const pdfTools = [
-  { id: 1, name: "Merge PDF", icon: "📑", desc: "Combine multiple PDFs into one file.", path: "/pdf-tools/merge", available: true, badge: "Free" },
-  { id: 2, name: "Split PDF", icon: "✂️", desc: "Extract specific pages from a PDF.", path: "/pdf-tools/split", available: true, badge: "Free" },
-  { id: 3, name: "Compress PDF", icon: "🗜️", desc: "Reduce PDF file size.", path: "/pdf-tools/compress", available: true, badge: "Free" },
-  { id: 4, name: "Image to PDF", icon: "🖼️", desc: "Convert images to PDF.", path: "/pdf-tools/image-to-pdf", available: true, badge: "Free" },
-  { id: 5, name: "Edit PDF", icon: "✏️", desc: "Add text, watermark, delete or rotate pages.", path: "/pdf-tools/edit", available: true, badge: "Free" }
+  { id: 1, name: "Merge PDF", icon: "📑", desc: "Combine multiple PDFs into one file.", path: "/pdf-tools/merge", badge: "Free" },
+  { id: 2, name: "Split PDF", icon: "✂️", desc: "Extract specific pages from a PDF.", path: "/pdf-tools/split", badge: "Free" },
+  { id: 3, name: "Compress PDF", icon: "🗜️", desc: "Reduce PDF file size.", path: "/pdf-tools/compress", badge: "Free" },
+  { id: 4, name: "Image to PDF", icon: "🖼️", desc: "Convert images to PDF.", path: "/pdf-tools/image-to-pdf", badge: "Free" },
+  { id: 5, name: "Edit PDF", icon: "✏️", desc: "Add text, watermark, delete or rotate pages.", path: "/pdf-tools/edit", badge: "Pro" },
 ];
 
 export default function PdfToolsDashboard() {
@@ -21,7 +22,7 @@ export default function PdfToolsDashboard() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">📄 PDF Tools</h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">Choose a tool to manage your PDF files easily. No signup required.</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Choose a tool to manage your PDF files easily.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {pdfTools.map((tool) => (
@@ -29,7 +30,7 @@ export default function PdfToolsDashboard() {
               <div className="text-5xl mb-4">{tool.icon}</div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xl font-bold">{tool.name}</h3>
-                <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-2 py-1 rounded-full font-medium">{tool.badge}</span>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${tool.badge === "Pro" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-700"}`}>{tool.badge}</span>
               </div>
               <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-grow">{tool.desc}</p>
               <Link href={tool.path} className="inline-block bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded-lg font-semibold transition">

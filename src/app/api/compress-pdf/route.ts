@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
-    // Remove metadata to reduce size
     pdfDoc.setTitle("");
     pdfDoc.setAuthor("");
     pdfDoc.setSubject("");

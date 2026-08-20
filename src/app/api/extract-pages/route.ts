@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "PDF file and pages are required." }, { status: 400 });
     }
 
-    // Parse page numbers (e.g., "1,3-5")
     const pageNumbers: number[] = [];
     const parts = pagesInput.split(",");
     for (const part of parts) {
