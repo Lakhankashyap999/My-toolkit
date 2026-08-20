@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../lib/supabaseClient";
 
 export default function AccountPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("toolbox_email");
@@ -34,12 +32,9 @@ export default function AccountPage() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     localStorage.removeItem("toolbox_email");
     localStorage.removeItem("toolbox_pro");
-    try {
-      await supabase.auth.signOut();
-    } catch {}
     router.push("/");
   };
 
@@ -109,8 +104,6 @@ export default function AccountPage() {
               </>
             )}
           </div>
-
-          {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400">{message}</p>}
         </div>
       </div>
     </div>
