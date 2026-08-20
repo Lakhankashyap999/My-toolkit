@@ -8,9 +8,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [sending, setSending] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check localStorage first
     const storedEmail = localStorage.getItem("toolbox_email");
     if (storedEmail) {
       setEmail(storedEmail);
@@ -18,14 +18,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Listen for auth state changes (magic link click)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session?.user?.email) {
         const verifiedEmail = session.user.email;
         localStorage.setItem("toolbox_email", verifiedEmail);
         setEmail(verifiedEmail);
         setShowForm(false);
-        // Register on server
         fetch("/api/register-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -34,7 +32,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
         const verifiedEmail = session.user.email;
@@ -58,6 +55,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       setMessage("Please enter a valid email.");
       return;
     }
+    if (sending) return;
+    setSending(true);
     setMessage("Sending verification link...");
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
@@ -66,10 +65,16 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       },
     });
     if (error) {
-      setMessage("Failed to send link. Try again.");
-      return;
+      console.error("Supabase send link error:", error);
+      if (error.status === 429) {
+        setMessage("Too many requests. Please wait a few minutes and try again.");
+      } else {
+        setMessage("Failed to send link. Please try again later.");
+      }
+    } else {
+      setMessage(`Link sent to ${trimmed}. Check your email (including spam) and click the link.`);
     }
-    setMessage(`Link sent to ${trimmed}. Check your email and click the link.`);
+    setSending(false);
   };
 
   if (loading) {
@@ -94,9 +99,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           />
           <button
             onClick={handleSendLink}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+            disabled={sending}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition"
           >
-            Send Verification Link
+            {sending ? "Sending..." : "Send Verification Link"}
           </button>
           {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center">{message}</p>}
         </div>
