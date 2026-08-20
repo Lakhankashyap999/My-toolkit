@@ -1,4 +1,5 @@
 // @ts-nocheck
+"use client";
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
