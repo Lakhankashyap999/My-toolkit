@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import ProGate from "../../../components/ProGate";
+import AuthGate from "../../../components/AuthGate";
 
 function hexToRgb(hex: string) {
   const clean = hex.replace("#", "");
@@ -294,261 +295,263 @@ export default function EditPdfPage() {
   const deleteCount = deleteFlags.filter(Boolean).length;
 
   return (
-    <ProGate>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
-        <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></a>
-            <div className="flex items-center gap-4">
-              <a href="/" className="text-sm text-gray-600 hover:text-blue-600">← Back to Home</a>
-              <a href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">PDF Tools</a>
+    <AuthGate>
+      <ProGate>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
+          <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
+            <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+              <a href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></a>
+              <div className="flex items-center gap-4">
+                <a href="/" className="text-sm text-gray-600 hover:text-blue-600">← Back to Home</a>
+                <a href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">PDF Tools</a>
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
 
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
-          <div className="text-center mb-8 sm:mb-10">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3">✏️ Edit PDF</h1>
-            <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">
-              Upload a PDF, click on the page to place text, add a watermark, and delete or rotate pages.
-            </p>
-          </div>
-
-          {!file && (
-            <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
-              <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" id="pdf-upload" ref={fileInputRef} />
-              <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-3">
-                <span className="text-5xl">📁</span>
-                <span className="text-xl font-semibold">Click to Upload PDF</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">Editing happens right here in your browser — nothing is uploaded anywhere.</span>
-              </label>
-              {isLoadingPreview && <p className="text-sm text-blue-600 mt-4">Loading preview…</p>}
+          <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+            <div className="text-center mb-8 sm:mb-10">
+              <h1 className="text-3xl sm:text-4xl font-bold mb-3">✏️ Edit PDF</h1>
+              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">
+                Upload a PDF, click on the page to place text, add a watermark, and delete or rotate pages.
+              </p>
             </div>
-          )}
 
-          {file && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* LEFT: interactive preview + page manager */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setSelectedPageForText(p => Math.max(1, p - 1))}
-                        disabled={selectedPageForText <= 1}
-                        className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 disabled:opacity-40 text-sm"
-                      >
-                        ← Prev
-                      </button>
-                      <span className="text-sm font-medium">Page {selectedPageForText} / {numPages}</span>
-                      <button
-                        onClick={() => setSelectedPageForText(p => Math.min(numPages, p + 1))}
-                        disabled={selectedPageForText >= numPages}
-                        className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 disabled:opacity-40 text-sm"
-                      >
-                        Next →
+            {!file && (
+              <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
+                <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" id="pdf-upload" ref={fileInputRef} />
+                <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-3">
+                  <span className="text-5xl">📁</span>
+                  <span className="text-xl font-semibold">Click to Upload PDF</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Editing happens right here in your browser — nothing is uploaded anywhere.</span>
+                </label>
+                {isLoadingPreview && <p className="text-sm text-blue-600 mt-4">Loading preview…</p>}
+              </div>
+            )}
+
+            {file && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* LEFT: interactive preview + page manager */}
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedPageForText(p => Math.max(1, p - 1))}
+                          disabled={selectedPageForText <= 1}
+                          className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 disabled:opacity-40 text-sm"
+                        >
+                          ← Prev
+                        </button>
+                        <span className="text-sm font-medium">Page {selectedPageForText} / {numPages}</span>
+                        <button
+                          onClick={() => setSelectedPageForText(p => Math.min(numPages, p + 1))}
+                          disabled={selectedPageForText >= numPages}
+                          className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 disabled:opacity-40 text-sm"
+                        >
+                          Next →
+                        </button>
+                      </div>
+                      <button onClick={resetAll} className="text-xs text-red-500 hover:text-red-700 font-medium">
+                        Upload different file
                       </button>
                     </div>
-                    <button onClick={resetAll} className="text-xs text-red-500 hover:text-red-700 font-medium">
-                      Upload different file
-                    </button>
+
+                    <div ref={mainContainerRef} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto bg-gray-100 dark:bg-gray-900 flex justify-center">
+                      <canvas
+                        ref={mainCanvasRef}
+                        onClick={handleCanvasClick}
+                        className="cursor-crosshair max-w-full h-auto"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      💡 Tap / click anywhere on the page above to set exactly where your text will appear.
+                    </p>
                   </div>
 
-                  <div ref={mainContainerRef} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto bg-gray-100 dark:bg-gray-900 flex justify-center">
-                    <canvas
-                      ref={mainCanvasRef}
-                      onClick={handleCanvasClick}
-                      className="cursor-crosshair max-w-full h-auto"
-                    />
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                      <h2 className="font-bold text-lg">📄 Pages ({numPages})</h2>
+                      <div className="flex gap-2 text-xs">
+                        <button onClick={selectAllForDelete} className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700">Select all</button>
+                        <button onClick={clearDeleteSelection} className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700">Clear</button>
+                      </div>
+                    </div>
+                    {deleteCount > 0 && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mb-3">{deleteCount} page(s) marked for deletion.</p>
+                    )}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {thumbnails.map((thumb, idx) => (
+                        <div
+                          key={idx}
+                          className={`relative border rounded-lg overflow-hidden cursor-pointer transition ${
+                            selectedPageForText === idx + 1 ? "border-blue-600 ring-2 ring-blue-500" : "border-gray-200 dark:border-gray-700"
+                          } ${deleteFlags[idx] ? "opacity-40" : ""}`}
+                          onClick={() => setSelectedPageForText(idx + 1)}
+                        >
+                          <img
+                            src={thumb}
+                            alt={`Page ${idx + 1}`}
+                            className="w-full h-auto block"
+                            style={{ transform: `rotate(${pageRotations[idx]}deg)` }}
+                          />
+                          <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                            {idx + 1}
+                          </div>
+                          <div className="absolute bottom-1 right-1 flex gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); rotatePageBy90(idx); }}
+                              title="Rotate 90°"
+                              className="bg-white/90 dark:bg-gray-900/90 text-xs w-6 h-6 rounded-full flex items-center justify-center shadow"
+                            >
+                              ⟳
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleDeletePage(idx); }}
+                              title="Mark for deletion"
+                              className={`text-xs w-6 h-6 rounded-full flex items-center justify-center shadow ${
+                                deleteFlags[idx] ? "bg-red-600 text-white" : "bg-white/90 dark:bg-gray-900/90"
+                              }`}
+                            >
+                              🗑
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    💡 Tap / click anywhere on the page above to set exactly where your text will appear.
-                  </p>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <h2 className="font-bold text-lg">📄 Pages ({numPages})</h2>
-                    <div className="flex gap-2 text-xs">
-                      <button onClick={selectAllForDelete} className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700">Select all</button>
-                      <button onClick={clearDeleteSelection} className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700">Clear</button>
-                    </div>
-                  </div>
-                  {deleteCount > 0 && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mb-3">{deleteCount} page(s) marked for deletion.</p>
-                  )}
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {thumbnails.map((thumb, idx) => (
-                      <div
-                        key={idx}
-                        className={`relative border rounded-lg overflow-hidden cursor-pointer transition ${
-                          selectedPageForText === idx + 1 ? "border-blue-600 ring-2 ring-blue-500" : "border-gray-200 dark:border-gray-700"
-                        } ${deleteFlags[idx] ? "opacity-40" : ""}`}
-                        onClick={() => setSelectedPageForText(idx + 1)}
-                      >
-                        <img
-                          src={thumb}
-                          alt={`Page ${idx + 1}`}
-                          className="w-full h-auto block"
-                          style={{ transform: `rotate(${pageRotations[idx]}deg)` }}
-                        />
-                        <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                          {idx + 1}
+                {/* RIGHT: edit controls */}
+                <div className="space-y-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                    <h2 className="font-bold text-lg mb-3">➕ Add Text</h2>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={addTextContent}
+                        onChange={(e) => setAddTextContent(e.target.value)}
+                        placeholder="Text to add (e.g., Approved by ABC)"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                      />
+                      <div>
+                        <label className="block text-xs mb-1">Will be placed on page</label>
+                        <select
+                          value={selectedPageForText}
+                          onChange={(e) => setSelectedPageForText(Number(e.target.value))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                        >
+                          {Array.from({ length: numPages }, (_, i) => i + 1).map(p => (
+                            <option key={p} value={p}>Page {p}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs mb-1">X Position</label>
+                          <input type="number" value={addTextX} onChange={(e) => setAddTextX(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
                         </div>
-                        <div className="absolute bottom-1 right-1 flex gap-1">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); rotatePageBy90(idx); }}
-                            title="Rotate 90°"
-                            className="bg-white/90 dark:bg-gray-900/90 text-xs w-6 h-6 rounded-full flex items-center justify-center shadow"
-                          >
-                            ⟳
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); toggleDeletePage(idx); }}
-                            title="Mark for deletion"
-                            className={`text-xs w-6 h-6 rounded-full flex items-center justify-center shadow ${
-                              deleteFlags[idx] ? "bg-red-600 text-white" : "bg-white/90 dark:bg-gray-900/90"
-                            }`}
-                          >
-                            🗑
-                          </button>
+                        <div>
+                          <label className="block text-xs mb-1">Y Position</label>
+                          <input type="number" value={addTextY} onChange={(e) => setAddTextY(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
+                        </div>
+                        <div>
+                          <label className="block text-xs mb-1">Font Size</label>
+                          <input type="number" value={textSize} onChange={(e) => setTextSize(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
+                        </div>
+                        <div>
+                          <label className="block text-xs mb-1">Color</label>
+                          <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-full h-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
                         </div>
                       </div>
-                    ))}
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">X/Y update automatically when you click on the preview — you can also fine-tune them manually.</p>
+                    </div>
                   </div>
+
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                    <h2 className="font-bold text-lg mb-3">💧 Watermark</h2>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={watermarkContent}
+                        onChange={(e) => setWatermarkContent(e.target.value)}
+                        placeholder="Watermark text (e.g., CONFIDENTIAL)"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs mb-1">Opacity (0-1)</label>
+                          <input type="number" step="0.1" min="0" max="1" value={watermarkOpacity} onChange={(e) => setWatermarkOpacity(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
+                        </div>
+                        <div>
+                          <label className="block text-xs mb-1">Font Size</label>
+                          <input type="number" value={watermarkSize} onChange={(e) => setWatermarkSize(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">Applied diagonally across every page that remains after deletion.</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                    <h2 className="font-bold text-lg mb-3">🔧 Page Operations</h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      Use the 🗑 button on a page thumbnail to mark it for deletion, and the ⟳ button to rotate it 90° at a time. Changes are shown instantly on the thumbnails.
+                    </p>
+                  </div>
+
+                  {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-3 text-sm">{error}</div>}
+                  {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl p-3 text-sm">{success}</div>}
+
+                  <button
+                    onClick={handleProcess}
+                    disabled={isProcessing}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition"
+                  >
+                    {isProcessing ? "Processing..." : "Edit & Download PDF"}
+                  </button>
                 </div>
               </div>
+            )}
 
-              {/* RIGHT: edit controls */}
-              <div className="space-y-4">
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                  <h2 className="font-bold text-lg mb-3">➕ Add Text</h2>
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={addTextContent}
-                      onChange={(e) => setAddTextContent(e.target.value)}
-                      placeholder="Text to add (e.g., Approved by ABC)"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                    />
-                    <div>
-                      <label className="block text-xs mb-1">Will be placed on page</label>
-                      <select
-                        value={selectedPageForText}
-                        onChange={(e) => setSelectedPageForText(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                      >
-                        {Array.from({ length: numPages }, (_, i) => i + 1).map(p => (
-                          <option key={p} value={p}>Page {p}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs mb-1">X Position</label>
-                        <input type="number" value={addTextX} onChange={(e) => setAddTextX(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
-                      </div>
-                      <div>
-                        <label className="block text-xs mb-1">Y Position</label>
-                        <input type="number" value={addTextY} onChange={(e) => setAddTextY(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
-                      </div>
-                      <div>
-                        <label className="block text-xs mb-1">Font Size</label>
-                        <input type="number" value={textSize} onChange={(e) => setTextSize(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
-                      </div>
-                      <div>
-                        <label className="block text-xs mb-1">Color</label>
-                        <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-full h-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">X/Y update automatically when you click on the preview — you can also fine-tune them manually.</p>
-                  </div>
-                </div>
+            <div className="mt-8 max-w-7xl mx-auto bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
+              💡 <strong>Privacy:</strong> Everything happens locally in your browser — your PDF is never uploaded to any server.
+            </div>
+          </div>
+        </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                  <h2 className="font-bold text-lg mb-3">💧 Watermark</h2>
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={watermarkContent}
-                      onChange={(e) => setWatermarkContent(e.target.value)}
-                      placeholder="Watermark text (e.g., CONFIDENTIAL)"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs mb-1">Opacity (0-1)</label>
-                        <input type="number" step="0.1" min="0" max="1" value={watermarkOpacity} onChange={(e) => setWatermarkOpacity(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
-                      </div>
-                      <div>
-                        <label className="block text-xs mb-1">Font Size</label>
-                        <input type="number" value={watermarkSize} onChange={(e) => setWatermarkSize(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">Applied diagonally across every page that remains after deletion.</p>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                  <h2 className="font-bold text-lg mb-3">🔧 Page Operations</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Use the 🗑 button on a page thumbnail to mark it for deletion, and the ⟳ button to rotate it 90° at a time. Changes are shown instantly on the thumbnails.
-                  </p>
-                </div>
-
-                {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-3 text-sm">{error}</div>}
-                {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl p-3 text-sm">{success}</div>}
-
-                <button
-                  onClick={handleProcess}
-                  disabled={isProcessing}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition"
+        {/* Success Popup */}
+        {showPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+              <div className="text-5xl mb-4">✅</div>
+              <h2 className="text-2xl font-bold mb-2">Edit Complete!</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Your edited PDF is ready.</p>
+              <div className="flex flex-col gap-3">
+                <a
+                  href={successUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
                 >
-                  {isProcessing ? "Processing..." : "Edit & Download PDF"}
+                  Open PDF
+                </a>
+                <a
+                  href={successUrl}
+                  download="edited.pdf"
+                  className="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
+                >
+                  Download Again
+                </a>
+                <button
+                  onClick={closePopup}
+                  className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
+                >
+                  Close
                 </button>
               </div>
             </div>
-          )}
-
-          <div className="mt-8 max-w-7xl mx-auto bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
-            💡 <strong>Privacy:</strong> Everything happens locally in your browser — your PDF is never uploaded to any server.
           </div>
-        </div>
-      </div>
-
-      {/* Success Popup */}
-      {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
-            <div className="text-5xl mb-4">✅</div>
-            <h2 className="text-2xl font-bold mb-2">Edit Complete!</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">Your edited PDF is ready.</p>
-            <div className="flex flex-col gap-3">
-              <a
-                href={successUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-              >
-                Open PDF
-              </a>
-              <a
-                href={successUrl}
-                download="edited.pdf"
-                className="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
-              >
-                Download Again
-              </a>
-              <button
-                onClick={closePopup}
-                className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </ProGate>
+        )}
+      </ProGate>
+    </AuthGate>
   );
 }

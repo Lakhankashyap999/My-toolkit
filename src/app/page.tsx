@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Inter } from "next/font/google";
 
@@ -61,6 +62,51 @@ const tools = [
   },
 ];
 
+const comingSoonTools = [
+  // PDF/Office
+  { icon: "📄", name: "PDF to Word" },
+  { icon: "🔁", name: "Word to PDF" },
+  { icon: "🖼️", name: "PDF to JPG" },
+  { icon: "🔒", name: "PDF Locker" },
+  { icon: "📊", name: "PDF to Excel" },
+  { icon: "📈", name: "Excel to PDF" },
+  { icon: "📑", name: "PDF to PPT" },
+  { icon: "📊", name: "PPT to PDF" },
+  { icon: "🔢", name: "PDF Page Numberer" },
+  { icon: "✍️", name: "PDF Signature" },
+  { icon: "📖", name: "PDF Reader" },
+  // Image Tools
+  { icon: "📏", name: "Image Resizer" },
+  { icon: "🔄", name: "Format Converter" },
+  { icon: "🎯", name: "Background Remover" },
+  { icon: "✂️", name: "Image Cropper" },
+  { icon: "📸", name: "Passport Photo Maker" },
+  { icon: "🔍", name: "Image to Text (OCR)" },
+  { icon: "😂", name: "Meme Generator" },
+  { icon: "💧", name: "Image Watermark" },
+  // Document/Text Tools
+  { icon: "📝", name: "Text to PDF" },
+  { icon: "🔤", name: "Word Counter" },
+  { icon: "✏️", name: "Grammar Checker" },
+  { icon: "🔎", name: "Plagiarism Checker" },
+  { icon: "🔳", name: "QR Code Generator" },
+  { icon: "📊", name: "Barcode Generator" },
+  { icon: "🧾", name: "Invoice Generator" },
+  { icon: "📨", name: "Letter Writer" },
+  // Utility/Security
+  { icon: "🔐", name: "File Encryptor" },
+  { icon: "🗝️", name: "Password Generator" },
+  { icon: "📦", name: "File Compressor" },
+  { icon: "🔍", name: "Duplicate File Finder" },
+  // Calculators
+  { icon: "🏦", name: "EMI Calculator" },
+  { icon: "🎂", name: "Age Calculator" },
+  { icon: "📊", name: "Percentage Calculator" },
+  { icon: "🧮", name: "GST Calculator" },
+  { icon: "⚖️", name: "Unit Converter" },
+  { icon: "⚕️", name: "BMI Calculator" },
+];
+
 const testimonials = [
   {
     name: "Rahul Sharma",
@@ -102,6 +148,9 @@ const faqs = [
 ];
 
 export default function Home() {
+  const [selectedTool, setSelectedTool] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div
       className={`${inter.variable} font-sans min-h-screen bg-white dark:bg-black text-[#1d1d1f] dark:text-white antialiased`}
@@ -119,6 +168,10 @@ export default function Home() {
               <a href="#features" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Pricing</a>
               <a href="#faq" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">FAQ</a>
+              <a href="/account" className="hover:text-[#0071e3] dark:hover:text-white transition-colors flex items-center gap-1">
+                <span className="w-7 h-7 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-sm">👤</span>
+                <span>My Account</span>
+              </a>
               <button className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors">
                 Get Started Free
               </button>
@@ -206,7 +259,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Tools Grid */}
+      {/* Available Tools */}
       <section id="tools" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-center mb-4">Available tools</h2>
         <p className="text-center text-[17px] text-[#6e6e73] dark:text-white/60 mb-14 max-w-2xl mx-auto">
@@ -253,6 +306,34 @@ export default function Home() {
                   </button>
                 )}
               </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Coming Soon Tools */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-center mb-4">Coming Soon</h2>
+        <p className="text-center text-[17px] text-[#6e6e73] dark:text-white/60 mb-14 max-w-2xl mx-auto">
+          Our team is working on these tools. Stay tuned!
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+          {comingSoonTools.map((tool, i) => (
+            <div
+              key={i}
+              onClick={() => {
+                setSelectedTool(tool);
+                setShowModal(true);
+              }}
+              className="group relative bg-white dark:bg-[#1d1d1f] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col items-center text-center cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-none transition-all duration-300 hover:-translate-y-1"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center text-2xl mb-4">
+                {tool.icon}
+              </div>
+              <h3 className="text-[15px] font-semibold tracking-tight text-gray-800 dark:text-white">{tool.name}</h3>
+              <span className="text-[11px] bg-blue-50 dark:bg-white/10 text-blue-600 dark:text-white/60 px-2 py-0.5 rounded-full mt-2 inline-block">
+                Coming Soon
+              </span>
             </div>
           ))}
         </div>
@@ -405,6 +486,28 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Coming Soon Modal */}
+      {showModal && selectedTool && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div className="text-5xl mb-4">{selectedTool.icon}</div>
+            <h2 className="text-2xl font-bold mb-2">{selectedTool.name}</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-2">
+              This tool is currently under development.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Our team is working hard to bring it to you soon. Stay tuned!
+            </p>
+            <button
+              onClick={() => setShowModal(false)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

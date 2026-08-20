@@ -10,6 +10,12 @@ declare global {
 }
 
 export default function PaymentPage() {
+  const [email, setEmail] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("toolbox_email") || "";
+    }
+    return "";
+  });
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState("");
   const [proActive, setProActive] = useState<boolean>(() => {
@@ -18,7 +24,6 @@ export default function PaymentPage() {
       if (data) {
         try {
           const parsed = JSON.parse(data);
-          // Token check karo, active nahi
           return parsed.token && parsed.expiry > Date.now();
         } catch {}
       }
@@ -37,6 +42,13 @@ export default function PaymentPage() {
   };
 
   const handlePayment = async () => {
+    // Email validation
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setMessage("Please enter a valid email address to activate Pro.");
+      return;
+    }
+
     setIsProcessing(true);
     setMessage("");
 
@@ -66,7 +78,7 @@ export default function PaymentPage() {
         amount: orderData.amount,
         currency: orderData.currency,
         name: "ToolBox",
-        description: "Pro Plan - 1 Month Access",
+        description: "Pro Plan - 30 Days Access",
         order_id: orderData.orderId,
         handler: async (paymentResponse: any) => {
           try {
@@ -82,11 +94,32 @@ export default function PaymentPage() {
 
             const verifyData = await verifyResponse.json();
             if (verifyData.success) {
-              // Token aur expiry store karo
+              // Save email to localStorage
+              localStorage.setItem("toolbox_email", trimmedEmail);
+
+              // Save subscription to server (Supabase)
+              try {
+                await fetch("/api/activate-subscription", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    email: trimmedEmail,
+                    payment_id: paymentResponse.razorpay_payment_id,
+                    expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                  }),
+                });
+              } catch (err) {
+                console.error("Failed to activate subscription:", err);
+                setMessage("Payment received but activation failed. Contact support.");
+                setIsProcessing(false);
+                return;
+              }
+
+              // Store local Pro token for fallback
               const proData = {
                 active: true,
                 token: verifyData.token,
-                expiry: verifyData.expiry,
+                expiry: Date.now() + 30 * 24 * 60 * 60 * 1000,
               };
               localStorage.setItem("toolbox_pro", JSON.stringify(proData));
               setProActive(true);
@@ -101,7 +134,7 @@ export default function PaymentPage() {
         },
         prefill: {
           name: "",
-          email: "",
+          email: trimmedEmail,
           contact: "",
         },
         theme: {
@@ -139,9 +172,23 @@ export default function PaymentPage() {
       <div className="max-w-md mx-auto px-4 py-16 text-center">
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
           <h1 className="text-3xl font-bold mb-4">💰 ToolBox Pro</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">Unlock all features for 1 month</p>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">Unlock all features for 30 days</p>
+
+          {/* Email input */}
+          <div className="text-left mb-4">
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email for Pro activation</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">We'll link your subscription to this email.</p>
+          </div>
+
           <div className="text-4xl font-extrabold text-blue-600 mb-2">₹29</div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">One-time payment · No subscription</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">One-time payment · 30 days access</p>
 
           {proActive ? (
             <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-lg py-3 font-semibold">
