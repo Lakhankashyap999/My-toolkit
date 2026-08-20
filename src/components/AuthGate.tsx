@@ -5,65 +5,71 @@ import { supabase } from "../lib/supabaseClient";
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState<string>("");
-  const [otp, setOtp] = useState<string>("");
-  const [step, setStep] = useState<"email" | "otp">("email");
+  const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
+    // Check localStorage first
     const storedEmail = localStorage.getItem("toolbox_email");
     if (storedEmail) {
       setEmail(storedEmail);
-    } else {
-      setShowForm(true);
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    // Listen for auth state changes (magic link click)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user?.email) {
+        const verifiedEmail = session.user.email;
+        localStorage.setItem("toolbox_email", verifiedEmail);
+        setEmail(verifiedEmail);
+        setShowForm(false);
+        // Register on server
+        fetch("/api/register-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: verifiedEmail }),
+        }).catch(() => {});
+      }
+    });
+
+    // Check existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        const verifiedEmail = session.user.email;
+        localStorage.setItem("toolbox_email", verifiedEmail);
+        setEmail(verifiedEmail);
+        setShowForm(false);
+      } else {
+        setShowForm(true);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  const handleSendOtp = async () => {
+  const handleSendLink = async () => {
     const trimmed = email.trim();
     if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setMessage("Please enter a valid email.");
       return;
     }
-    setMessage("Sending OTP...");
+    setMessage("Sending verification link...");
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
+      options: {
+        emailRedirectTo: window.location.origin + "/auth/callback",
+      },
     });
     if (error) {
-      setMessage("Failed to send OTP. Try again.");
+      setMessage("Failed to send link. Try again.");
       return;
     }
-    setMessage(`OTP sent to ${trimmed}. Enter the code below.`);
-    setStep("otp");
-  };
-
-  const handleVerifyOtp = async () => {
-    const trimmedEmail = email.trim();
-    if (!otp.trim()) {
-      setMessage("Enter OTP code.");
-      return;
-    }
-    const { error } = await supabase.auth.verifyOtp({
-      email: trimmedEmail,
-      token: otp.trim(),
-      type: "email",
-    });
-    if (error) {
-      setMessage("Invalid OTP. Try again.");
-      return;
-    }
-    // OTP verified
-    localStorage.setItem("toolbox_email", trimmedEmail);
-    try {
-      await fetch("/api/register-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail }),
-      });
-    } catch {}
-    setShowForm(false);
+    setMessage(`Link sent to ${trimmed}. Check your email and click the link.`);
   };
 
   if (loading) {
@@ -77,51 +83,21 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <div className="text-4xl mb-4 text-center">📧</div>
           <h1 className="text-2xl font-bold mb-2 text-center">Verify Your Email</h1>
           <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-            {step === "email"
-              ? "Enter your email to receive a verification code."
-              : `OTP sent to ${email}. Enter the code below.`}
+            Enter your email to receive a verification link. Click the link to unlock tools.
           </p>
-
-          {step === "email" ? (
-            <>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4"
-              />
-              <button
-                onClick={handleSendOtp}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-              >
-                Send OTP
-              </button>
-            </>
-          ) : (
-            <>
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 6-digit OTP"
-                maxLength={6}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4 text-center tracking-widest"
-              />
-              <button
-                onClick={handleVerifyOtp}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition"
-              >
-                Verify OTP
-              </button>
-              <button
-                onClick={() => setStep("email")}
-                className="w-full mt-2 text-sm text-blue-600 hover:underline"
-              >
-                Change email
-              </button>
-            </>
-          )}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4"
+          />
+          <button
+            onClick={handleSendLink}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+          >
+            Send Verification Link
+          </button>
           {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center">{message}</p>}
         </div>
       </div>
