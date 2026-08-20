@@ -144,17 +144,16 @@ export default function ResumeMakerPage() {
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 18;
+      const margin = 16;
       const contentWidth = pageWidth - 2 * margin;
       const bottomLimit = pageHeight - margin;
       let y = margin;
 
-      // ---------- ATS-safe palette: near-black text only, no colored links ----------
-      const COLOR_HEADING = [0, 0, 0];
-      const COLOR_SUBHEADING = [30, 30, 30];
-      const COLOR_BODY = [45, 45, 45];
-      const COLOR_META = [90, 90, 90];
-      const COLOR_RULE = [0, 0, 0];
+      // ---------- Palette matched to the LaTeX reference resume ----------
+      const COLOR_NAME = [28, 3, 60]; // #1C033C
+      const COLOR_SECTION = [28, 3, 60]; // #1C033C
+      const COLOR_ACCENT = [55, 30, 119]; // #371e77
+      const COLOR_BODY = [17, 2, 35]; // #110223
 
       // ---------- helpers ----------
       const ensureSpace = (needed: number) => {
@@ -165,16 +164,45 @@ export default function ResumeMakerPage() {
       };
 
       const sectionHeading = (label: string) => {
-        ensureSpace(12);
+        ensureSpace(13);
+        y += 2;
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(...COLOR_HEADING);
+        doc.setFontSize(13);
+        doc.setTextColor(...COLOR_SECTION);
         doc.text(label.toUpperCase(), margin, y);
         y += 1.5;
-        doc.setDrawColor(...COLOR_RULE);
-        doc.setLineWidth(0.4);
+        doc.setDrawColor(...COLOR_SECTION);
+        doc.setLineWidth(0.6);
         doc.line(margin, y, pageWidth - margin, y);
         y += 5;
+      };
+
+      const labeledLine = (label: string, value: string, size = 9.5) => {
+        if (!value || !value.trim()) return;
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(size);
+        const labelText = label + " ";
+        const labelWidth = doc.getTextWidth(labelText);
+        const availWidth = contentWidth - labelWidth;
+        doc.setFont("Helvetica", "normal");
+        const lines = doc.splitTextToSize(value, availWidth);
+        lines.forEach((line: string, idx: number) => {
+          ensureSpace(5);
+          if (idx === 0) {
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(size);
+            doc.setTextColor(...COLOR_SECTION);
+            doc.text(labelText, margin, y);
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(...COLOR_BODY);
+            doc.text(line, margin + labelWidth, y);
+          } else {
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(...COLOR_BODY);
+            doc.text(line, margin, y);
+          }
+          y += 4.5;
+        });
       };
 
       const bodyText = (text: string, x: number, width: number, size = 9.5) => {
@@ -194,25 +222,25 @@ export default function ResumeMakerPage() {
         doc.setFontSize(9.5);
         doc.setTextColor(...COLOR_BODY);
         const lines = doc.splitTextToSize(text, width);
-        lines.forEach((line: string) => {
+        lines.forEach((line: string, idx: number) => {
           ensureSpace(5);
-          doc.text("- " + line, x, y);
+          doc.text((idx === 0 ? "• " : "  ") + line, x, y);
           y += 4.5;
         });
       };
 
-      // ================= HEADER =================
+      // ================= HEADER (centered, LaTeX-style) =================
       doc.setFont("Helvetica", "bold");
-      doc.setFontSize(20);
-      doc.setTextColor(...COLOR_HEADING);
-      doc.text(form.fullName, margin, y);
-      y += 7;
+      doc.setFontSize(26);
+      doc.setTextColor(...COLOR_NAME);
+      doc.text(form.fullName, pageWidth / 2, y, { align: "center" });
+      y += 7.5;
 
+      doc.setFont("Helvetica", "italic");
       doc.setFontSize(12);
-      doc.setFont("Helvetica", "normal");
-      doc.setTextColor(...COLOR_SUBHEADING);
-      doc.text(form.title, margin, y);
-      y += 5.5;
+      doc.setTextColor(...COLOR_ACCENT);
+      doc.text(form.title, pageWidth / 2, y, { align: "center" });
+      y += 6;
 
       const contactParts: string[] = [];
       if (form.email) contactParts.push(form.email);
@@ -222,17 +250,18 @@ export default function ResumeMakerPage() {
       if (form.website) contactParts.push(form.website);
       const contactLine = contactParts.join("   |   ");
       if (contactLine) {
-        doc.setFontSize(9);
-        doc.setTextColor(...COLOR_META);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...COLOR_ACCENT);
         const contactLines = doc.splitTextToSize(contactLine, contentWidth);
         contactLines.forEach((line: string) => {
-          doc.text(line, margin, y);
-          y += 4.2;
+          doc.text(line, pageWidth / 2, y, { align: "center" });
+          y += 4.3;
         });
       }
 
       y += 2;
-      doc.setDrawColor(...COLOR_RULE);
+      doc.setDrawColor(...COLOR_SECTION);
       doc.setLineWidth(0.6);
       doc.line(margin, y, pageWidth - margin, y);
       y += 7;
@@ -248,7 +277,7 @@ export default function ResumeMakerPage() {
       if (form.skills.trim()) {
         sectionHeading("Skills");
         const skillsArray = form.skills.split(",").map(s => s.trim()).filter(s => s);
-        bodyText(skillsArray.join("   |   "), margin, contentWidth, 10);
+        labeledLine("Skills:", skillsArray.join(", "), 10);
         y += 3;
       }
 
@@ -261,26 +290,25 @@ export default function ResumeMakerPage() {
           ensureSpace(9);
 
           doc.setFont("Helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(...COLOR_HEADING);
-          const jobTitle = exp.role || "";
-          doc.text(jobTitle, margin, y);
+          doc.setFontSize(11);
+          doc.setTextColor(...COLOR_SECTION);
+          doc.text(exp.company || "", margin, y);
 
           if (exp.start || exp.end) {
             doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...COLOR_META);
+            doc.setFontSize(9.5);
+            doc.setTextColor(...COLOR_ACCENT);
             const dates = `${exp.start || "N/A"} - ${exp.end || "Present"}`;
             doc.text(dates, pageWidth - margin, y, { align: "right" });
           }
-          y += 4.5;
+          y += 5;
 
-          if (exp.company) {
-            doc.setFont("Helvetica", "italic");
+          if (exp.role) {
+            doc.setFont("Helvetica", "bolditalic");
             doc.setFontSize(10);
-            doc.setTextColor(...COLOR_SUBHEADING);
-            doc.text(exp.company, margin, y);
-            y += 4.5;
+            doc.setTextColor(...COLOR_ACCENT);
+            doc.text(exp.role, margin, y);
+            y += 5;
           }
 
           if (exp.description.trim()) {
@@ -288,7 +316,7 @@ export default function ResumeMakerPage() {
               .split("\n")
               .map(l => l.replace(/^[-•\s]+/, "").trim())
               .filter(l => l);
-            descBullets.forEach(line => bulletLines(line, margin + 4, contentWidth - 4));
+            descBullets.forEach(line => bulletLines(line, margin + 2, contentWidth - 4));
           }
           y += 3.5;
         }
@@ -304,26 +332,26 @@ export default function ResumeMakerPage() {
           ensureSpace(9);
 
           doc.setFont("Helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(...COLOR_HEADING);
+          doc.setFontSize(11);
+          doc.setTextColor(...COLOR_SECTION);
           doc.text(edu.degree, margin, y);
 
           if (edu.year) {
             doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...COLOR_META);
+            doc.setFontSize(9.5);
+            doc.setTextColor(...COLOR_ACCENT);
             doc.text(edu.year, pageWidth - margin, y, { align: "right" });
           }
-          y += 4.5;
+          y += 5;
 
           if (edu.institution) {
-            doc.setFont("Helvetica", "normal");
+            doc.setFont("Helvetica", "italic");
             doc.setFontSize(10);
-            doc.setTextColor(...COLOR_SUBHEADING);
+            doc.setTextColor(...COLOR_ACCENT);
             doc.text(edu.institution, margin, y);
-            y += 4.5;
+            y += 5;
           }
-          y += 3;
+          y += 2.5;
         }
         y += 1;
       }
@@ -331,30 +359,30 @@ export default function ResumeMakerPage() {
       // ================= PROJECTS =================
       const validProjects = projects.filter(proj => proj.name);
       if (validProjects.length > 0) {
-        sectionHeading("Projects");
+        sectionHeading("Project Work");
 
         for (const proj of validProjects) {
           ensureSpace(9);
 
           doc.setFont("Helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(...COLOR_HEADING);
+          doc.setFontSize(11);
+          doc.setTextColor(...COLOR_SECTION);
           doc.text(proj.name, margin, y);
 
           if (proj.link) {
             doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...COLOR_META);
+            doc.setFontSize(9.5);
+            doc.setTextColor(...COLOR_ACCENT);
             doc.text(proj.link, pageWidth - margin, y, { align: "right" });
           }
-          y += 4.5;
+          y += 5;
 
           if (proj.description.trim()) {
             const projBullets = proj.description
               .split("\n")
               .map(l => l.replace(/^[-•\s]+/, "").trim())
               .filter(l => l);
-            projBullets.forEach(line => bulletLines(line, margin + 4, contentWidth - 4));
+            projBullets.forEach(line => bulletLines(line, margin + 2, contentWidth - 4));
           }
           y += 3;
         }
@@ -370,26 +398,26 @@ export default function ResumeMakerPage() {
           ensureSpace(9);
 
           doc.setFont("Helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(...COLOR_HEADING);
+          doc.setFontSize(11);
+          doc.setTextColor(...COLOR_SECTION);
           doc.text(cert.name, margin, y);
 
           if (cert.year) {
             doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...COLOR_META);
+            doc.setFontSize(9.5);
+            doc.setTextColor(...COLOR_ACCENT);
             doc.text(cert.year, pageWidth - margin, y, { align: "right" });
           }
-          y += 4.5;
+          y += 5;
 
           if (cert.issuer) {
-            doc.setFont("Helvetica", "normal");
+            doc.setFont("Helvetica", "italic");
             doc.setFontSize(10);
-            doc.setTextColor(...COLOR_SUBHEADING);
+            doc.setTextColor(...COLOR_ACCENT);
             doc.text(cert.issuer, margin, y);
-            y += 4.5;
+            y += 5;
           }
-          y += 3;
+          y += 2.5;
         }
         y += 1;
       }
@@ -397,17 +425,18 @@ export default function ResumeMakerPage() {
       // ================= ACHIEVEMENTS =================
       const validAchievements = achievements.filter(ach => ach.title);
       if (validAchievements.length > 0) {
-        sectionHeading("Achievements");
+        sectionHeading("Awards and Certificates");
 
         for (const ach of validAchievements) {
           ensureSpace(5);
           doc.setFont("Helvetica", "normal");
           doc.setFontSize(9.5);
           doc.setTextColor(...COLOR_BODY);
-          doc.text("- " + ach.title, margin, y);
+          doc.text("• " + ach.title, margin, y);
           if (ach.year) {
-            doc.setFontSize(9);
-            doc.setTextColor(...COLOR_META);
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9.5);
+            doc.setTextColor(...COLOR_ACCENT);
             doc.text(ach.year, pageWidth - margin, y, { align: "right" });
           }
           y += 4.5;
@@ -421,16 +450,16 @@ export default function ResumeMakerPage() {
         sectionHeading("Languages");
         const languageLine = validLanguages
           .map(lang => lang.name + (lang.proficiency ? ` (${lang.proficiency})` : ""))
-          .join("   |   ");
-        bodyText(languageLine, margin, contentWidth, 9.5);
+          .join(", ");
+        labeledLine("Languages:", languageLine, 9.5);
         y += 1;
       }
 
       // ================= INTERESTS =================
       if (form.interests.trim()) {
         sectionHeading("Interests");
-        const interestsLine = form.interests.split(",").map(s => s.trim()).filter(s => s).join("   |   ");
-        bodyText(interestsLine, margin, contentWidth, 9.5);
+        const interestsLine = form.interests.split(",").map(s => s.trim()).filter(s => s).join(", ");
+        labeledLine("Interests:", interestsLine, 9.5);
         y += 1;
       }
 
