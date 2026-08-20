@@ -1,198 +1,129 @@
 // @ts-nocheck
 "use client";
-import { useState, useRef } from "react";
 import Link from "next/link";
-import { PDFDocument } from "pdf-lib";
 
-export default function SplitPdfPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [pageInput, setPageInput] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState("");
-  const [successUrl, setSuccessUrl] = useState<string>("");
-  const [showPopup, setShowPopup] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+const pdfTools = [
+  {
+    id: 1,
+    name: "Merge PDF",
+    icon: "📑",
+    desc: "Combine multiple PDFs into one file.",
+    path: "/pdf-tools/merge",
+    badge: "Free",
+    gradient: "from-rose-400 to-orange-400",
+    glow: "rgba(251,146,60,0.35)",
+  },
+  {
+    id: 2,
+    name: "Split PDF",
+    icon: "✂️",
+    desc: "Extract specific pages from a PDF.",
+    path: "/pdf-tools/split",
+    badge: "Free",
+    gradient: "from-blue-400 to-indigo-400",
+    glow: "rgba(99,102,241,0.35)",
+  },
+  {
+    id: 3,
+    name: "Compress PDF",
+    icon: "🗜️",
+    desc: "Reduce PDF file size.",
+    path: "/pdf-tools/compress",
+    badge: "Free",
+    gradient: "from-emerald-400 to-teal-400",
+    glow: "rgba(45,212,191,0.35)",
+  },
+  {
+    id: 4,
+    name: "Image to PDF",
+    icon: "🖼️",
+    desc: "Convert images to PDF.",
+    path: "/pdf-tools/image-to-pdf",
+    badge: "Free",
+    gradient: "from-purple-400 to-pink-400",
+    glow: "rgba(217,70,239,0.35)",
+  },
+  {
+    id: 5,
+    name: "Edit PDF",
+    icon: "✏️",
+    desc: "Add text, watermark, delete or rotate pages.",
+    path: "/pdf-tools/edit",
+    badge: "Pro",
+    gradient: "from-yellow-400 to-amber-400",
+    glow: "rgba(245,158,11,0.35)",
+  },
+];
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected && selected.type === "application/pdf") {
-      setFile(selected);
-      setError("");
-    } else {
-      setFile(null);
-      setError("Please select a valid PDF file.");
-    }
-  };
-
-  const handleExtract = async () => {
-    if (!file) {
-      setError("Please upload a PDF file.");
-      return;
-    }
-    if (!pageInput.trim()) {
-      setError("Please enter page numbers to extract (e.g., 1,3-5).");
-      return;
-    }
-
-    setIsProcessing(true);
-    setError("");
-
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const srcPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-      const totalPages = srcPdf.getPageCount();
-
-      // Parse page input
-      const pageNumbers: number[] = [];
-      const parts = pageInput.split(",");
-      for (const part of parts) {
-        const trimmed = part.trim();
-        if (trimmed.includes("-")) {
-          const [startStr, endStr] = trimmed.split("-");
-          const start = parseInt(startStr);
-          const end = parseInt(endStr);
-          if (isNaN(start) || isNaN(end)) {
-            setError("Invalid page range.");
-            return;
-          }
-          for (let i = start; i <= end; i++) pageNumbers.push(i);
-        } else {
-          const page = parseInt(trimmed);
-          if (!isNaN(page)) pageNumbers.push(page);
-        }
-      }
-
-      const uniquePages = [...new Set(pageNumbers)].sort((a, b) => a - b);
-
-      if (uniquePages.some((p) => p < 1 || p > totalPages)) {
-        setError(`Page numbers must be between 1 and ${totalPages}.`);
-        return;
-      }
-
-      const newPdf = await PDFDocument.create();
-      const copiedPages = await newPdf.copyPages(srcPdf, uniquePages.map((p) => p - 1));
-      copiedPages.forEach((page) => newPdf.addPage(page));
-
-      const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-
-      // Auto download
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "extracted.pdf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      // Show popup
-      setSuccessUrl(url);
-      setShowPopup(true);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const closePopup = () => {
-    setShowPopup(false);
-    if (successUrl) {
-      URL.revokeObjectURL(successUrl);
-      setSuccessUrl("");
-    }
-  };
-
+export default function PdfToolsDashboard() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
-      <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></Link>
-          <Link href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">← Back to PDF Tools</Link>
-        </div>
-      </nav>
-
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-4">✂️ Split / Extract Pages</h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Extract specific pages from your PDF. Enter page numbers like <code>1,3-5</code>.
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
-          <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" id="pdf-upload" ref={fileInputRef} />
-          <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-3">
-            <span className="text-5xl">📁</span>
-            <span className="text-xl font-semibold">{file ? file.name : "Click to Upload PDF"}</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">Select a PDF file</span>
-          </label>
-        </div>
-
-        {file && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 shadow-sm">
-            <label className="block text-sm font-medium mb-2">Pages to Extract</label>
-            <input
-              type="text"
-              value={pageInput}
-              onChange={(e) => setPageInput(e.target.value)}
-              placeholder="e.g., 1,3-5"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate pages with commas. Use hyphens for ranges.</p>
-          </div>
-        )}
-
-        {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-4 mb-6 text-sm">{error}</div>}
-
-        <div className="flex justify-center">
-          <button
-            onClick={handleExtract}
-            disabled={isProcessing || !file}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition"
-          >
-            {isProcessing ? "Extracting..." : "Extract Pages"}
-          </button>
-        </div>
-
-        <div className="mt-10 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
-          💡 <strong>Privacy:</strong> Files are processed in your browser, never uploaded.
-        </div>
-      </div>
-
-      {/* Success Popup */}
-      {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
-            <div className="text-5xl mb-4">✅</div>
-            <h2 className="text-2xl font-bold mb-2">Extraction Complete!</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">Your PDF pages are ready.</p>
-            <div className="flex flex-col gap-3">
-              <a
-                href={successUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-              >
-                Open PDF
+    <div className="min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white antialiased">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#fbfbfd]/75 dark:bg-[#040404]/75 border-b border-black/5 dark:border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <a href="/" className="flex items-center gap-2">
+              <span className="text-xl">🛠️</span>
+              <span className="text-[17px] font-semibold tracking-tight">ToolBox</span>
+            </a>
+            <div className="flex items-center gap-4">
+              <a href="/" className="text-sm text-[#6e6e73] hover:text-[#0071e3] dark:hover:text-white transition-colors">
+                ← Back to Home
               </a>
-              <a
-                href={successUrl}
-                download="extracted.pdf"
-                className="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
-              >
-                Download Again
+              <a href="/account" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-lg">
+                👤
               </a>
-              <button
-                onClick={closePopup}
-                className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
-      )}
+      </nav>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="text-center mb-12 sm:mb-16">
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mb-4">📄 PDF Tools</h1>
+          <p className="text-gray-600 dark:text-gray-300 text-lg sm:text-xl max-w-2xl mx-auto">
+            Choose a tool to manage your PDF files easily. Free, fast, and private.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 sm:gap-6">
+          {pdfTools.map((tool) => (
+            <div
+              key={tool.id}
+              className="group relative bg-white dark:bg-[#111113] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center text-2xl mb-5`}
+                style={{ boxShadow: `0 10px 24px -6px ${tool.glow}` }}
+              >
+                {tool.icon}
+              </div>
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <h3 className="text-lg font-bold tracking-tight">{tool.name}</h3>
+                <span
+                  className={`text-[11px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${
+                    tool.badge === "Pro"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300"
+                      : "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-300"
+                  }`}
+                >
+                  {tool.badge}
+                </span>
+              </div>
+              <p className="text-[#6e6e73] dark:text-white/60 text-sm mb-5 flex-grow leading-relaxed">
+                {tool.desc}
+              </p>
+              <Link
+                href={tool.path}
+                className="inline-block bg-[#0071e3] hover:bg-[#0077ED] text-white text-center py-2.5 rounded-xl font-semibold transition-colors"
+              >
+                Use Tool →
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
