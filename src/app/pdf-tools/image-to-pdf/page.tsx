@@ -2,11 +2,14 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
+import { PDFDocument } from "pdf-lib";
 
 export default function ImageToPdfPage() {
   const [images, setImages] = useState<File[]>([]);
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState("");
+  const [successUrl, setSuccessUrl] = useState<string>("");
+  const [showPopup, setShowPopup] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,39 +23,64 @@ export default function ImageToPdfPage() {
   const removeImage = (index: number) => setImages(prev => prev.filter((_, i) => i !== index));
 
   const handleConvert = async () => {
-    if (images.length === 0) { setError("Please upload at least one image."); return; }
+    if (images.length === 0) {
+      setError("Please upload at least one image.");
+      return;
+    }
     setIsConverting(true);
     setError("");
     try {
-      const formData = new FormData();
-      images.forEach(image => formData.append("images", image));
-      const response = await fetch("/api/image-to-pdf", { method: "POST", body: formData });
+      const pdfDoc = await PDFDocument.create();
 
-      if (!response.ok) {
-        const text = await response.text();
-        let errorMessage = "Conversion failed";
-        try {
-          const err = JSON.parse(text);
-          if (err.error) errorMessage = err.error;
-        } catch (e) {
-          if (text) errorMessage = text;
+      for (const image of images) {
+        const arrayBuffer = await image.arrayBuffer();
+        const mimeType = image.type;
+        let embeddedImage;
+
+        if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
+          embeddedImage = await pdfDoc.embedJpg(arrayBuffer);
+        } else if (mimeType === "image/png") {
+          embeddedImage = await pdfDoc.embedPng(arrayBuffer);
+        } else {
+          continue;
         }
-        throw new Error(errorMessage);
+
+        const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
+        page.drawImage(embeddedImage, {
+          x: 0,
+          y: 0,
+          width: embeddedImage.width,
+          height: embeddedImage.height,
+        });
       }
 
-      const blob = await response.blob();
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
+
+      // Auto download
       const a = document.createElement("a");
       a.href = url;
       a.download = "converted.pdf";
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      document.body.removeChild(a);
+
+      // Show popup
+      setSuccessUrl(url);
+      setShowPopup(true);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
       setIsConverting(false);
+    }
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+    if (successUrl) {
+      URL.revokeObjectURL(successUrl);
+      setSuccessUrl("");
     }
   };
 
@@ -67,7 +95,7 @@ export default function ImageToPdfPage() {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-4">🖼️ Image to PDF</h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">Convert JPG or PNG images into a single PDF document.</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Convert JPG or PNG images into a single PDF document. Free, fast, and private.</p>
         </div>
         <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
           <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" id="image-upload" ref={fileInputRef} />
@@ -92,12 +120,48 @@ export default function ImageToPdfPage() {
         )}
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-4 mb-6 text-sm">{error}</div>}
         <div className="flex justify-center">
-          <button onClick={handleConvert} disabled={isConverting || images.length === 0} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition">{isConverting ? "Converting..." : "Convert to PDF"}</button>
+          <button onClick={handleConvert} disabled={isConverting || images.length === 0} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition">
+            {isConverting ? "Converting..." : "Convert to PDF"}
+          </button>
         </div>
         <div className="mt-10 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
-          💡 <strong>Privacy:</strong> Images are processed securely and never stored.
+          💡 <strong>Privacy:</strong> Images are processed in your browser, never uploaded.
         </div>
       </div>
+
+      {/* Success Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div className="text-5xl mb-4">✅</div>
+            <h2 className="text-2xl font-bold mb-2">Conversion Complete!</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Your PDF is ready.</p>
+            <div className="flex flex-col gap-3">
+              <a
+                href={successUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+              >
+                Open PDF
+              </a>
+              <a
+                href={successUrl}
+                download="converted.pdf"
+                className="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
+              >
+                Download Again
+              </a>
+              <button
+                onClick={closePopup}
+                className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

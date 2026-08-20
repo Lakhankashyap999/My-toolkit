@@ -2,12 +2,15 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
+import { PDFDocument } from "pdf-lib";
 
 export default function CompressPdfPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [error, setError] = useState("");
   const [resultInfo, setResultInfo] = useState("");
+  const [successUrl, setSuccessUrl] = useState<string>("");
+  const [showPopup, setShowPopup] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,45 +26,61 @@ export default function CompressPdfPage() {
   };
 
   const handleCompress = async () => {
-    if (!file) { setError("Please upload a PDF file."); return; }
+    if (!file) {
+      setError("Please upload a PDF file.");
+      return;
+    }
     setIsCompressing(true);
     setError("");
     setResultInfo("");
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/compress-pdf", { method: "POST", body: formData });
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
-      if (!response.ok) {
-        const text = await response.text();
-        let errorMessage = "Compression failed";
-        try {
-          const err = JSON.parse(text);
-          if (err.error) errorMessage = err.error;
-        } catch (e) {
-          if (text) errorMessage = text;
-        }
-        throw new Error(errorMessage);
-      }
+      // Remove metadata and save with optimized settings
+      pdfDoc.setTitle("");
+      pdfDoc.setAuthor("");
+      pdfDoc.setSubject("");
+      pdfDoc.setKeywords([]);
+      pdfDoc.setProducer("");
+      pdfDoc.setCreator("");
 
-      const blob = await response.blob();
+      const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
+
       const originalSize = file.size;
       const compressedSize = blob.size;
       const percent = Math.round((1 - compressedSize / originalSize) * 100);
-      setResultInfo(`Original: ${formatSize(originalSize)} → Compressed: ${formatSize(compressedSize)} (${percent > 0 ? `saved ${percent}%` : "no significant change"})`);
+      setResultInfo(
+        `Original: ${formatSize(originalSize)} → Compressed: ${formatSize(compressedSize)} (${
+          percent > 0 ? `saved ${percent}%` : "no significant change"
+        })`
+      );
 
+      // Auto download
       const a = document.createElement("a");
       a.href = url;
       a.download = "compressed.pdf";
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      document.body.removeChild(a);
+
+      // Show popup
+      setSuccessUrl(url);
+      setShowPopup(true);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
       setIsCompressing(false);
+    }
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+    if (successUrl) {
+      URL.revokeObjectURL(successUrl);
+      setSuccessUrl("");
     }
   };
 
@@ -84,7 +103,9 @@ export default function CompressPdfPage() {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-4">🗜️ Compress PDF</h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">Reduce PDF file size. Compression effectiveness depends on the PDF content.</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Reduce PDF file size. Free, fast, and private — processed in your browser.
+          </p>
         </div>
         <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center mb-6">
           <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" id="pdf-upload" ref={fileInputRef} />
@@ -97,12 +118,48 @@ export default function CompressPdfPage() {
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-4 mb-6 text-sm">{error}</div>}
         {resultInfo && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl p-4 mb-6 text-sm">{resultInfo}</div>}
         <div className="flex justify-center">
-          <button onClick={handleCompress} disabled={isCompressing || !file} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition">{isCompressing ? "Compressing..." : "Compress PDF"}</button>
+          <button onClick={handleCompress} disabled={isCompressing || !file} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition">
+            {isCompressing ? "Compressing..." : "Compress PDF"}
+          </button>
         </div>
         <div className="mt-10 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm text-blue-800 dark:text-blue-200">
-          💡 <strong>Note:</strong> Our compression re-saves the PDF with optimized settings. For heavily image-based PDFs, reduction may be minimal.
+          💡 <strong>Note:</strong> Our compression re-saves the PDF with optimized settings. For heavily image-based PDFs, reduction may be minimal. Processed entirely in your browser.
         </div>
       </div>
+
+      {/* Success Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div className="text-5xl mb-4">✅</div>
+            <h2 className="text-2xl font-bold mb-2">Compression Complete!</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Your compressed PDF is ready.</p>
+            <div className="flex flex-col gap-3">
+              <a
+                href={successUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+              >
+                Open PDF
+              </a>
+              <a
+                href={successUrl}
+                download="compressed.pdf"
+                className="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
+              >
+                Download Again
+              </a>
+              <button
+                onClick={closePopup}
+                className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
