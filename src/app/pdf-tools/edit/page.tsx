@@ -2,7 +2,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import ProGate from "../../components/ProGate";
+import ProGate from "../../../components/ProGate";
 
 export default function EditPdfPage() {
   const [file, setFile] = useState<File | null>(null);
