@@ -630,6 +630,10 @@
     height: calc(var(--spacing) * 7);
   }
 
+  .h-9 {
+    height: calc(var(--spacing) * 9);
+  }
+
   .h-10 {
     height: calc(var(--spacing) * 10);
   }
@@ -692,6 +696,10 @@
 
   .w-7 {
     width: calc(var(--spacing) * 7);
+  }
+
+  .w-9 {
+    width: calc(var(--spacing) * 9);
   }
 
   .w-12 {
@@ -2011,6 +2019,10 @@
   @media (min-width: 48rem) {
     .md\:flex {
       display: flex;
+    }
+
+    .md\:hidden {
+      display: none;
     }
 
     .md\:grid-cols-2 {

@@ -63,7 +63,6 @@ const tools = [
 ];
 
 const comingSoonTools = [
-  // PDF/Office
   { icon: "📄", name: "PDF to Word" },
   { icon: "🔁", name: "Word to PDF" },
   { icon: "🖼️", name: "PDF to JPG" },
@@ -75,7 +74,6 @@ const comingSoonTools = [
   { icon: "🔢", name: "PDF Page Numberer" },
   { icon: "✍️", name: "PDF Signature" },
   { icon: "📖", name: "PDF Reader" },
-  // Image Tools
   { icon: "📏", name: "Image Resizer" },
   { icon: "🔄", name: "Format Converter" },
   { icon: "🎯", name: "Background Remover" },
@@ -84,7 +82,6 @@ const comingSoonTools = [
   { icon: "🔍", name: "Image to Text (OCR)" },
   { icon: "😂", name: "Meme Generator" },
   { icon: "💧", name: "Image Watermark" },
-  // Document/Text Tools
   { icon: "📝", name: "Text to PDF" },
   { icon: "🔤", name: "Word Counter" },
   { icon: "✏️", name: "Grammar Checker" },
@@ -93,12 +90,10 @@ const comingSoonTools = [
   { icon: "📊", name: "Barcode Generator" },
   { icon: "🧾", name: "Invoice Generator" },
   { icon: "📨", name: "Letter Writer" },
-  // Utility/Security
   { icon: "🔐", name: "File Encryptor" },
   { icon: "🗝️", name: "Password Generator" },
   { icon: "📦", name: "File Compressor" },
   { icon: "🔍", name: "Duplicate File Finder" },
-  // Calculators
   { icon: "🏦", name: "EMI Calculator" },
   { icon: "🎂", name: "Age Calculator" },
   { icon: "📊", name: "Percentage Calculator" },
@@ -160,9 +155,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🛠️</span>
-              <span className="text-[17px] font-semibold tracking-tight">ToolBox</span>
+              <a href="/" className="flex items-center gap-2">
+                <span className="text-xl">🛠️</span>
+                <span className="text-[17px] font-semibold tracking-tight">ToolBox</span>
+              </a>
             </div>
+
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[#1d1d1f]/80 dark:text-white/80">
               <a href="#tools" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Tools</a>
               <a href="#features" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Features</a>
@@ -175,6 +174,13 @@ export default function Home() {
               <button className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors">
                 Get Started Free
               </button>
+            </div>
+
+            {/* Mobile Profile Icon */}
+            <div className="flex md:hidden items-center">
+              <a href="/account" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-lg">
+                👤
+              </a>
             </div>
           </div>
         </div>
