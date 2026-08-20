@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     const email = req.nextUrl.searchParams.get("email");
     if (!email) {
-      return NextResponse.json({ active: false });
+      return NextResponse.json({ active: false, subscription: null });
     }
 
     const supabase = createClient(
@@ -24,9 +24,12 @@ export async function GET(req: NextRequest) {
 
     if (error) throw error;
 
-    return NextResponse.json({ active: data && data.length > 0 });
+    const active = data && data.length > 0;
+    const subscription = active ? data[0] : null;
+
+    return NextResponse.json({ active, subscription });
   } catch (error) {
     console.error("Check subscription error:", error);
-    return NextResponse.json({ active: false, error: "Check failed" }, { status: 500 });
+    return NextResponse.json({ active: false, subscription: null, error: "Check failed" }, { status: 500 });
   }
 }

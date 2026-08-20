@@ -19,9 +19,9 @@ export default function AuthCallbackPage() {
             body: JSON.stringify({ email: session.user.email }),
           });
         } catch {}
-        router.push("/");
+        router.push("/account");
       } else {
-        router.push("/");
+        router.push("/account");
       }
     };
     handleCallback();

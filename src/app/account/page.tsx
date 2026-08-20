@@ -3,33 +3,79 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function AccountPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [remaining, setRemaining] = useState<string>("");
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("toolbox_email");
-    if (!storedEmail) {
-      router.push("/");
-      return;
+    if (storedEmail) {
+      setEmail(storedEmail);
+      fetchSubscription(storedEmail);
+    } else {
+      // Show login form instead of redirect
+      setLoading(false);
     }
-    setEmail(storedEmail);
-    checkSubscription(storedEmail);
   }, []);
 
-  const checkSubscription = async (email: string) => {
+  const fetchSubscription = async (email: string) => {
     try {
       const res = await fetch(`/api/check-subscription?email=${encodeURIComponent(email)}`);
       const data = await res.json();
-      setSubscription(data);
+      setSubscription(data.subscription);
+      if (data.subscription?.expiry_date) {
+        startCountdown(data.subscription.expiry_date);
+      }
     } catch {
-      setSubscription({ active: false });
+      setSubscription(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const startCountdown = (expiryDate: string) => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const expiry = new Date(expiryDate).getTime();
+      const diff = expiry - now;
+      if (diff <= 0) {
+        setRemaining("Expired");
+        clearInterval(interval);
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        setRemaining(`${days}d ${hours}h ${mins}m ${secs}s`);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  };
+
+  const handleSendLink = async () => {
+    const trimmed = email.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setMessage("Please enter a valid email.");
+      return;
+    }
+    setMessage("Sending verification link...");
+    const { error } = await supabase.auth.signInWithOtp({
+      email: trimmed,
+      options: {
+        emailRedirectTo: window.location.origin + "/auth/callback",
+      },
+    });
+    if (error) {
+      setMessage("Failed to send link. Try again.");
+      return;
+    }
+    setMessage(`Link sent to ${trimmed}. Check your email and click the link.`);
   };
 
   const handleLogout = () => {
@@ -42,6 +88,35 @@ export default function AccountPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <p className="text-lg text-gray-600 dark:text-gray-300">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!email) {
+    // Login form
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700">
+          <div className="text-4xl mb-4 text-center">👤</div>
+          <h1 className="text-2xl font-bold mb-2 text-center">My Account</h1>
+          <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
+            Enter your email to receive a verification link.
+          </p>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4"
+          />
+          <button
+            onClick={handleSendLink}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+          >
+            Send Verification Link
+          </button>
+          {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center">{message}</p>}
+        </div>
       </div>
     );
   }
@@ -64,23 +139,26 @@ export default function AccountPage() {
           <div className="text-left space-y-4">
             <div>
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
-              <p className="text-lg font-semibold">{email}</p>
+              <p className="text-lg font-semibold break-all">{email}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Subscription</label>
-              {subscription?.active ? (
-                <p className="text-lg font-semibold text-green-600">Pro Active ✅</p>
+              {subscription ? (
+                <>
+                  <p className="text-lg font-semibold text-green-600">Pro Active ✅</p>
+                  <p className="text-sm text-gray-500">Expires on: {new Date(subscription.expiry_date).toLocaleString()}</p>
+                  {remaining && (
+                    <p className="text-sm font-medium text-blue-600">Time left: {remaining}</p>
+                  )}
+                </>
               ) : (
                 <p className="text-lg font-semibold text-red-500">Not Active</p>
-              )}
-              {subscription?.expiry_date && (
-                <p className="text-sm text-gray-500">Expires on: {new Date(subscription.expiry_date).toLocaleDateString()}</p>
               )}
             </div>
           </div>
 
           <div className="mt-8 flex flex-col gap-3">
-            {subscription?.active ? (
+            {subscription ? (
               <button
                 onClick={handleLogout}
                 className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold transition"
