@@ -3,23 +3,26 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../lib/supabaseClient";
 
 export default function AccountPage() {
   const router = useRouter();
-  const [email, setEmail] = useState<string>("");
-  const [subscription, setSubscription] = useState<any>(null);
+  const [verifiedEmail, setVerifiedEmail] = useState<string>("");
+  const [inputEmail, setInputEmail] = useState<string>("");
+  const [code, setCode] = useState<string>("");
+  const [step, setStep] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [subscription, setSubscription] = useState<any>(null);
   const [remaining, setRemaining] = useState<string>("");
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("toolbox_email");
     if (storedEmail) {
-      setEmail(storedEmail);
+      setVerifiedEmail(storedEmail);
       fetchSubscription(storedEmail);
     } else {
-      // Show login form instead of redirect
       setLoading(false);
     }
   }, []);
@@ -58,29 +61,81 @@ export default function AccountPage() {
     return () => clearInterval(interval);
   };
 
-  const handleSendLink = async () => {
-    const trimmed = email.trim();
+  const handleSendCode = async () => {
+    const trimmed = inputEmail.trim();
     if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setMessage("Please enter a valid email.");
       return;
     }
-    setMessage("Sending verification link...");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmed,
-      options: {
-        emailRedirectTo: window.location.origin + "/auth/callback",
-      },
-    });
-    if (error) {
-      setMessage("Failed to send link. Try again.");
+    setSending(true);
+    setMessage("Sending verification code...");
+    try {
+      const res = await fetch("/api/send-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage(`Code sent to ${trimmed}. Check your email.`);
+        setStep("code");
+      } else {
+        setMessage(data.error || "Failed to send code. Try again.");
+      }
+    } catch {
+      setMessage("Network error. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const trimmedEmail = inputEmail.trim();
+    if (!code.trim()) {
+      setMessage("Enter verification code.");
       return;
     }
-    setMessage(`Link sent to ${trimmed}. Check your email and click the link.`);
+    setVerifying(true);
+    setMessage("Verifying...");
+    try {
+      const res = await fetch("/api/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail, code: code.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setVerifiedEmail(trimmedEmail);
+        localStorage.setItem("toolbox_email", trimmedEmail);
+        // Register email in users table (optional)
+        try {
+          await fetch("/api/register-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: trimmedEmail }),
+          });
+        } catch {}
+        setMessage("");
+        fetchSubscription(trimmedEmail);
+      } else {
+        setMessage(data.error || "Invalid code.");
+      }
+    } catch {
+      setMessage("Network error. Please try again.");
+    } finally {
+      setVerifying(false);
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("toolbox_email");
     localStorage.removeItem("toolbox_pro");
+    setVerifiedEmail("");
+    setInputEmail("");
+    setCode("");
+    setStep("email");
+    setSubscription(null);
+    setRemaining("");
     router.push("/");
   };
 
@@ -92,35 +147,68 @@ export default function AccountPage() {
     );
   }
 
-  if (!email) {
-    // Login form
+  // Login / Verification form
+  if (!verifiedEmail) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700">
           <div className="text-4xl mb-4 text-center">👤</div>
           <h1 className="text-2xl font-bold mb-2 text-center">My Account</h1>
           <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-            Enter your email to receive a verification link.
+            {step === "email"
+              ? "Enter your email to receive a verification code."
+              : `Code sent to ${inputEmail}. Enter the 6-digit code below.`}
           </p>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4"
-          />
-          <button
-            onClick={handleSendLink}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-          >
-            Send Verification Link
-          </button>
+
+          {step === "email" ? (
+            <>
+              <input
+                type="email"
+                value={inputEmail}
+                onChange={(e) => setInputEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4"
+              />
+              <button
+                onClick={handleSendCode}
+                disabled={sending}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition"
+              >
+                {sending ? "Sending..." : "Send Code"}
+              </button>
+            </>
+          ) : (
+            <>
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="6-digit code"
+                maxLength={6}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4 text-center tracking-widest"
+              />
+              <button
+                onClick={handleVerifyCode}
+                disabled={verifying}
+                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition mb-2"
+              >
+                {verifying ? "Verifying..." : "Verify"}
+              </button>
+              <button
+                onClick={() => setStep("email")}
+                className="w-full text-sm text-blue-600 hover:underline"
+              >
+                Change email
+              </button>
+            </>
+          )}
           {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center">{message}</p>}
         </div>
       </div>
     );
   }
 
+  // Account details
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
       <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
@@ -139,7 +227,7 @@ export default function AccountPage() {
           <div className="text-left space-y-4">
             <div>
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
-              <p className="text-lg font-semibold break-all">{email}</p>
+              <p className="text-lg font-semibold break-all">{verifiedEmail}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Subscription</label>
