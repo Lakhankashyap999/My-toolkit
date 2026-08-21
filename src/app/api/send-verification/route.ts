@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "no-reply@mytoolboxs.online",
       to: [email],
       subject: "ToolBox Verification Code",
       html: `
