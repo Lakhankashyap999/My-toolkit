@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+const BASE_USERS = 2000; // 👈 Starting number for trust
+
 function maskEmail(email: string): string {
   const [name, domain] = email.split("@");
   if (!name || !domain) return "***";
@@ -17,14 +19,17 @@ export async function GET(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Get total count
+    // Real users count
     const { count, error: countError } = await supabase
       .from("users")
       .select("*", { count: "exact", head: true });
 
     if (countError) throw countError;
 
-    // Get recent users (last 10)
+    const realCount = count || 0;
+    const displayTotal = BASE_USERS + realCount; // 👈 2000 + real
+
+    // Get recent real users (last 10)
     const { data, error } = await supabase
       .from("users")
       .select("email, created_at")
@@ -38,9 +43,9 @@ export async function GET(req: NextRequest) {
       joined: new Date(user.created_at).toLocaleDateString(),
     }));
 
-    return NextResponse.json({ total: count || 0, users });
+    return NextResponse.json({ total: displayTotal, users });
   } catch (error) {
     console.error("Public users error:", error);
-    return NextResponse.json({ total: 0, users: [] }, { status: 500 });
+    return NextResponse.json({ total: BASE_USERS, users: [] }, { status: 500 });
   }
 }
