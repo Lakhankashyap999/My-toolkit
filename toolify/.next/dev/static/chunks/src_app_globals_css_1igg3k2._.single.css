@@ -727,6 +727,10 @@
     margin-bottom: calc(var(--spacing) * 16);
   }
 
+  .ml-3 {
+    margin-left: calc(var(--spacing) * 3);
+  }
+
   .block {
     display: block;
   }
@@ -837,6 +841,10 @@
 
   .max-h-\[65vh\] {
     max-height: 65vh;
+  }
+
+  .max-h-\[80vh\] {
+    max-height: 80vh;
   }
 
   .min-h-0 {

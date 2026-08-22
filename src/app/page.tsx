@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Inter } from "next/font/google";
 
@@ -158,6 +158,25 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // New states for active users
+  const [userCount, setUserCount] = useState<number>(0);
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [showUsers, setShowUsers] = useState(false);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("/api/public-users");
+        const data = await res.json();
+        if (res.ok) {
+          setUserCount(data.total);
+          setUsersList(data.users || []);
+        }
+      } catch {}
+    };
+    fetchUsers();
+  }, []);
+
   return (
     <div
       className={`${inter.variable} font-sans min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white antialiased`}
@@ -171,7 +190,6 @@ export default function Home() {
               <span className="text-[17px] font-semibold tracking-tight">ToolBox</span>
             </a>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[#1d1d1f]/80 dark:text-white/80">
               {navLinks.map(link => (
                 <a key={link.href} href={link.href} className="hover:text-[#0071e3] dark:hover:text-white transition-colors">
@@ -187,7 +205,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobile: hamburger + profile */}
             <div className="flex md:hidden items-center gap-2">
               <a href="/account" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-lg">
                 👤
@@ -204,7 +221,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Mobile menu panel */}
           {mobileMenuOpen && (
             <div className="md:hidden pb-5 pt-1 flex flex-col gap-1 animate-in fade-in slide-in-from-top-2">
               {navLinks.map(link => (
@@ -227,7 +243,6 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-16 sm:pt-28 pb-16 sm:pb-24 px-4">
-        {/* Ambient premium glow — subtle, keeps things from feeling flat/plain */}
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-blue-400/25 via-indigo-400/15 to-purple-400/20 dark:from-blue-500/15 dark:via-indigo-500/10 dark:to-purple-500/15 blur-3xl" />
           <div className="absolute top-40 -left-20 w-64 h-64 rounded-full bg-emerald-300/20 dark:bg-emerald-500/10 blur-3xl" />
@@ -237,7 +252,7 @@ export default function Home() {
         <div className="relative max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-7 sm:mb-8 text-[#1d1d1f]/70 dark:text-white/70">
             <span className="w-1.5 h-1.5 bg-[#30d158] rounded-full" />
-            Trusted by 2,000+ users in India
+            Trusted by {userCount > 0 ? `${userCount}+` : "..."} users in India
           </div>
           <h1 className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-5 sm:mb-6">
             All your daily tools.
@@ -249,16 +264,10 @@ export default function Home() {
             all with a beautifully simple interface. No signup required, just start using.
           </p>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-            <a
-              href="#tools"
-              className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px] shadow-lg shadow-blue-500/25"
-            >
+            <a href="#tools" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px] shadow-lg shadow-blue-500/25">
               Explore Tools
             </a>
-            <a
-              href="#pricing"
-              className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]"
-            >
+            <a href="#pricing" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
               See Pricing
             </a>
           </div>
@@ -268,20 +277,34 @@ export default function Home() {
       {/* Stats Bar */}
       <section className="max-w-5xl mx-auto px-4 mb-16 sm:mb-24">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
-          {[
-            { value: "2K+", label: "Active Users" },
-            { value: "1.5K+", label: "Files Processed" },
-            { value: "4.5/5", label: "Average Rating" },
-            { value: "No Signup", label: "Required" },
-          ].map((stat, i) => (
-            <div
-              key={i}
-              className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7"
-            >
-              <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">{stat.value}</div>
-              <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">{stat.label}</div>
+          <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
+            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">
+              {userCount > 0 ? `${userCount}+` : "..."}
             </div>
-          ))}
+            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Active Users</div>
+          </div>
+          <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
+            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">1.5K+</div>
+            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Files Processed</div>
+          </div>
+          <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
+            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">4.5/5</div>
+            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Average Rating</div>
+          </div>
+          <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
+            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">No Signup</div>
+            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Required</div>
+          </div>
+        </div>
+
+        {/* See active users button */}
+        <div className="text-center mt-5">
+          <button
+            onClick={() => setShowUsers(true)}
+            className="text-sm text-[#0071e3] hover:underline font-medium"
+          >
+            See our active users →
+          </button>
         </div>
       </section>
 
@@ -534,10 +557,10 @@ export default function Home() {
               © {new Date().getFullYear()} ToolBox. All rights reserved.
             </div>
             <div className="flex gap-5 text-[13px] text-[#6e6e73] dark:text-white/50">
-  <a href="/privacy" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Privacy</a>
-  <a href="/terms" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Terms</a>
-  <a href="/contact" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Contact</a>
-</div>
+              <a href="/privacy" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Privacy</a>
+              <a href="/terms" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Terms</a>
+              <a href="/contact" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Contact</a>
+            </div>
           </div>
         </div>
       </footer>
@@ -560,6 +583,44 @@ export default function Home() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Active Users Modal */}
+      {showUsers && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                👥 Active Users ({userCount})
+              </h2>
+              <button
+                onClick={() => setShowUsers(false)}
+                className="w-8 h-8 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {usersList.length > 0 ? (
+              <ul className="space-y-3">
+                {usersList.map((user, idx) => (
+                  <li key={idx} className="flex items-center justify-between bg-[#f5f5f7] dark:bg-white/5 rounded-xl px-4 py-3">
+                    <span className="text-sm font-medium truncate">{user.email}</span>
+                    <span className="text-xs text-[#6e6e73] dark:text-white/50 whitespace-nowrap ml-3">
+                      {user.joined}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#6e6e73]">No users yet.</p>
+            )}
+
+            <p className="mt-4 text-xs text-[#6e6e73] text-center">
+              🔒 Emails are masked to protect privacy.
+            </p>
           </div>
         </div>
       )}
