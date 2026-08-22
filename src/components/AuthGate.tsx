@@ -2,6 +2,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
+const SESSION_VALID_MS = 8 * 60 * 60 * 1000; // 8 hours
+
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState<string>("");
@@ -14,13 +16,24 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("toolbox_email");
-    if (storedEmail) {
-      setEmail(storedEmail);
-      setLoading(false);
-    } else {
-      setShowForm(true);
-      setLoading(false);
+    const loginTime = localStorage.getItem("toolbox_login_time");
+
+    if (storedEmail && loginTime) {
+      const now = Date.now();
+      const timeDiff = now - parseInt(loginTime, 10);
+      if (timeDiff < SESSION_VALID_MS) {
+        setEmail(storedEmail);
+        setLoading(false);
+        return;
+      } else {
+        // Session expired — clear
+        localStorage.removeItem("toolbox_email");
+        localStorage.removeItem("toolbox_login_time");
+      }
     }
+
+    setShowForm(true);
+    setLoading(false);
   }, []);
 
   const handleSendCode = async () => {
@@ -68,6 +81,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem("toolbox_email", trimmedEmail);
+        localStorage.setItem("toolbox_login_time", String(Date.now()));
         // Register email in users table (optional)
         try {
           await fetch("/api/register-email", {
