@@ -39,6 +39,8 @@ export default function EditPdfPage() {
   const [successUrl, setSuccessUrl] = useState<string>("");
   const [showPopup, setShowPopup] = useState(false);
 
+  const [zoom, setZoom] = useState(1); // 1 = 100%
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
@@ -59,6 +61,7 @@ export default function EditPdfPage() {
     setSuccess("");
     setSuccessUrl("");
     setShowPopup(false);
+    setZoom(1);
     pdfProxyRef.current = null;
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -71,29 +74,37 @@ export default function EditPdfPage() {
     const page = await pdf.getPage(pageNum);
     const baseViewport = page.getViewport({ scale: 1 });
     const containerWidth = mainContainerRef.current?.clientWidth || 500;
-    const scale = Math.min(containerWidth / baseViewport.width, 1.6);
+    const dpr = window.devicePixelRatio || 1;
+    const fitScale = Math.min(containerWidth / baseViewport.width, 1.6);
+    const scale = fitScale * zoom * dpr; // sharp rendering with zoom
+
     const viewport = page.getViewport({ scale });
 
     canvas.width = viewport.width;
     canvas.height = viewport.height;
+    canvas.style.width = `${viewport.width / dpr}px`;
+    canvas.style.height = `${viewport.height / dpr}px`;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     await page.render({ canvasContext: ctx, viewport }).promise;
 
-    mainScaleRef.current = scale;
+    mainScaleRef.current = scale / dpr;
     mainPageHeightRef.current = baseViewport.height;
 
     if (marker) {
+      const mx = marker.x * dpr;
+      const my = marker.y * dpr;
       ctx.strokeStyle = "#2563eb";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2 * dpr;
       ctx.beginPath();
-      ctx.arc(marker.x, marker.y, 7, 0, Math.PI * 2);
+      ctx.arc(mx, my, 7 * dpr, 0, Math.PI * 2);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(marker.x - 11, marker.y);
-      ctx.lineTo(marker.x + 11, marker.y);
-      ctx.moveTo(marker.x, marker.y - 11);
-      ctx.lineTo(marker.x, marker.y + 11);
+      ctx.moveTo(mx - 11 * dpr, my);
+      ctx.lineTo(mx + 11 * dpr, my);
+      ctx.moveTo(mx, my - 11 * dpr);
+      ctx.lineTo(mx, my + 11 * dpr);
       ctx.stroke();
     }
   };
@@ -102,8 +113,7 @@ export default function EditPdfPage() {
     if (numPages > 0) {
       drawMainPage(selectedPageForText, null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPageForText, numPages]);
+  }, [selectedPageForText, numPages, zoom]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -119,8 +129,7 @@ export default function EditPdfPage() {
     try {
       const arrayBuffer = await selected.arrayBuffer();
       const pdfjsLib = await import("pdfjs-dist");
-      // 🔧 Fixed worker URL using jsdelivr (supports .mjs)
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       pdfProxyRef.current = pdf;
@@ -129,7 +138,7 @@ export default function EditPdfPage() {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const baseViewport = page.getViewport({ scale: 1 });
-        const scale = 130 / baseViewport.width;
+        const scale = 220 / baseViewport.width; // sharper thumbnails
         const viewport = page.getViewport({ scale });
         const c = document.createElement("canvas");
         c.width = viewport.width;
@@ -147,6 +156,7 @@ export default function EditPdfPage() {
       setSelectedPageForText(1);
       setAddTextX(50);
       setAddTextY(50);
+      setZoom(1);
     } catch (err) {
       console.error(err);
       setError("Could not read this PDF. Please try another file.");
@@ -216,7 +226,6 @@ export default function EditPdfPage() {
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const pages = pdfDoc.getPages();
 
-      // Rotate pages
       pages.forEach((page, idx) => {
         const delta = pageRotations[idx] || 0;
         if (delta !== 0) {
@@ -225,7 +234,6 @@ export default function EditPdfPage() {
         }
       });
 
-      // Watermark on every page
       if (watermarkContent.trim()) {
         pages.forEach(page => {
           const { width, height } = page.getSize();
@@ -241,7 +249,6 @@ export default function EditPdfPage() {
         });
       }
 
-      // Add text on the chosen page
       if (addTextContent.trim()) {
         const pageIdx = Math.min(Math.max(selectedPageForText - 1, 0), pages.length - 1);
         const { r, g, b } = hexToRgb(textColor);
@@ -254,7 +261,6 @@ export default function EditPdfPage() {
         });
       }
 
-      // Delete pages (descending order so indices stay valid)
       const indicesToDelete = deleteFlags
         .map((flag, idx) => (flag ? idx : -1))
         .filter(idx => idx !== -1)
@@ -265,7 +271,6 @@ export default function EditPdfPage() {
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
-      // Auto download
       const a = document.createElement("a");
       a.href = url;
       a.download = "edited.pdf";
@@ -273,7 +278,6 @@ export default function EditPdfPage() {
       a.click();
       document.body.removeChild(a);
 
-      // Show success popup
       setSuccessUrl(url);
       setShowPopup(true);
       setSuccess("PDF edited successfully!");
@@ -299,12 +303,16 @@ export default function EditPdfPage() {
     <AuthGate>
       <ProGate>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
-          <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
+          <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-              <a href="/" className="flex items-center gap-2"><span className="text-2xl">🛠️</span><span className="text-xl font-bold">ToolBox</span></a>
+              <a href="/" className="flex items-center gap-2">
+                <span className="text-2xl">🛠️</span>
+                <span className="text-xl font-bold">ToolBox</span>
+              </a>
               <div className="flex items-center gap-4">
                 <a href="/" className="text-sm text-gray-600 hover:text-blue-600">← Back to Home</a>
                 <a href="/pdf-tools" className="text-sm text-gray-600 hover:text-blue-600">PDF Tools</a>
+                <a href="/account" className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-lg">👤</a>
               </div>
             </div>
           </nav>
@@ -331,7 +339,6 @@ export default function EditPdfPage() {
 
             {file && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* LEFT: interactive preview + page manager */}
                 <div className="lg:col-span-2 space-y-4">
                   <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -354,6 +361,29 @@ export default function EditPdfPage() {
                       </div>
                       <button onClick={resetAll} className="text-xs text-red-500 hover:text-red-700 font-medium">
                         Upload different file
+                      </button>
+                    </div>
+
+                    {/* Zoom Controls */}
+                    <div className="flex items-center gap-2 justify-end mb-3">
+                      <button
+                        onClick={() => setZoom(prev => Math.max(0.5, prev - 0.1))}
+                        className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm"
+                      >
+                        −
+                      </button>
+                      <span className="text-sm font-medium w-12 text-center">{Math.round(zoom * 100)}%</span>
+                      <button
+                        onClick={() => setZoom(prev => Math.min(2.5, prev + 0.1))}
+                        className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm"
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => setZoom(1)}
+                        className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm"
+                      >
+                        Reset
                       </button>
                     </div>
 
@@ -395,9 +425,7 @@ export default function EditPdfPage() {
                             className="w-full h-auto block"
                             style={{ transform: `rotate(${pageRotations[idx]}deg)` }}
                           />
-                          <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                            {idx + 1}
-                          </div>
+                          <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">{idx + 1}</div>
                           <div className="absolute bottom-1 right-1 flex gap-1">
                             <button
                               onClick={(e) => { e.stopPropagation(); rotatePageBy90(idx); }}
@@ -422,7 +450,6 @@ export default function EditPdfPage() {
                   </div>
                 </div>
 
-                {/* RIGHT: edit controls */}
                 <div className="space-y-4">
                   <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
                     <h2 className="font-bold text-lg mb-3">➕ Add Text</h2>
@@ -488,7 +515,6 @@ export default function EditPdfPage() {
                           <input type="number" value={watermarkSize} onChange={(e) => setWatermarkSize(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700" />
                         </div>
                       </div>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400">Applied diagonally across every page that remains after deletion.</p>
                     </div>
                   </div>
 
@@ -519,7 +545,6 @@ export default function EditPdfPage() {
           </div>
         </div>
 
-        {/* Success Popup */}
         {showPopup && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
@@ -527,27 +552,9 @@ export default function EditPdfPage() {
               <h2 className="text-2xl font-bold mb-2">Edit Complete!</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6">Your edited PDF is ready.</p>
               <div className="flex flex-col gap-3">
-                <a
-                  href={successUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-                >
-                  Open PDF
-                </a>
-                <a
-                  href={successUrl}
-                  download="edited.pdf"
-                  className="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
-                >
-                  Download Again
-                </a>
-                <button
-                  onClick={closePopup}
-                  className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition"
-                >
-                  Close
-                </button>
+                <a href={successUrl} target="_blank" rel="noopener noreferrer" className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition">Open PDF</a>
+                <a href={successUrl} download="edited.pdf" className="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition">Download Again</a>
+                <button onClick={closePopup} className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-lg font-semibold transition">Close</button>
               </div>
             </div>
           </div>
