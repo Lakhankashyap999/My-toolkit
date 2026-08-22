@@ -16,7 +16,14 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("toolbox_email");
-    const loginTime = localStorage.getItem("toolbox_login_time");
+    let loginTime = localStorage.getItem("toolbox_login_time");
+
+    // Legacy fix: agar email saved hai but login_time missing hai,
+    // to aaj ka time set karke session valid maan lo
+    if (storedEmail && !loginTime) {
+      loginTime = String(Date.now());
+      localStorage.setItem("toolbox_login_time", loginTime);
+    }
 
     if (storedEmail && loginTime) {
       const now = Date.now();
