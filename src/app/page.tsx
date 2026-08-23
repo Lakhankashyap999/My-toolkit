@@ -53,6 +53,19 @@ const tools = [
   },
   {
     id: 4,
+    name: "QR Code Generator",
+    icon: "🔳",
+    gradient: "from-slate-500 to-gray-700",
+    glow: "rgba(100,116,139,0.35)",
+    badge: "New",
+    price: "₹0 / Free",
+    proPrice: "Free",
+    desc: "Create QR codes from any text or URL instantly.",
+    features: ["High-Quality PNG", "Instant Download", "No Signup"],
+    path: "/qr-code-generator",
+  },
+  {
+    id: 5,
     name: "Chatbot Help",
     icon: "💬",
     gradient: "from-purple-400 to-pink-400",
@@ -90,7 +103,6 @@ const comingSoonTools = [
   { icon: "🔤", name: "Word Counter" },
   { icon: "✏️", name: "Grammar Checker" },
   { icon: "🔎", name: "Plagiarism Checker" },
-  { icon: "🔳", name: "QR Code Generator" },
   { icon: "📊", name: "Barcode Generator" },
   { icon: "🧾", name: "Invoice Generator" },
   { icon: "📨", name: "Letter Writer" },
@@ -158,7 +170,7 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // New states for active users
+  // Active users states
   const [userCount, setUserCount] = useState<number>(0);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [showUsers, setShowUsers] = useState(false);
@@ -192,7 +204,11 @@ export default function Home() {
 
             <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[#1d1d1f]/80 dark:text-white/80">
               {navLinks.map(link => (
-                <a key={link.href} href={link.href} className="hover:text-[#0071e3] dark:hover:text-white transition-colors">
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="hover:text-[#0071e3] dark:hover:text-white transition-colors"
+                >
                   {link.label}
                 </a>
               ))}
