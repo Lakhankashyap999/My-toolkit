@@ -919,6 +919,10 @@
     height: 520px;
   }
 
+  .h-\[600px\] {
+    height: 600px;
+  }
+
   .h-auto {
     height: auto;
   }
