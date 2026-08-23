@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "ToolBox - All Daily Tools in One Place",
   description:
     "Edit PDFs, create resumes, compress images, and more — free, fast, and no signup required.",
+  icons: {
+    icon: "/favimage.png.png", // ye line add karo
+  },
 };
 
 export default function RootLayout({
