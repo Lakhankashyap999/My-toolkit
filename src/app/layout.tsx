@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ToolBox - All Daily Tools in One Place",
+  title: "ToolBoxs - All Daily Tools in One Place",
   description:
     "Edit PDFs, create resumes, compress images, and more — free, fast, and no signup required.",
   icons: {
