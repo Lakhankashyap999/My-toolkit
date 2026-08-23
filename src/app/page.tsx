@@ -66,6 +66,19 @@ const tools = [
   },
   {
     id: 5,
+    name: "PDF to Word",
+    icon: "📄",
+    gradient: "from-amber-400 to-orange-400",
+    glow: "rgba(245,158,11,0.35)",
+    badge: "New",
+    price: "₹0 / Free",
+    proPrice: "Free",
+    desc: "Convert PDF documents to editable Word files.",
+    features: ["Text Extraction", "Preserves Formatting", "Free & Fast"],
+    path: "/pdf-to-word",
+  },
+  {
+    id: 6,
     name: "Chatbot Help",
     icon: "💬",
     gradient: "from-purple-400 to-pink-400",
@@ -80,7 +93,6 @@ const tools = [
 ];
 
 const comingSoonTools = [
-  { icon: "📄", name: "PDF to Word" },
   { icon: "🔁", name: "Word to PDF" },
   { icon: "🖼️", name: "PDF to JPG" },
   { icon: "🔒", name: "PDF Locker" },
@@ -170,10 +182,11 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Active users states
   const [userCount, setUserCount] = useState<number>(0);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [showUsers, setShowUsers] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -188,6 +201,13 @@ export default function Home() {
     };
     fetchUsers();
   }, []);
+
+  const filteredTools = tools.filter((tool) => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    const searchableText = `${tool.name} ${tool.desc} ${tool.features.join(" ")}`.toLowerCase();
+    return searchableText.includes(query);
+  });
 
   return (
     <div
@@ -222,14 +242,8 @@ export default function Home() {
             </div>
 
             <div className="flex md:hidden items-center gap-2">
-              <a href="/account" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-lg">
-                👤
-              </a>
-              <button
-                onClick={() => setMobileMenuOpen(v => !v)}
-                aria-label="Menu"
-                className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex flex-col items-center justify-center gap-[3px]"
-              >
+              <a href="/account" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-lg">👤</a>
+              <button onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex flex-col items-center justify-center gap-[3px]">
                 <span className={`block w-4 h-[1.5px] bg-current transition-transform ${mobileMenuOpen ? "translate-y-[5px] rotate-45" : ""}`} />
                 <span className={`block w-4 h-[1.5px] bg-current transition-opacity ${mobileMenuOpen ? "opacity-0" : ""}`} />
                 <span className={`block w-4 h-[1.5px] bg-current transition-transform ${mobileMenuOpen ? "-translate-y-[5px] -rotate-45" : ""}`} />
@@ -294,9 +308,7 @@ export default function Home() {
       <section className="max-w-5xl mx-auto px-4 mb-16 sm:mb-24">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">
-              {userCount > 0 ? `${userCount}+` : "..."}
-            </div>
+            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">{userCount > 0 ? `${userCount}+` : "..."}</div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Active Users</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
@@ -312,13 +324,8 @@ export default function Home() {
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Required</div>
           </div>
         </div>
-
-        {/* See active users button */}
         <div className="text-center mt-5">
-          <button
-            onClick={() => setShowUsers(true)}
-            className="text-sm text-[#0071e3] hover:underline font-medium"
-          >
+          <button onClick={() => setShowUsers(true)} className="text-sm text-[#0071e3] hover:underline font-medium">
             See our active users →
           </button>
         </div>
@@ -350,59 +357,101 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Available Tools */}
+      {/* Available Tools with Search Bar */}
       <section id="tools" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Available tools</h2>
-        <p className="text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
+        <p className="text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-8 sm:mb-10 max-w-2xl mx-auto px-2">
           Pick a tool and get started instantly — no login, no hassle.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {tools.map((tool) => (
-            <div
-              key={tool.id}
-              className="group relative bg-white dark:bg-[#111113] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col hover:shadow-[0_12px_36px_rgba(0,0,0,0.10)] dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300"
-            >
-              <div
-                className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center text-2xl mb-5`}
-                style={{ boxShadow: `0 10px 24px -6px ${tool.glow}` }}
-              >
-                {tool.icon}
-              </div>
-              <div className="flex items-center justify-between mb-2 gap-2">
-                <h3 className="text-[18px] font-semibold tracking-tight">{tool.name}</h3>
-                <span className="text-[11px] bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white px-2 py-1 rounded-full font-medium whitespace-nowrap">
-                  {tool.badge}
-                </span>
-              </div>
-              <p className="text-[#6e6e73] dark:text-white/60 text-[14px] mb-4 leading-relaxed">{tool.desc}</p>
-              <ul className="space-y-1.5 mb-4 flex-grow">
-                {tool.features.map((feature, idx) => (
-                  <li key={idx} className="text-[13px] text-[#6e6e73] dark:text-white/50 flex items-center gap-2">
-                    <span className="text-[#30d158]">✓</span> {feature}
-                  </li>
-                ))}
-              </ul>
-              <div className="flex items-center justify-between mt-auto pt-4 border-t border-black/5 dark:border-white/10">
-                <span className="text-[13px] font-medium text-[#6e6e73] dark:text-white/50">{tool.price}</span>
-                {tool.path ? (
-                  <Link
-                    href={tool.path}
-                    className="text-[13px] font-semibold text-[#0071e3] hover:underline transition"
-                  >
-                    Use Tool →
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => alert(`${tool.name} will be live soon!`)}
-                    className="text-[13px] font-semibold text-[#0071e3] hover:underline transition"
-                  >
-                    Use Tool →
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+
+        {/* Search Bar */}
+        <div className="max-w-xl mx-auto mb-10 sm:mb-14">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tools (e.g., PDF, QR, resume...)"
+              className="w-full px-5 py-3.5 pr-12 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-[#111113] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] shadow-sm"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-white/50">
+              {searchQuery ? (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="hover:text-[#0071e3] transition-colors"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
+            </span>
+          </div>
+          {searchQuery && (
+            <p className="text-center text-xs text-[#6e6e73] dark:text-white/50 mt-2">
+              Showing results for "{searchQuery}"
+            </p>
+          )}
         </div>
+
+        {/* Tools Grid */}
+        {filteredTools.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {filteredTools.map((tool) => (
+              <div
+                key={tool.id}
+                className="group relative bg-white dark:bg-[#111113] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col hover:shadow-[0_12px_36px_rgba(0,0,0,0.10)] dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300"
+              >
+                <div
+                  className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center text-2xl mb-5`}
+                  style={{ boxShadow: `0 10px 24px -6px ${tool.glow}` }}
+                >
+                  {tool.icon}
+                </div>
+                <div className="flex items-center justify-between mb-2 gap-2">
+                  <h3 className="text-[18px] font-semibold tracking-tight">{tool.name}</h3>
+                  <span className="text-[11px] bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                    {tool.badge}
+                  </span>
+                </div>
+                <p className="text-[#6e6e73] dark:text-white/60 text-[14px] mb-4 leading-relaxed">{tool.desc}</p>
+                <ul className="space-y-1.5 mb-4 flex-grow">
+                  {tool.features.map((feature, idx) => (
+                    <li key={idx} className="text-[13px] text-[#6e6e73] dark:text-white/50 flex items-center gap-2">
+                      <span className="text-[#30d158]">✓</span> {feature}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-black/5 dark:border-white/10">
+                  <span className="text-[13px] font-medium text-[#6e6e73] dark:text-white/50">{tool.price}</span>
+                  {tool.path ? (
+                    <Link
+                      href={tool.path}
+                      className="text-[13px] font-semibold text-[#0071e3] hover:underline transition"
+                    >
+                      Use Tool →
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => alert(`${tool.name} will be live soon!`)}
+                      className="text-[13px] font-semibold text-[#0071e3] hover:underline transition"
+                    >
+                      Use Tool →
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-lg font-medium text-[#1d1d1f] dark:text-white">No tools found</p>
+            <p className="text-sm text-[#6e6e73] dark:text-white/50 mt-2">Try a different search term.</p>
+          </div>
+        )}
       </section>
 
       {/* Coming Soon Tools */}
