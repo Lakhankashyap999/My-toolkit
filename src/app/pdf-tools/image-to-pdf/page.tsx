@@ -116,15 +116,15 @@ const handleConvert = async () => {
         // Standard page size
         [pageWidth, pageHeight] = pageSizes[pageSize];
 
-        // Fill page completely (cover) - no white borders
+        // Fit image fully INSIDE the page (contain) - never crop, never overflow
         const scaleX = pageWidth / embeddedImage.width;
         const scaleY = pageHeight / embeddedImage.height;
-        // Use max to fill entire page, image will overflow and be cropped
-        const scale = Math.max(scaleX, scaleY);
+        // Use MIN so the entire image always stays within page bounds
+        const scale = Math.min(scaleX, scaleY);
         drawWidth = embeddedImage.width * scale;
         drawHeight = embeddedImage.height * scale;
 
-        // Center the oversized image (crop equally from all sides)
+        // Center the image on the page (equal white margin on shorter side)
         x = (pageWidth - drawWidth) / 2;
         y = (pageHeight - drawHeight) / 2;
       }

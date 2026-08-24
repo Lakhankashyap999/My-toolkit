@@ -35,7 +35,7 @@ const genId = () => Math.random().toString(36).substring(2) + Date.now().toStrin
    (Apne actual emails yahan daalo)
 ============================================================ */
 const personalizedMap: Record<string, PersonalizedInfo> = {
-  "lakhan@toolbox.com": {
+  "lakhankashyap795@gmail.com": {
     name: "Lakhan Sir",
     role: "Admin (Website Creator)",
     details: [
