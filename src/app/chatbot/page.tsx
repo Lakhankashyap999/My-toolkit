@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -15,176 +16,321 @@ type Tool = { label: string; path: string };
 type KnowledgeEntry = {
   id: string;
   keywords: string[];
-  weight?: number; // extra weight for very specific keywords
+  weight?: number;
   response: string;
   tool?: Tool;
+};
+
+type PersonalizedInfo = {
+  name: string;
+  role: string;
+  details: string[];
+  greeting: string;
 };
 
 const genId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
 
 /* ============================================================
-   KNOWLEDGE BASE
-   Har entry ek "topic" hai jisme keywords hain jo match honge
-   aur response hai jo user ko step-by-step samjhayega.
-   Jitne zyada specific keywords match honge utna zyada weight milega,
-   isse bot sabse relevant jawab choose karta hai (AI jaisa smart matching).
+   PERSONALIZED EMAIL MAPPING
+   (Apne actual emails yahan daalo)
+============================================================ */
+const personalizedMap: Record<string, PersonalizedInfo> = {
+  "lakhan@toolbox.com": {
+    name: "Lakhan Sir",
+    role: "Admin (Website Creator)",
+    details: [
+      "Aap ToolBox website ke creator hain.",
+      "Aapne mujhe (ULTRON 2.0) August 2026 mein banaya hai.",
+      "Isme millions of coding hai, backend bhi hai.",
+      "Aapke paas website ka full control hai.",
+    ],
+    greeting: "Hello Lakhan Sir 👑, main ULTRON 2.0 hoon — aapka apna AI assistant. Aapne mujhe banaya hai. Kya poochhna chahenge?",
+  },
+  "akashkashyap1q1q@gmail.com": {
+    name: "Akash",
+    role: "Bhai (Lakhan Sir ke bhai)",
+    details: [
+      "Aap Lakhan Sir ke bhai ho.",
+      "Aap Delhi mein rehte ho.",
+      "Aapka mobile number 7982270708 hai.",
+      "Aapki Instagram ID bhi mujhe pata hai.",
+      "Aap Pubg mein pro player ho, aapki ID no. 18 hai.",
+      "Aap apne aap ko Pubg mein pro player mante ho, aur sach mein ho bhi.",
+    ],
+    greeting: "Hello Akash! 🙌 Main ULTRON 2.0 hoon. Aap Lakhan Sir ke bhai ho, Delhi mein rehte ho. Mujhe aapki sab details pata hai. Kya poochna chahte ho?",
+  },
+  "om@example.com": {
+    name: "Om",
+    role: "Lawyer",
+    details: [
+      "Aap Sadikpur ke rehne wale ho.",
+      "Aap Freeganj Tehsil Kacheri mein kaam karte ho.",
+      "Aap vakil sahab ho.",
+    ],
+    greeting: "Hello Om! ⚖️ Main ULTRON 2.0 hoon. Aap Sadikpur ke rehne wale ho, Freeganj Tehsil Kacheri mein kaam karte ho. Kya janna chahenge?",
+  },
+  "davpsrohitkumar@gmail.com": {
+    name: "Rohit Kumar",
+    role: "Nurse",
+    details: [
+      "Aap Saraswati College of Medical Science mein nurse ho.",
+    ],
+    greeting: "Hello Rohit Kumar! 🩺 Main ULTRON 2.0 hoon. Aap Saraswati College of Medical Science mein nurse ho. Kaise madad karoon?",
+  },
+};
+
+/* ============================================================
+   STOPWORDS (Hindi + English common words)
+============================================================ */
+const STOPWORDS = new Set([
+  "kaise", "karein", "karne", "karna", "karo", "kijiye", "kya", "hai", "hain", "ho", "hum", "mujhe", "aap", "aapko", "koi", "kuch", "kyu", "kab", "kaha", "kitna", "kitne", "please", "batao", "bataiye", "bata", "de", "do", "dijiye", "chahiye", "chahta", "chahte", "me", "se", "ke", "ki", "ka", "par", "le", "liye", "the", "is", "to", "for", "how", "what", "why", "when", "where", "which", "can", "you", "i", "we", "they", "me", "my", "your", "our", "please", "tell", "give", "do", "does", "did", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "will", "would", "shall", "should", "may", "might", "must", "about", "from", "with", "without", "and", "or", "but", "if", "then", "so", "just", "very", "really", "ok", "okay",
+]);
+
+/* ============================================================
+   SYNONYM DICTIONARY (Expand understanding)
+============================================================ */
+const SYNONYMS: Record<string, string[]> = {
+  "merge": ["combine", "join", "jodo", "jod", "ek", "single", "milao", "mila", "add", "attach"],
+  "split": ["divide", "todo", "alag", "separate", "break", "cut", "nikalo", "nikal"],
+  "compress": ["reduce", "kam", "chota", "small", "shrink", "ghatao", "ghata", "optimize"],
+  "edit": ["modify", "change", "likhna", "likh", "text", "watermark", "rotate", "delete", "page"],
+  "image": ["photo", "picture", "jpg", "jpeg", "png", "webp", "tasveer", "chavi"],
+  "pdf": ["document", "file", "pdf", "pdfs", "files"],
+  "word": ["doc", "docx", "microsoft", "document"],
+  "resume": ["cv", "biodata", "bio-data", "bio", "data"],
+  "qr": ["qrcode", "qr-code", "qr_code", "scan", "barcode"],
+  "compressimage": ["compress", "image", "photo", "size", "kam", "chota"],
+  "pricing": ["price", "cost", "payment", "pay", "paisa", "rupee", "rs", "subscription", "pro", "premium"],
+  "account": ["login", "signup", "sign", "register", "free"],
+  "privacy": ["data", "safe", "secure", "security", "private", "privacy"],
+  "creator": ["who", "made", "built", "developer", "lakhan", "kashyap", "banaya", "banai"],
+  "greeting": ["hello", "hi", "hey", "namaste", "namaskar", "yo", "assalam", "salam"],
+  "thanks": ["thank", "shukriya", "dhanyavad", "thanku"],
+  "bye": ["bye", "goodbye", "alvida", "chalta", "milte"],
+  "help": ["help", "madad", "support", "assist"],
+  "howare": ["kaise", "ho", "how", "are", "haal", "kaisa"],
+};
+
+/* ============================================================
+   KNOWLEDGE BASE (Detailed, with tool links)
 ============================================================ */
 const knowledgeBase: KnowledgeEntry[] = [
-  // ---------------- GREETINGS ----------------
   {
     id: "greeting",
+    weight: 1,
     keywords: ["hello", "hi", "hey", "namaste", "namaskar", "yo", "assalam"],
-    response:
-      "Hello! 👋 Main ToolBox Assistant hoon, Lakhan Kashyap sir ka banaya hua. Main aapko batata hoon ki PDF Tools, Resume Maker, aur Image Compressor kaise use karte hain, aur inse related koi bhi sawaal ka jawab deta hoon. Bas neeche type karo ya quick suggestion pe click karo.",
+    response: "Hello! 👋 Main ULTRON 2.0 hoon — ToolBox ka AI assistant. Main aapko PDF Tools, Resume Maker, Image Compressor, QR Code Generator, aur baaki sab tools ke baare mein puri jaankari de sakta hoon. Bas poochiye!",
   },
   {
     id: "how-are-you",
+    weight: 1,
     keywords: ["kaise ho", "how are you", "kya haal", "kaisa hai"],
-    response:
-      "Main bilkul theek hoon, dhanyavaad! 😊 Bataiye main aapki kis tool ke saath madad karoon — PDF, Resume ya Image Compressor?",
+    response: "Main bilkul theek hoon, dhanyavaad! 😊 Bataiye aapko kis tool ki madad chahiye?",
   },
   {
     id: "thanks",
-    keywords: ["thanks", "thank you", "thanku", "shukriya", "dhanyavad"],
-    response: "Aapka swagat hai! 🙌 Agar aur kuch janna ho ToolBox ke baare me, bas pooch lijiye.",
+    weight: 1,
+    keywords: ["thank", "shukriya", "dhanyavad", "thanku"],
+    response: "Aapka swagat hai! 🙌 Aur kuch poochna ho toh bataiye.",
   },
   {
     id: "bye",
-    keywords: ["bye", "goodbye", "alvida", "chalta hoon", "milte hai"],
-    response: "Theek hai, phir milte hain! 👋 Zaroorat pade to main yahin hoon.",
+    weight: 1,
+    keywords: ["bye", "goodbye", "alvida", "chalta", "milte"],
+    response: "Theek hai, phir milte hain! 👋 Main yahin hoon jab bhi zaroorat pade.",
   },
-
-  // ---------------- PDF MERGE ----------------
   {
     id: "pdf-merge",
-    weight: 3,
-    keywords: ["merge pdf", "pdf merge", "combine pdf", "join pdf", "ek pdf", "pdf jodo"],
-    response:
-      "PDF Merge kaise karein:\n1. PDF Tools kholo aur \"Merge PDF\" option choose karo.\n2. Jitni PDF files jodni hain unhe select ya drag-drop karo.\n3. Files ka order upar-neeche karke sahi sequence set karo.\n4. \"Merge\" button dabao — sab files ek single PDF me combine ho jayengi.\n5. Final PDF turant download ho jayegi, koi upload cloud pe nahi jaata.",
+    weight: 5,
+    keywords: ["merge pdf", "pdf merge", "combine pdf", "join pdf", "ek pdf", "pdf jodo", "multiple pdf", "pdf combine"],
+    response: "PDF Merge kaise karein:\n1. Homepage se 'PDF Tools' kholo aur 'Merge PDF' choose karo.\n2. Jitni PDF files jodni hain unhe select ya drag-drop karo.\n3. Files ka order upar-neeche karke sahi sequence set karo.\n4. 'Merge' button dabao — sab files ek single PDF me combine ho jayengi.\n5. Final PDF turant download ho jayegi. Koi file server pe upload nahi hoti, sab browser me hi hota hai.",
     tool: { label: "Open PDF Tools", path: "/pdf-tools" },
   },
-
-  // ---------------- PDF SPLIT ----------------
   {
     id: "pdf-split",
-    weight: 3,
-    keywords: ["split pdf", "pdf split", "divide pdf", "pdf todo", "alag pdf", "pages nikalo"],
-    response:
-      "PDF Split kaise karein:\n1. PDF Tools me \"Split PDF\" option select karo.\n2. Apni PDF file upload karo.\n3. Jo pages ya page-range alag karni hai wo choose karo (jaise page 1-3, ya har page alag).\n4. \"Split\" button dabao.\n5. Aapko alag-alag PDF files milengi, jo directly download ho jayengi.",
+    weight: 5,
+    keywords: ["split pdf", "pdf split", "divide pdf", "pdf todo", "alag pdf", "pages nikalo", "pdf separate"],
+    response: "PDF Split kaise karein:\n1. PDF Tools me 'Split PDF' option select karo.\n2. Apni PDF file upload karo.\n3. Jo pages ya page-range alag karni hai wo choose karo.\n4. 'Split' button dabao.\n5. Aapko alag-alag PDF files milengi, jo directly download ho jayengi.",
     tool: { label: "Open PDF Tools", path: "/pdf-tools" },
   },
-
-  // ---------------- PDF COMPRESS ----------------
   {
     id: "pdf-compress",
-    weight: 3,
-    keywords: ["compress pdf", "pdf compress", "pdf size kam", "pdf chota", "reduce pdf size", "pdf ka size"],
-    response:
-      "PDF Compress kaise karein:\n1. PDF Tools me \"Compress PDF\" choose karo.\n2. Bhaari PDF file upload karo.\n3. Compression level select karo (jaise Low, Medium, High) — jitna high utna chota size par thodi quality kam ho sakti hai.\n4. \"Compress\" pe click karo.\n5. Size-reduced PDF turant download ho jaayegi, quality mostly readable rehti hai.",
+    weight: 5,
+    keywords: ["compress pdf", "pdf compress", "pdf size kam", "pdf chota", "reduce pdf size", "pdf ka size", "pdf shrink"],
+    response: "PDF Compress kaise karein:\n1. PDF Tools me 'Compress PDF' choose karo.\n2. Bhaari PDF file upload karo.\n3. Compression level select karo (Low, Medium, High) — jitna high utna chota size par thodi quality kam ho sakti hai.\n4. 'Compress' pe click karo.\n5. Size-reduced PDF turant download ho jaayegi, quality mostly readable rehti hai.",
     tool: { label: "Open PDF Tools", path: "/pdf-tools" },
   },
-
-  // ---------------- PDF EDIT ----------------
   {
     id: "pdf-edit",
-    weight: 3,
-    keywords: ["edit pdf", "pdf edit", "pdf me likhna", "pdf change karna", "pdf modify"],
-    response:
-      "PDF Edit kaise karein:\n1. PDF Tools me \"Edit PDF\" option kholo.\n2. Jo PDF edit karni hai use upload karo.\n3. Text add karo, highlight karo, ya pages rotate/delete karo — jo bhi option available ho use karo.\n4. Changes preview me dekh lo.\n5. \"Save\" ya \"Download\" karke updated PDF apne device me le lo.",
+    weight: 5,
+    keywords: ["edit pdf", "pdf edit", "pdf me likhna", "pdf change", "pdf modify", "pdf watermark", "rotate pages", "delete pages", "pdf text add"],
+    response: "PDF Edit kaise karein:\n1. PDF Tools me 'Edit PDF' option kholo.\n2. Jo PDF edit karni hai use upload karo.\n3. Text add karo, watermark lagao, pages rotate/delete karo.\n4. Preview me changes dekh lo.\n5. 'Edit & Download PDF' button dabao — updated PDF download ho jayegi.",
     tool: { label: "Open PDF Tools", path: "/pdf-tools" },
   },
-
-  // ---------------- IMAGE TO PDF ----------------
   {
     id: "image-to-pdf",
-    weight: 3,
-    keywords: ["image to pdf", "photo to pdf", "jpg to pdf", "png to pdf", "image pdf banana"],
-    response:
-      "Image to PDF kaise banayein:\n1. PDF Tools me \"Image to PDF\" option select karo.\n2. Ek ya multiple images (JPG/PNG) upload karo.\n3. Images ka order set karo agar multiple pages banani hain.\n4. Page size aur orientation (Portrait/Landscape) choose karo.\n5. \"Convert\" dabao — saari images ek PDF file me convert ho kar download ho jayengi.",
+    weight: 5,
+    keywords: ["image to pdf", "photo to pdf", "jpg to pdf", "png to pdf", "image pdf banana", "photo pdf"],
+    response: "Image to PDF kaise banayein:\n1. PDF Tools me 'Image to PDF' option select karo.\n2. Ek ya multiple images upload karo.\n3. Images ka order set karo agar multiple pages banani hain.\n4. Page size aur orientation (Portrait/Landscape) choose karo.\n5. 'Convert' dabao — saari images ek PDF file me convert ho kar download ho jayengi.",
     tool: { label: "Open PDF Tools", path: "/pdf-tools" },
   },
-
-  // ---------------- PDF TOOLS - GENERAL ----------------
   {
     id: "pdf-general",
+    weight: 2,
     keywords: ["pdf tools", "pdf tool", "pdf kaise", "pdf"],
-    response:
-      "PDF Tools me aapko ye sab milta hai: Merge PDF, Split PDF, Compress PDF, Edit PDF, aur Image to PDF. Bas bataiye kaunsa specific kaam karna hai (jaise \"pdf merge kaise karein\") aur main step-by-step samjha dunga, ya seedha neeche button se tool khol lo.",
+    response: "PDF Tools me aapko ye sab milta hai: Merge PDF, Split PDF, Compress PDF, Edit PDF, aur Image to PDF. Bas bataiye kaunsa specific kaam karna hai, main step-by-step samjha dunga.",
     tool: { label: "Open PDF Tools", path: "/pdf-tools" },
   },
-
-  // ---------------- IMAGE COMPRESSOR ----------------
   {
     id: "image-compress",
-    weight: 3,
-    keywords: ["compress image", "image compress", "photo compress", "image size kam", "reduce image size", "image ka size"],
-    response:
-      "Image Compress kaise karein:\n1. Image Compressor tool kholo.\n2. Apni photo (JPG/PNG/WebP) upload karo.\n3. Quality slider adjust karo — jitna kam quality % utna chota file size.\n4. Live preview me original vs compressed size compare karo.\n5. \"Download\" karke compressed image save kar lo. Ye pura process browser me hi hota hai, image kahin upload nahi hoti isliye privacy safe rehti hai.",
+    weight: 5,
+    keywords: ["compress image", "image compress", "photo compress", "image size kam", "reduce image size", "image ka size", "compress photo"],
+    response: "Image Compress kaise karein:\n1. Image Compressor tool kholo.\n2. Apni photo (JPG/PNG/WebP) upload karo.\n3. Quality slider adjust karo — jitna kam quality % utna chota file size.\n4. Live preview me original vs compressed size compare karo.\n5. 'Download' karke compressed image save kar lo. Ye pura process browser me hi hota hai, image kahin upload nahi hoti.",
     tool: { label: "Open Image Compressor", path: "/image-compressor" },
   },
-
-  // ---------------- RESUME MAKER ----------------
   {
     id: "resume",
-    weight: 3,
-    keywords: ["resume", "cv", "bio data", "resume banao", "resume kaise"],
-    response:
-      "Resume kaise banayein:\n1. Resume Maker tool kholo.\n2. Personal Info, Summary, Skills, Work Experience, Education jaise sections bharo.\n3. Chaho to Projects, Certifications, Achievements, Languages bhi add karo.\n4. Sab bharne ke baad \"Generate ATS-Friendly Resume PDF\" button dabao.\n5. Ek clean, professional, ATS-friendly resume PDF turant download ho jayegi — jo recruiters ke systems aasani se parse kar sakein.",
+    weight: 5,
+    keywords: ["resume", "cv", "bio data", "resume banao", "resume kaise", "ats friendly", "resume maker"],
+    response: "Resume kaise banayein:\n1. Resume Maker tool kholo.\n2. Personal Info, Summary, Skills, Work Experience, Education jaise sections bharo.\n3. Chaho to Projects, Certifications, Achievements, Languages bhi add karo.\n4. Sab bharne ke baad 'Generate ATS-Friendly Resume PDF' button dabao.\n5. Ek clean, professional, ATS-friendly resume PDF turant download ho jayegi.",
     tool: { label: "Open Resume Maker", path: "/resume-maker" },
   },
-
-  // ---------------- PRICING ----------------
+  {
+    id: "qr-code",
+    weight: 5,
+    keywords: ["qr code", "qr generator", "generate qr", "qr banao", "qrcode"],
+    response: "QR Code Generator kaise use karein:\n1. QR Code tool kholo.\n2. Text ya URL enter karo.\n3. Color aur size customize karo (optional).\n4. 'Generate QR Code' button dabao.\n5. QR code image download kar lo.",
+    tool: { label: "Open QR Code Generator", path: "/qr-code" },
+  },
   {
     id: "pricing",
-    keywords: ["price", "cost", "payment", "pay", "pro", "premium", "paisa"],
-    response:
-      "ToolBox mostly free hai. Pro plan sirf ₹29 one-time hai, jisme unlimited access milta hai. UPI, Paytm, Google Pay sab accepted hai.",
+    keywords: ["price", "cost", "payment", "pay", "pro", "premium", "paisa", "subscription", "rupee"],
+    response: "ToolBox mostly free hai. Pro plan sirf ₹29 one-time hai, jisme unlimited access milta hai. UPI, Paytm, Google Pay sab accepted hai. Pro se aapko advanced tools unlocked milte hain.",
   },
-
-  // ---------------- ACCOUNT / SIGNUP ----------------
   {
     id: "account",
-    keywords: ["free", "account", "login", "signup", "sign up"],
+    keywords: ["free", "account", "login", "signup", "sign up", "register"],
     response: "No signup needed! Aap directly tools use kar sakte ho. Basic features free forever hain.",
   },
-
-  // ---------------- PRIVACY ----------------
   {
     id: "privacy",
-    keywords: ["data", "safe", "privacy", "secure", "security"],
-    response:
-      "Aapki privacy hamari priority hai. Files process hokar turant delete ho jaati hain, aur zyada tools browser me hi kaam karte hain — matlab file kabhi server pe jaati hi nahi.",
+    keywords: ["data", "safe", "privacy", "secure", "security", "private"],
+    response: "Aapki privacy hamari priority hai. Files process hokar turant delete ho jaati hain, aur zyada tools browser me hi kaam karte hain — matlab file kabhi server pe jaati hi nahi.",
   },
-
-  // ---------------- CREATOR ----------------
   {
     id: "creator",
-    keywords: ["who made", "who built", "creator", "developer", "lakhan", "kisne banaya"],
-    response: "Mujhe Lakhan Kashyap sir ne banaya hai. Main unka AI assistant hoon ToolBox ke liye.",
+    keywords: ["who made", "who built", "creator", "developer", "lakhan", "kisne banaya", "banaya"],
+    response: "Mujhe Lakhan Kashyap sir ne banaya hai. Main ULTRON 2.0 hoon, unka AI assistant. Unhone isme millions of coding ki hai, aur backend bhi hai.",
   },
 ];
 
 const DENIAL_MESSAGE =
-  "Ye jaankari Lakhan Kashyap sir ne abhi ke liye denied kar rakhi hai. Aap mujhse ToolBox ke tools ke baare me kuch bhi pooch sakte ho — jaise PDF Merge, Split, Compress, Edit, Image to PDF, Image Compressor, Resume Maker, pricing, privacy, etc.";
+  "Ye jaankari main aapko nahi de sakta. Aap mujhse ToolBox ke tools ke baare me kuch bhi pooch sakte ho — jaise PDF Merge, Split, Compress, Edit, Image to PDF, Image Compressor, Resume Maker, pricing, privacy, etc.";
 
 /* ============================================================
-   SMART MATCHING
-   Har knowledge entry ke keywords ke against score nikalta hai,
-   sabse zyada score wali entry ka response return karta hai.
-   Ye simple lekin effective "intent detection" hai — koi bhi
-   naya keyword variation ya phrase easily match ho jaata hai.
+   ADVANCED NLP FUNCTIONS (Brain)
 ============================================================ */
-function findBestMatch(userInput: string): KnowledgeEntry | null {
+
+// Tokenize and normalize
+function tokenize(text: string): string[] {
+  return text.toLowerCase().replace(/[^\w\s]/g, " ").split(/\s+/).filter(Boolean);
+}
+
+// Basic stemmer (Hindi + English)
+function stem(word: string): string {
+  const suffixes = ["ing", "ed", "s", "es", "karna", "karne", "karo", "kijiye", "na", "ne", "ta", "te", "ti", "ya", "ye", "ji", "sahab", "bhai"];
+  for (const suffix of suffixes) {
+    if (word.endsWith(suffix) && word.length > suffix.length + 2) {
+      return word.slice(0, -suffix.length);
+    }
+  }
+  return word;
+}
+
+// Expand token with synonyms
+function expandToken(token: string): string[] {
+  const synonyms = SYNONYMS[token];
+  if (synonyms) return [token, ...synonyms];
+  const stemmed = stem(token);
+  const syn2 = SYNONYMS[stemmed];
+  if (syn2) return [token, stemmed, ...syn2];
+  return [token, stemmed];
+}
+
+// Remove stopwords and expand synonyms
+function preprocess(text: string): Set<string> {
+  const tokens = tokenize(text);
+  const processed = new Set<string>();
+  for (let token of tokens) {
+    if (!STOPWORDS.has(token)) {
+      const expanded = expandToken(token);
+      expanded.forEach(w => processed.add(w));
+    }
+  }
+  return processed;
+}
+
+// Calculate score for a knowledge entry based on processed input tokens
+function scoreEntry(processed: Set<string>, entry: KnowledgeEntry): number {
+  let score = 0;
+  for (const kw of entry.keywords) {
+    const kwLower = kw.toLowerCase();
+    if (processed.has(kwLower)) {
+      score += (entry.weight || 1) * 2; // phrase match bonus
+    } else {
+      const kwTokens = kwLower.split(" ");
+      let matchCount = 0;
+      for (const kwToken of kwTokens) {
+        if (processed.has(kwToken) || processed.has(stem(kwToken))) {
+          matchCount++;
+        }
+      }
+      if (matchCount > 0) {
+        score += matchCount * (entry.weight || 1);
+      }
+    }
+  }
+  return score;
+}
+
+// Find best match with context awareness
+function findBestMatch(userInput: string, userEmail: string | null, contextTopic: string | null): KnowledgeEntry | null {
   const lower = userInput.toLowerCase();
+
+  // Personalized self info
+  if (userEmail && personalizedMap[userEmail]) {
+    const info = personalizedMap[userEmail];
+    if (lower.includes("who am i") || lower.includes("my name") || lower.includes("mera naam") || lower.includes("mujhe kaun jaanta") || lower.includes("mere bare me") || lower.includes("my details") || lower.includes("meri details") || lower.includes("about me")) {
+      const response = `Aap ${info.name} ho (${info.role}).\n${info.details.join("\n")}`;
+      return { id: "personalized-self", keywords: [], response };
+    }
+  }
+
+  // Deny asking about others
+  const namesToCheck = [
+    { name: "akash", email: "akashkashyap1q1q@gmail.com" },
+    { name: "rohit", email: "davpsrohitkumar@gmail.com" },
+    { name: "om", email: "om@example.com" },
+    { name: "lakhan", email: "lakhan@toolbox.com" },
+  ];
+  for (const person of namesToCheck) {
+    if (lower.includes(person.name) && userEmail !== person.email) {
+      return { id: "deny-other-person", keywords: [], response: "Aap dusre ke baare mein nahi jaan sakte. Sirf apni details dekh sakte ho." };
+    }
+  }
+
+  // Preprocess input
+  const processed = preprocess(userInput);
+
+  // Score each entry
   let best: KnowledgeEntry | null = null;
   let bestScore = 0;
 
   for (const entry of knowledgeBase) {
-    let score = 0;
-    for (const kw of entry.keywords) {
-      if (lower.includes(kw)) {
-        score += kw.split(" ").length * (entry.weight || 1);
-      }
+    let score = scoreEntry(processed, entry);
+    // Context boost
+    if (contextTopic && entry.id.includes(contextTopic)) {
+      score += 2;
     }
     if (score > bestScore) {
       bestScore = score;
@@ -195,46 +341,94 @@ function findBestMatch(userInput: string): KnowledgeEntry | null {
   return bestScore > 0 ? best : null;
 }
 
+// Extract possible topic from entry id
+function getTopicFromEntry(entry: KnowledgeEntry): string {
+  if (entry.id.startsWith("pdf-")) return "pdf";
+  if (entry.id === "image-compress") return "image";
+  if (entry.id === "resume") return "resume";
+  if (entry.id === "qr-code") return "qr";
+  return entry.id;
+}
+
 export default function ChatbotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: genId(),
-      type: "bot",
-      text: "Hi! 👋 Main ToolBox Assistant hoon, Lakhan Kashyap sir ka banaya hua smart assistant. Aap mujhse PDF Tools, Resume Maker, ya Image Compressor use karne ka poora tareeka pooch sakte ho, ya neeche quick suggestions try karo.",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [contextTopic, setContextTopic] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("toolbox_email");
+    setUserEmail(storedEmail);
+
+    let initialGreeting = "Hi! 👋 Main ULTRON 2.0 hoon — ToolBox ka AI assistant. Aap mujhse PDF Tools, Resume Maker, Image Compressor, QR Code Generator, aur baaki sab tools ke baare mein puri jaankari le sakte ho. Bas poochiye!";
+    if (storedEmail && personalizedMap[storedEmail]) {
+      initialGreeting = personalizedMap[storedEmail].greeting;
+    }
+    setMessages([
+      {
+        id: genId(),
+        type: "bot",
+        text: initialGreeting,
+      },
+    ]);
+  }, []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const getBotReply = (userInput: string): { text: string; tool?: Tool } => {
-    const match = findBestMatch(userInput);
-    if (match) return { text: match.response, tool: match.tool };
-    return { text: DENIAL_MESSAGE };
+  const fetchGeminiResponse = async (userInput: string, email: string | null): Promise<string> => {
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userInput, email: email || "" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.response) {
+        return data.response;
+      } else {
+        console.error("Chat API error:", data.error);
+        return DENIAL_MESSAGE;
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      return DENIAL_MESSAGE;
+    }
   };
 
-  const pushBotReply = (userText: string) => {
+  const pushBotReply = async (userText: string) => {
     setIsTyping(true);
-    const delay = 500 + Math.min(userText.length * 12, 700); // thodi si "sochne" wali delay, jitna bada sawal utni zyada delay
-    setTimeout(() => {
-      const reply = getBotReply(userText);
-      setMessages(prev => [
-        ...prev,
-        { id: genId(), type: "bot", text: reply.text, toolPath: reply.tool?.path, toolLabel: reply.tool?.label },
-      ]);
-      setIsTyping(false);
-    }, delay);
+    const delay = 300 + Math.min(userText.length * 10, 600);
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    const localMatch = findBestMatch(userText, userEmail, contextTopic);
+    let replyText: string;
+    let tool: Tool | undefined;
+
+    if (localMatch) {
+      replyText = localMatch.response;
+      tool = localMatch.tool;
+      const topic = getTopicFromEntry(localMatch);
+      setContextTopic(topic);
+    } else {
+      replyText = await fetchGeminiResponse(userText, userEmail);
+      setContextTopic(null);
+    }
+
+    setMessages(prev => [
+      ...prev,
+      { id: genId(), type: "bot", text: replyText, toolPath: tool?.path, toolLabel: tool?.label },
+    ]);
+    setIsTyping(false);
   };
 
   const handleSend = () => {
     const userMessage = input.trim();
     if (!userMessage || isTyping) return;
-
     setMessages(prev => [...prev, { id: genId(), type: "user", text: userMessage }]);
     setInput("");
     pushBotReply(userMessage);
@@ -251,6 +445,7 @@ export default function ChatbotPage() {
     "Image to PDF kaise banaye?",
     "Image compress kaise karein?",
     "Resume kaise banaye?",
+    "QR code kaise generate karein?",
     "Pricing kya hai?",
     "Data safe hai kya?",
   ];
@@ -276,20 +471,18 @@ export default function ChatbotPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-2xl mb-3 shadow-lg shadow-blue-600/20">
             🤖
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">ToolBox Assistant</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">ULTRON 2.0</h1>
           <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">
             Built by Lakhan Kashyap. Tools ke baare me kuch bhi pooch lo.
           </p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 sm:rounded-2xl shadow-sm border-0 sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col min-h-0">
-          {/* Chat Header (mobile-friendly status bar) */}
           <div className="hidden sm:flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40">
             <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Online — turant reply karta hai</span>
           </div>
 
-          {/* Chat Messages */}
           <div className="flex-1 min-h-[420px] max-h-[65vh] sm:max-h-[500px] overflow-y-auto p-3 sm:p-4 space-y-3">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex items-end gap-2 ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
@@ -333,7 +526,6 @@ export default function ChatbotPage() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Quick Suggestions */}
           <div className="px-3 sm:px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible scrollbar-none">
             {quickSuggestions.map((suggestion, index) => (
               <button
@@ -347,7 +539,6 @@ export default function ChatbotPage() {
             ))}
           </div>
 
-          {/* Input Area */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-3 flex gap-2 bg-white dark:bg-gray-800">
             <input
               ref={inputRef}

@@ -24,6 +24,7 @@ export default function ImageToPdfPage() {
   const [successUrl, setSuccessUrl] = useState<string>("");
   const [showPopup, setShowPopup] = useState(false);
   const [elapsedLabel, setElapsedLabel] = useState("");
+  const [pageSize, setPageSize] = useState<"fit" | "a4p" | "a4l" | "letter">("fit");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -47,6 +48,16 @@ export default function ImageToPdfPage() {
 
   const removeImage = (index: number) => setImages((prev) => prev.filter((_, i) => i !== index));
 
+  const moveImage = (index: number, direction: "up" | "down") => {
+    setImages((prev) => {
+      const newImages = [...prev];
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= newImages.length) return newImages;
+      [newImages[index], newImages[target]] = [newImages[target], newImages[index]];
+      return newImages;
+    });
+  };
+
   const handleConvert = async () => {
     if (images.length === 0) {
       setError("Please upload at least one image.");
@@ -60,6 +71,13 @@ export default function ImageToPdfPage() {
 
     try {
       const pdfDoc = await PDFDocument.create();
+
+      // Define standard page sizes (in points)
+      const pageSizes = {
+        a4p: [595.28, 841.89], // A4 portrait
+        a4l: [841.89, 595.28], // A4 landscape
+        letter: [612, 792], // Letter portrait
+      };
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
@@ -77,12 +95,35 @@ export default function ImageToPdfPage() {
           continue;
         }
 
-        const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
+        let pageWidth, pageHeight;
+
+        if (pageSize === "fit") {
+          // Use image's original dimensions
+          pageWidth = embeddedImage.width;
+          pageHeight = embeddedImage.height;
+        } else {
+          // Use standard page size, image will be centered and scaled to fit
+          [pageWidth, pageHeight] = pageSizes[pageSize];
+        }
+
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+        // Calculate scale to fit image within page
+        const scaleX = pageWidth / embeddedImage.width;
+        const scaleY = pageHeight / embeddedImage.height;
+        const scale = Math.min(scaleX, scaleY, 1); // don't upscale if fit mode not used? actually if page larger than image, we can upscale to fill? Usually fit means scale to fit, but not exceeding. We'll keep scale <=1 for non-fit mode.
+
+        const drawWidth = embeddedImage.width * (pageSize === "fit" ? 1 : scale);
+        const drawHeight = embeddedImage.height * (pageSize === "fit" ? 1 : scale);
+
+        const x = (pageWidth - drawWidth) / 2;
+        const y = (pageHeight - drawHeight) / 2;
+
         page.drawImage(embeddedImage, {
-          x: 0,
-          y: 0,
-          width: embeddedImage.width,
-          height: embeddedImage.height,
+          x,
+          y,
+          width: drawWidth,
+          height: drawHeight,
         });
 
         setProgress(8 + Math.round(((i + 1) / images.length) * 72));
@@ -195,21 +236,93 @@ export default function ImageToPdfPage() {
             </label>
           </div>
 
+          {/* Image list with thumbnails and controls */}
           {images.length > 0 && (
             <div className="itp-ticket itp-list">
               <div className="itp-list-head">
-                <span>Selected</span>
+                <span>Selected Images</span>
                 <span className="itp-mono">{images.length} file{images.length > 1 ? "s" : ""}</span>
               </div>
               <ul>
                 {images.map((image, index) => (
                   <li key={index}>
                     <span className="itp-mono itp-list-num">{String(index + 1).padStart(2, "0")}</span>
+                    <div className="itp-thumb">
+                      {/* Thumbnail preview */}
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={image.name}
+                        className="itp-thumb-img"
+                      />
+                    </div>
                     <span className="itp-list-name">🖼️ {image.name}</span>
-                    <button onClick={() => removeImage(index)} aria-label="Remove">✕</button>
+                    <div className="itp-list-actions">
+                      <button
+                        onClick={() => moveImage(index, "up")}
+                        disabled={index === 0}
+                        title="Move up"
+                        className="itp-action-btn"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        onClick={() => moveImage(index, "down")}
+                        disabled={index === images.length - 1}
+                        title="Move down"
+                        className="itp-action-btn"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        onClick={() => removeImage(index)}
+                        title="Remove"
+                        className="itp-remove-btn"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
+              <button
+                className="itp-add-more"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                + Add More Images
+              </button>
+            </div>
+          )}
+
+          {/* Page size selector */}
+          {images.length > 0 && (
+            <div className="itp-ticket itp-options">
+              <span className="itp-options-label">Page size:</span>
+              <div className="itp-options-group">
+                <button
+                  className={`itp-option ${pageSize === "fit" ? "itp-option-active" : ""}`}
+                  onClick={() => setPageSize("fit")}
+                >
+                  Fit to image
+                </button>
+                <button
+                  className={`itp-option ${pageSize === "a4p" ? "itp-option-active" : ""}`}
+                  onClick={() => setPageSize("a4p")}
+                >
+                  A4 Portrait
+                </button>
+                <button
+                  className={`itp-option ${pageSize === "a4l" ? "itp-option-active" : ""}`}
+                  onClick={() => setPageSize("a4l")}
+                >
+                  A4 Landscape
+                </button>
+                <button
+                  className={`itp-option ${pageSize === "letter" ? "itp-option-active" : ""}`}
+                  onClick={() => setPageSize("letter")}
+                >
+                  Letter
+                </button>
+              </div>
             </div>
           )}
 
@@ -482,10 +595,32 @@ export default function ImageToPdfPage() {
             background: var(--paper-deep);
             border-radius: 8px;
             padding: 8px 10px;
+            transition: background 0.2s;
+          }
+          .itp-list li:hover {
+            background: #e9e9eb;
           }
           .itp-list-num {
             font-size: 11px;
             color: var(--signal);
+            min-width: 24px;
+            text-align: center;
+          }
+          .itp-thumb {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .itp-thumb-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
           }
           .itp-list-name {
             flex: 1;
@@ -494,12 +629,85 @@ export default function ImageToPdfPage() {
             text-overflow: ellipsis;
             white-space: nowrap;
           }
-          .itp-list li button {
+          .itp-list-actions {
+            display: flex;
+            gap: 4px;
+          }
+          .itp-action-btn,
+          .itp-remove-btn {
             background: none;
-            border: none;
-            color: #c14c4c;
+            border: 1px solid transparent;
             cursor: pointer;
             font-size: 13px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+          }
+          .itp-action-btn {
+            color: var(--ink-soft);
+          }
+          .itp-action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+          }
+          .itp-action-btn:not(:disabled):hover {
+            background: var(--line);
+            color: var(--ink);
+          }
+          .itp-remove-btn {
+            color: #c14c4c;
+          }
+          .itp-remove-btn:hover {
+            background: #fdecea;
+            border-color: #f2c4c0;
+          }
+
+          .itp-add-more {
+            margin-top: 10px;
+            background: var(--paper-deep);
+            border: 1px dashed var(--line);
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 13px;
+            color: var(--press);
+            font-weight: 500;
+          }
+          .itp-add-more:hover {
+            background: #e9e9eb;
+          }
+
+          .itp-options {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+          }
+          .itp-options-label {
+            font-size: 13px;
+            font-weight: 600;
+          }
+          .itp-options-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+          }
+          .itp-option {
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--ink-soft);
+            transition: all 0.2s;
+          }
+          .itp-option-active {
+            background: var(--press);
+            color: white;
+            border-color: var(--press);
           }
 
           .itp-error {
@@ -725,6 +933,17 @@ export default function ImageToPdfPage() {
             }
             .itp-hero p {
               font-size: 14px;
+            }
+            .itp-options {
+              flex-direction: column;
+              align-items: flex-start;
+            }
+            .itp-options-group {
+              width: 100%;
+            }
+            .itp-option {
+              flex: 1;
+              text-align: center;
             }
           }
         `}</style>
