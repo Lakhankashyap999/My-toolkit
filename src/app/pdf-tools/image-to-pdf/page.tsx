@@ -15,6 +15,12 @@ function sleep(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
+// Page size constants (points)
+const A4_PORTRAIT = [595.28, 841.89];
+const A4_LANDSCAPE = [841.89, 595.28];
+const LETTER_PORTRAIT = [612, 792];
+const LETTER_LANDSCAPE = [792, 612];
+
 export default function ImageToPdfPage() {
   const [images, setImages] = useState<File[]>([]);
   const [isConverting, setIsConverting] = useState(false);
@@ -66,18 +72,11 @@ export default function ImageToPdfPage() {
     setIsConverting(true);
     setError("");
     setProgress(2);
-    setStage("Preparing ticket...");
+    setStage("Preparing...");
     const start = performance.now();
 
     try {
       const pdfDoc = await PDFDocument.create();
-
-      // Define standard page sizes (in points)
-      const pageSizes = {
-        a4p: [595.28, 841.89], // A4 portrait
-        a4l: [841.89, 595.28], // A4 landscape
-        letter: [612, 792], // Letter portrait
-      };
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
@@ -85,7 +84,7 @@ export default function ImageToPdfPage() {
         const mimeType = image.type;
         let embeddedImage;
 
-        setStage(`Preparing page ${i + 1} of ${images.length}`);
+        setStage(`Processing page ${i + 1} of ${images.length}`);
 
         if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
           embeddedImage = await pdfDoc.embedJpg(arrayBuffer);
@@ -95,58 +94,77 @@ export default function ImageToPdfPage() {
           continue;
         }
 
-        let pageWidth, pageHeight;
+        let pageWidth: number, pageHeight: number;
+        let drawWidth: number, drawHeight: number;
+        let x: number, y: number;
 
         if (pageSize === "fit") {
-          // Use image's original dimensions
-          pageWidth = embeddedImage.width;
-          pageHeight = embeddedImage.height;
+          // Determine orientation based on image aspect ratio
+          const imgRatio = embeddedImage.width / embeddedImage.height;
+          // Cap page size to A4 portrait/landscape dimensions
+          const maxLong = 842;   // points
+          const maxShort = 595;  // points
+          if (imgRatio > 1) {
+            // Landscape
+            pageWidth = Math.min(maxLong, embeddedImage.width * 72 / 96); // 96 DPI
+            pageHeight = pageWidth / imgRatio;
+            // ensure within short dimension
+            if (pageHeight > maxShort) {
+              pageHeight = maxShort;
+              pageWidth = pageHeight * imgRatio;
+            }
+          } else {
+            // Portrait
+            pageHeight = Math.min(maxLong, embeddedImage.height * 72 / 96);
+            pageWidth = pageHeight * imgRatio;
+            if (pageWidth > maxShort) {
+              pageWidth = maxShort;
+              pageHeight = pageWidth / imgRatio;
+            }
+          }
+          // No margin, image fills page exactly
+          drawWidth = pageWidth;
+          drawHeight = pageHeight;
+          x = 0;
+          y = 0;
         } else {
-          // Use standard page size, image will be centered and scaled to fit
-          [pageWidth, pageHeight] = pageSizes[pageSize];
+          // Standard page sizes
+          if (pageSize === "a4p") [pageWidth, pageHeight] = A4_PORTRAIT;
+          else if (pageSize === "a4l") [pageWidth, pageHeight] = A4_LANDSCAPE;
+          else if (pageSize === "letter") [pageWidth, pageHeight] = LETTER_PORTRAIT;
+          else [pageWidth, pageHeight] = A4_PORTRAIT; // fallback
+
+          // Scale image to fit within page with margin
+          const margin = 36; // 0.5 inch
+          const maxWidth = pageWidth - margin * 2;
+          const maxHeight = pageHeight - margin * 2;
+          const scale = Math.min(maxWidth / embeddedImage.width, maxHeight / embeddedImage.height, 1);
+          drawWidth = embeddedImage.width * scale;
+          drawHeight = embeddedImage.height * scale;
+          x = (pageWidth - drawWidth) / 2;
+          y = (pageHeight - drawHeight) / 2;
         }
 
         const page = pdfDoc.addPage([pageWidth, pageHeight]);
-
-        // Calculate scale to fit image within page
-        const scaleX = pageWidth / embeddedImage.width;
-        const scaleY = pageHeight / embeddedImage.height;
-        const scale = Math.min(scaleX, scaleY, 1); // don't upscale if fit mode not used? actually if page larger than image, we can upscale to fill? Usually fit means scale to fit, but not exceeding. We'll keep scale <=1 for non-fit mode.
-
-        const drawWidth = embeddedImage.width * (pageSize === "fit" ? 1 : scale);
-        const drawHeight = embeddedImage.height * (pageSize === "fit" ? 1 : scale);
-
-        const x = (pageWidth - drawWidth) / 2;
-        const y = (pageHeight - drawHeight) / 2;
-
-        page.drawImage(embeddedImage, {
-          x,
-          y,
-          width: drawWidth,
-          height: drawHeight,
-        });
+        page.drawImage(embeddedImage, { x, y, width: drawWidth, height: drawHeight });
 
         setProgress(8 + Math.round(((i + 1) / images.length) * 72));
-        await sleep(60);
+        await sleep(50);
       }
 
-      setStage("Sealing PDF...");
+      setStage("Creating PDF...");
       setProgress(92);
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
 
       const elapsed = performance.now() - start;
-      const minVisibleDuration = 650;
-      if (elapsed < minVisibleDuration) await sleep(minVisibleDuration - elapsed);
+      if (elapsed < 650) await sleep(650 - elapsed);
 
       setProgress(100);
       setStage("Done!");
+      setElapsedLabel(((performance.now() - start) / 1000).toFixed(1));
 
-      const totalSeconds = ((performance.now() - start) / 1000).toFixed(1);
-      setElapsedLabel(totalSeconds);
-
-      // Auto download
       const a = document.createElement("a");
       a.href = url;
       a.download = "converted.pdf";
@@ -155,7 +173,6 @@ export default function ImageToPdfPage() {
       document.body.removeChild(a);
 
       setSuccessUrl(url);
-      await sleep(200);
       setShowPopup(true);
     } catch (err: any) {
       setError(err.message || "Something went wrong, please try again.");
@@ -192,17 +209,15 @@ export default function ImageToPdfPage() {
 
         <div className="itp-wrap">
           <div className="itp-hero">
-            <span className="itp-eyebrow">IMG → PDF</span>
             <h1>Image to PDF</h1>
-            <p>Convert your JPG or PNG images into a clean PDF — completely private, completely fast.</p>
+            <p>Convert JPG or PNG images into a professional PDF — privately, instantly.</p>
           </div>
 
-          {/* Tools / feature strip */}
-          <div className="itp-chip-row">
+          <div className="itp-features">
             {FEATURES.map((f) => (
-              <div className="itp-chip" key={f.label}>
-                <span className="itp-chip-icon">{f.icon}</span>
-                <div className="itp-chip-text">
+              <div className="itp-feature" key={f.label}>
+                <span className="itp-feature-icon">{f.icon}</span>
+                <div>
                   <strong>{f.label}</strong>
                   <span>{f.note}</span>
                 </div>
@@ -210,13 +225,10 @@ export default function ImageToPdfPage() {
             ))}
           </div>
 
-          {/* Upload ticket */}
+          {/* Upload area */}
           <div
-            className={`itp-ticket itp-dropzone ${dragActive ? "itp-drop-active" : ""}`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragActive(true);
-            }}
+            className={`itp-dropzone ${dragActive ? "itp-drop-active" : ""}`}
+            onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
             onDragLeave={() => setDragActive(false)}
             onDrop={handleDrop}
           >
@@ -230,96 +242,76 @@ export default function ImageToPdfPage() {
               ref={fileInputRef}
             />
             <label htmlFor="image-upload" className="itp-drop-label">
-              <span className="itp-drop-icon">📁</span>
-              <span className="itp-drop-title">Drop images here or click to upload</span>
-              <span className="itp-drop-sub">JPG, PNG · multiple files supported</span>
+              <div className="itp-drop-icon">📁</div>
+              <div className="itp-drop-title">Drop images here or click to upload</div>
+              <div className="itp-drop-sub">JPG, PNG · multiple files supported</div>
             </label>
           </div>
 
-          {/* Image list with thumbnails and controls */}
+          {/* Image grid */}
           {images.length > 0 && (
-            <div className="itp-ticket itp-list">
-              <div className="itp-list-head">
+            <div className="itp-card">
+              <div className="itp-card-header">
                 <span>Selected Images</span>
-                <span className="itp-mono">{images.length} file{images.length > 1 ? "s" : ""}</span>
+                <span className="itp-badge">{images.length}</span>
               </div>
-              <ul>
+              <div className="itp-grid">
                 {images.map((image, index) => (
-                  <li key={index}>
-                    <span className="itp-mono itp-list-num">{String(index + 1).padStart(2, "0")}</span>
-                    <div className="itp-thumb">
-                      {/* Thumbnail preview */}
-                      <img
-                        src={URL.createObjectURL(image)}
-                        alt={image.name}
-                        className="itp-thumb-img"
-                      />
+                  <div className="itp-grid-item" key={index}>
+                    <img src={URL.createObjectURL(image)} alt={image.name} className="itp-grid-img" />
+                    <div className="itp-grid-overlay">
+                      <span className="itp-grid-index">{index + 1}</span>
                     </div>
-                    <span className="itp-list-name">🖼️ {image.name}</span>
-                    <div className="itp-list-actions">
+                    <div className="itp-grid-actions">
                       <button
                         onClick={() => moveImage(index, "up")}
                         disabled={index === 0}
+                        className="itp-grid-btn"
                         title="Move up"
-                        className="itp-action-btn"
                       >
                         ↑
                       </button>
                       <button
                         onClick={() => moveImage(index, "down")}
                         disabled={index === images.length - 1}
+                        className="itp-grid-btn"
                         title="Move down"
-                        className="itp-action-btn"
                       >
                         ↓
                       </button>
                       <button
                         onClick={() => removeImage(index)}
+                        className="itp-grid-btn itp-grid-remove"
                         title="Remove"
-                        className="itp-remove-btn"
                       >
                         ✕
                       </button>
                     </div>
-                  </li>
+                    <div className="itp-grid-name">{image.name}</div>
+                  </div>
                 ))}
-              </ul>
-              <button
-                className="itp-add-more"
-                onClick={() => fileInputRef.current?.click()}
-              >
+              </div>
+              <button className="itp-add-more" onClick={() => fileInputRef.current?.click()}>
                 + Add More Images
               </button>
             </div>
           )}
 
-          {/* Page size selector */}
+          {/* Page size */}
           {images.length > 0 && (
-            <div className="itp-ticket itp-options">
-              <span className="itp-options-label">Page size:</span>
-              <div className="itp-options-group">
-                <button
-                  className={`itp-option ${pageSize === "fit" ? "itp-option-active" : ""}`}
-                  onClick={() => setPageSize("fit")}
-                >
+            <div className="itp-card itp-options-card">
+              <span className="itp-options-label">Page size</span>
+              <div className="itp-options">
+                <button className={`itp-option ${pageSize === "fit" ? "itp-option-active" : ""}`} onClick={() => setPageSize("fit")}>
                   Fit to image
                 </button>
-                <button
-                  className={`itp-option ${pageSize === "a4p" ? "itp-option-active" : ""}`}
-                  onClick={() => setPageSize("a4p")}
-                >
+                <button className={`itp-option ${pageSize === "a4p" ? "itp-option-active" : ""}`} onClick={() => setPageSize("a4p")}>
                   A4 Portrait
                 </button>
-                <button
-                  className={`itp-option ${pageSize === "a4l" ? "itp-option-active" : ""}`}
-                  onClick={() => setPageSize("a4l")}
-                >
+                <button className={`itp-option ${pageSize === "a4l" ? "itp-option-active" : ""}`} onClick={() => setPageSize("a4l")}>
                   A4 Landscape
                 </button>
-                <button
-                  className={`itp-option ${pageSize === "letter" ? "itp-option-active" : ""}`}
-                  onClick={() => setPageSize("letter")}
-                >
+                <button className={`itp-option ${pageSize === "letter" ? "itp-option-active" : ""}`} onClick={() => setPageSize("letter")}>
                   Letter
                 </button>
               </div>
@@ -338,44 +330,32 @@ export default function ImageToPdfPage() {
             </button>
           </div>
 
-          {/* Progress ticket */}
           {isConverting && (
-            <div className="itp-ticket itp-progress-card">
+            <div className="itp-card itp-progress-card">
               <div className="itp-progress-head">
                 <span className="itp-printer-icon">🖨️</span>
                 <span className="itp-stage-text">{stage}</span>
-                <span className="itp-mono itp-progress-pct">{progress}%</span>
+                <span className="itp-progress-pct">{progress}%</span>
               </div>
               <div className="itp-gauge">
                 <div className="itp-gauge-fill" style={{ width: `${progress}%` }} />
-                <div className="itp-gauge-ticks" />
               </div>
             </div>
           )}
 
-          <div className="itp-privacy-note">💡 Images are processed in your browser, never uploaded.</div>
+          <div className="itp-privacy-note">💡 Your images stay on your device — never uploaded.</div>
         </div>
 
         {showPopup && (
-          <div className="itp-overlay" role="dialog" aria-modal="true">
-            <div className="itp-ticket itp-done-card">
-              <div className="itp-stamp">
-                <span>DONE</span>
-              </div>
-              <h2>All done!</h2>
-              <p>
-                Just <strong className="itp-mono">{elapsedLabel}s</strong> to create your PDF.
-              </p>
-              <div className="itp-done-actions">
-                <a href={successUrl} target="_blank" rel="noopener noreferrer" className="itp-btn-primary">
-                  Open PDF
-                </a>
-                <a href={successUrl} download="converted.pdf" className="itp-btn-secondary">
-                  Download Again
-                </a>
-                <button onClick={closePopup} className="itp-btn-ghost">
-                  Close
-                </button>
+          <div className="itp-overlay">
+            <div className="itp-popup">
+              <div className="itp-popup-check">✅</div>
+              <h2>PDF Ready!</h2>
+              <p>Created in {elapsedLabel}s</p>
+              <div className="itp-popup-actions">
+                <a href={successUrl} target="_blank" rel="noopener noreferrer" className="itp-btn-primary">Open PDF</a>
+                <a href={successUrl} download="converted.pdf" className="itp-btn-secondary">Download Again</a>
+                <button onClick={closePopup} className="itp-btn-ghost">Close</button>
               </div>
             </div>
           </div>
@@ -387,18 +367,21 @@ export default function ImageToPdfPage() {
 
         <style jsx>{`
           .itp-root {
-            --paper: #fbfbfd;
-            --paper-deep: #f5f5f7;
-            --ink: #1d1d1f;
-            --ink-soft: #6e6e73;
-            --press: #0071e3;
-            --press-deep: #0077ed;
-            --signal: #0071e3;
-            --success: #30d158;
-            --line: #d2d2d7;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #111827;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --border: #e5e7eb;
+            --error-bg: #fee2e2;
+            --error-border: #fecaca;
+            --error-text: #b91c1c;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
             min-height: 100vh;
-            background: var(--paper);
-            color: var(--ink);
+            background: var(--bg);
+            color: var(--text);
             font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
           }
 
@@ -406,15 +389,15 @@ export default function ImageToPdfPage() {
             position: sticky;
             top: 0;
             z-index: 40;
-            background: rgba(251, 251, 253, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
           }
           .itp-nav-inner {
-            max-width: 880px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 0 16px;
-            height: 60px;
+            height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -424,297 +407,252 @@ export default function ImageToPdfPage() {
             align-items: center;
             gap: 8px;
             text-decoration: none;
-            color: var(--ink);
-            font-family: "Inter", sans-serif;
+            color: var(--text);
             font-weight: 600;
-            font-size: 17px;
+            font-size: 18px;
           }
           .itp-nav-links {
             display: flex;
-            gap: 18px;
-            font-size: 13px;
+            gap: 16px;
+            font-size: 14px;
           }
           .itp-nav-links a {
-            color: var(--ink-soft);
+            color: var(--muted);
             text-decoration: none;
           }
           .itp-nav-links a:hover {
-            color: var(--press);
+            color: var(--primary);
           }
 
           .itp-wrap {
-            max-width: 720px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 40px 16px 64px;
+            padding: 32px 16px 64px;
           }
 
           .itp-hero {
             text-align: center;
-            margin-bottom: 28px;
-          }
-          .itp-eyebrow {
-            font-family: "Inter", sans-serif;
-            font-size: 12px;
-            letter-spacing: 0.14em;
-            color: var(--signal);
-            font-weight: 600;
-          }
-          .itp-hero h1 {
-            font-family: "Inter", sans-serif;
-            font-size: clamp(28px, 6vw, 42px);
-            font-weight: 600;
-            margin: 6px 0 10px;
-            letter-spacing: -0.01em;
-          }
-          .itp-hero p {
-            color: var(--ink-soft);
-            font-size: 15px;
-            max-width: 480px;
-            margin: 0 auto;
-          }
-
-          .itp-chip-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
             margin-bottom: 24px;
           }
-          .itp-chip {
+          .itp-hero h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 8px;
+          }
+          .itp-hero p {
+            color: var(--muted);
+            font-size: 16px;
+          }
+
+          .itp-features {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+          }
+          .itp-feature {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
-            background: white;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 10px 8px;
+            box-shadow: var(--shadow-sm);
           }
-          .itp-chip-icon {
-            font-size: 18px;
+          .itp-feature-icon {
+            font-size: 22px;
           }
-          .itp-chip-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
+          .itp-feature strong {
+            font-size: 13px;
+            display: block;
           }
-          .itp-chip-text strong {
-            font-size: 12.5px;
-          }
-          .itp-chip-text span {
-            font-size: 10.5px;
-            color: var(--ink-soft);
+          .itp-feature span:last-child {
+            font-size: 11px;
+            color: var(--muted);
           }
 
-          .itp-ticket {
-            position: relative;
-            background: white;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            margin-bottom: 18px;
+          .itp-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            padding: 16px;
+            margin-bottom: 16px;
           }
-          .itp-ticket::before,
-          .itp-ticket::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 12px;
-            background-image: radial-gradient(circle at 10px 0, transparent 8px, var(--paper) 9px);
-            background-size: 20px 12px;
-            background-repeat: repeat-x;
+          .itp-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 600;
           }
-          .itp-ticket::before {
-            top: -1px;
-          }
-          .itp-ticket::after {
-            bottom: -1px;
-            transform: rotate(180deg);
+          .itp-badge {
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
           }
 
           .itp-dropzone {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
             padding: 32px 16px;
             text-align: center;
-            border-style: dashed;
-            border-color: var(--press);
-            transition: background 0.2s ease, transform 0.15s ease;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            margin-bottom: 16px;
+            background: var(--card-bg);
           }
           .itp-drop-active {
-            background: #eef4fa;
-            transform: scale(1.01);
+            border-color: var(--primary);
+            background: #f0f4ff;
           }
           .itp-hidden-input {
             display: none;
           }
-          .itp-drop-label {
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-          }
           .itp-drop-icon {
-            font-size: 38px;
+            font-size: 40px;
+            margin-bottom: 8px;
           }
           .itp-drop-title {
-            font-family: "Inter", sans-serif;
             font-weight: 600;
-            font-size: 17px;
+            font-size: 16px;
           }
           .itp-drop-sub {
-            font-size: 12.5px;
-            color: var(--ink-soft);
+            font-size: 13px;
+            color: var(--muted);
           }
 
-          .itp-list {
-            padding: 16px;
+          .itp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
           }
-          .itp-list-head {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12.5px;
-            color: var(--ink-soft);
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed var(--line);
-          }
-          .itp-mono {
-            font-family: "Inter", sans-serif;
-            font-variant-numeric: tabular-nums;
-          }
-          .itp-list ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-          }
-          .itp-list li {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--paper-deep);
+          .itp-grid-item {
+            position: relative;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 8px 10px;
-            transition: background 0.2s;
-          }
-          .itp-list li:hover {
-            background: #e9e9eb;
-          }
-          .itp-list-num {
-            font-size: 11px;
-            color: var(--signal);
-            min-width: 24px;
-            text-align: center;
-          }
-          .itp-thumb {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
             overflow: hidden;
-            flex-shrink: 0;
-            background: white;
+            background: #f3f4f6;
+            aspect-ratio: 4/3;
             display: flex;
             align-items: center;
             justify-content: center;
           }
-          .itp-thumb-img {
+          .itp-grid-img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
           }
-          .itp-list-name {
-            flex: 1;
-            font-size: 13px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+          .itp-grid-overlay {
+            position: absolute;
+            top: 6px;
+            left: 6px;
           }
-          .itp-list-actions {
+          .itp-grid-index {
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+          }
+          .itp-grid-actions {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
             display: flex;
             gap: 4px;
           }
-          .itp-action-btn,
-          .itp-remove-btn {
-            background: none;
-            border: 1px solid transparent;
-            cursor: pointer;
-            font-size: 13px;
-            padding: 2px 6px;
+          .itp-grid-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
             border-radius: 4px;
-            transition: all 0.2s;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #374151;
+            transition: background 0.2s;
           }
-          .itp-action-btn {
-            color: var(--ink-soft);
-          }
-          .itp-action-btn:disabled {
-            opacity: 0.3;
+          .itp-grid-btn:disabled {
+            opacity: 0.4;
             cursor: not-allowed;
           }
-          .itp-action-btn:not(:disabled):hover {
-            background: var(--line);
-            color: var(--ink);
+          .itp-grid-btn:not(:disabled):hover {
+            background: white;
           }
-          .itp-remove-btn {
-            color: #c14c4c;
+          .itp-grid-remove {
+            color: #dc2626;
           }
-          .itp-remove-btn:hover {
-            background: #fdecea;
-            border-color: #f2c4c0;
+          .itp-grid-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            padding: 4px 6px;
+            font-size: 11px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
 
           .itp-add-more {
-            margin-top: 10px;
-            background: var(--paper-deep);
-            border: 1px dashed var(--line);
-            border-radius: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
             width: 100%;
+            background: #f9fafb;
+            border: 1px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 8px;
             font-size: 13px;
-            color: var(--press);
+            color: var(--primary);
+            cursor: pointer;
             font-weight: 500;
+            transition: background 0.2s;
           }
           .itp-add-more:hover {
-            background: #e9e9eb;
+            background: #f3f4f6;
           }
 
-          .itp-options {
-            padding: 14px 16px;
+          .itp-options-card {
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
           }
           .itp-options-label {
-            font-size: 13px;
             font-weight: 600;
+            font-size: 14px;
           }
-          .itp-options-group {
+          .itp-options {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
           }
           .itp-option {
             background: white;
-            border: 1px solid var(--line);
+            border: 1px solid var(--border);
             border-radius: 999px;
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 6px 14px;
+            font-size: 13px;
             cursor: pointer;
-            color: var(--ink-soft);
+            color: var(--muted);
             transition: all 0.2s;
           }
           .itp-option-active {
-            background: var(--press);
+            background: var(--primary);
             color: white;
-            border-color: var(--press);
+            border-color: var(--primary);
           }
 
           .itp-error {
-            background: #fdecea;
-            border: 1px solid #f2c4c0;
-            color: #a83e34;
-            border-radius: 10px;
+            background: var(--error-bg);
+            border: 1px solid var(--error-border);
+            color: var(--error-text);
+            border-radius: 8px;
             padding: 10px 14px;
             font-size: 13px;
             margin-bottom: 16px;
@@ -723,134 +661,99 @@ export default function ImageToPdfPage() {
           .itp-convert-row {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-top: 16px;
           }
           .itp-convert-btn {
-            font-family: "Inter", sans-serif;
-            font-weight: 600;
-            font-size: 15px;
+            background: var(--primary);
             color: white;
-            background: var(--press);
             border: none;
-            padding: 13px 30px;
-            border-radius: 999px;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 12px 32px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.12s ease, background 0.2s ease;
-            box-shadow: 0 4px 0 var(--press-deep);
+            transition: background 0.2s;
           }
           .itp-convert-btn:not(:disabled):hover {
-            transform: translateY(-1px);
-          }
-          .itp-convert-btn:not(:disabled):active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 var(--press-deep);
+            background: var(--primary-hover);
           }
           .itp-convert-btn:disabled {
-            background: #b7bcc7;
-            box-shadow: none;
+            background: #d1d5db;
             cursor: not-allowed;
           }
 
           .itp-progress-card {
-            padding: 16px;
+            margin-top: 16px;
           }
           .itp-progress-head {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
-            font-size: 13px;
+            margin-bottom: 8px;
+            font-size: 14px;
           }
           .itp-printer-icon {
             font-size: 18px;
-            animation: itp-bounce 0.9s ease-in-out infinite;
           }
           .itp-stage-text {
             flex: 1;
-            color: var(--ink-soft);
+            color: var(--muted);
           }
           .itp-progress-pct {
             font-weight: 600;
-            color: var(--signal);
+            color: var(--primary);
           }
           .itp-gauge {
-            position: relative;
-            height: 10px;
+            height: 8px;
+            background: #e5e7eb;
             border-radius: 999px;
-            background: var(--paper-deep);
             overflow: hidden;
           }
           .itp-gauge-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--signal), #5856d6);
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
             border-radius: 999px;
-            transition: width 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-          }
-          .itp-gauge-ticks {
-            position: absolute;
-            inset: 0;
-            background-image: repeating-linear-gradient(
-              90deg,
-              rgba(0, 0, 0, 0.04) 0,
-              rgba(0, 0, 0, 0.04) 1px,
-              transparent 1px,
-              transparent 10%
-            );
-            pointer-events: none;
+            transition: width 0.3s;
           }
 
           .itp-privacy-note {
             text-align: center;
-            font-size: 12.5px;
-            color: var(--ink-soft);
-            margin-top: 8px;
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 16px;
           }
 
           .itp-overlay {
             position: fixed;
             inset: 0;
-            z-index: 50;
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(28, 30, 38, 0.55);
-            backdrop-filter: blur(3px);
-            padding: 16px;
+            z-index: 50;
           }
-          .itp-done-card {
-            max-width: 340px;
-            width: 100%;
-            padding: 34px 24px 24px;
+          .itp-popup {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
             text-align: center;
-            animation: itp-pop 0.3s ease-out;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
           }
-          .itp-stamp {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid var(--success);
-            color: var(--success);
-            border-radius: 10px;
-            padding: 6px 18px;
-            font-family: "Inter", sans-serif;
-            font-weight: 700;
-            font-size: 22px;
-            letter-spacing: 0.08em;
-            transform: rotate(-8deg);
-            margin-bottom: 14px;
-            animation: itp-stamp-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+          .itp-popup-check {
+            font-size: 48px;
+            margin-bottom: 12px;
           }
-          .itp-done-card h2 {
-            font-family: "Inter", sans-serif;
+          .itp-popup h2 {
+            margin: 0 0 8px;
             font-size: 20px;
-            margin: 0 0 6px;
           }
-          .itp-done-card p {
-            font-size: 13.5px;
-            color: var(--ink-soft);
-            margin: 0 0 20px;
+          .itp-popup p {
+            color: var(--muted);
+            margin-bottom: 20px;
           }
-          .itp-done-actions {
+          .itp-popup-actions {
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -860,90 +763,46 @@ export default function ImageToPdfPage() {
           .itp-btn-ghost {
             display: block;
             width: 100%;
-            padding: 11px;
-            border-radius: 10px;
-            font-size: 13.5px;
+            padding: 10px;
+            border-radius: 8px;
             font-weight: 600;
             text-decoration: none;
             border: none;
             cursor: pointer;
-            box-sizing: border-box;
+            font-size: 14px;
+            transition: background 0.2s;
           }
           .itp-btn-primary {
-            background: var(--press);
+            background: var(--primary);
             color: white;
           }
+          .itp-btn-primary:hover {
+            background: var(--primary-hover);
+          }
           .itp-btn-secondary {
-            background: var(--paper-deep);
-            color: var(--ink);
+            background: #f3f4f6;
+            color: var(--text);
+          }
+          .itp-btn-secondary:hover {
+            background: #e5e7eb;
           }
           .itp-btn-ghost {
             background: transparent;
-            color: var(--ink-soft);
+            color: var(--muted);
           }
-
-          @keyframes itp-bounce {
-            0%,
-            100% {
-              transform: translateY(0);
-            }
-            50% {
-              transform: translateY(-3px);
-            }
-          }
-          @keyframes itp-stamp-in {
-            0% {
-              transform: scale(2.4) rotate(-24deg);
-              opacity: 0;
-            }
-            60% {
-              transform: scale(0.94) rotate(-8deg);
-              opacity: 1;
-            }
-            100% {
-              transform: scale(1) rotate(-8deg);
-              opacity: 1;
-            }
-          }
-          @keyframes itp-pop {
-            0% {
-              opacity: 0;
-              transform: scale(0.92);
-            }
-            100% {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-
-          @media (prefers-reduced-motion: reduce) {
-            .itp-printer-icon,
-            .itp-stamp,
-            .itp-done-card {
-              animation: none !important;
-            }
+          .itp-btn-ghost:hover {
+            background: #f9fafb;
           }
 
           @media (max-width: 640px) {
-            .itp-chip-row {
+            .itp-features {
               grid-template-columns: repeat(2, 1fr);
             }
-            .itp-nav-links a:first-child {
-              display: none;
+            .itp-grid {
+              grid-template-columns: repeat(2, 1fr);
             }
-            .itp-hero p {
-              font-size: 14px;
-            }
-            .itp-options {
-              flex-direction: column;
-              align-items: flex-start;
-            }
-            .itp-options-group {
-              width: 100%;
-            }
-            .itp-option {
-              flex: 1;
-              text-align: center;
+            .itp-hero h1 {
+              font-size: 26px;
             }
           }
         `}</style>
