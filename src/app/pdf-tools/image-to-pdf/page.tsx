@@ -63,123 +63,113 @@ export default function ImageToPdfPage() {
       return newImages;
     });
   };
+const handleConvert = async () => {
+  if (images.length === 0) {
+    setError("Please upload at least one image.");
+    return;
+  }
+  setIsConverting(true);
+  setError("");
+  setProgress(2);
+  setStage("Preparing...");
+  const start = performance.now();
 
-  const handleConvert = async () => {
-    if (images.length === 0) {
-      setError("Please upload at least one image.");
-      return;
-    }
-    setIsConverting(true);
-    setError("");
-    setProgress(2);
-    setStage("Preparing...");
-    const start = performance.now();
+  try {
+    const pdfDoc = await PDFDocument.create();
 
-    try {
-      const pdfDoc = await PDFDocument.create();
+    // Define standard page sizes (in points)
+    const pageSizes = {
+      a4p: [595.28, 841.89],
+      a4l: [841.89, 595.28],
+      letter: [612, 792],
+    };
 
-      for (let i = 0; i < images.length; i++) {
-        const image = images[i];
-        const arrayBuffer = await image.arrayBuffer();
-        const mimeType = image.type;
-        let embeddedImage;
+    for (let i = 0; i < images.length; i++) {
+      const image = images[i];
+      const arrayBuffer = await image.arrayBuffer();
+      const mimeType = image.type;
+      let embeddedImage;
 
-        setStage(`Processing page ${i + 1} of ${images.length}`);
+      setStage(`Processing page ${i + 1} of ${images.length}`);
 
-        if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
-          embeddedImage = await pdfDoc.embedJpg(arrayBuffer);
-        } else if (mimeType === "image/png") {
-          embeddedImage = await pdfDoc.embedPng(arrayBuffer);
-        } else {
-          continue;
-        }
-
-        let pageWidth: number, pageHeight: number;
-        let drawWidth: number, drawHeight: number;
-        let x: number, y: number;
-
-        if (pageSize === "fit") {
-          // Determine orientation based on image aspect ratio
-          const imgRatio = embeddedImage.width / embeddedImage.height;
-          // Cap page size to A4 portrait/landscape dimensions
-          const maxLong = 842;   // points
-          const maxShort = 595;  // points
-          if (imgRatio > 1) {
-            // Landscape
-            pageWidth = Math.min(maxLong, embeddedImage.width * 72 / 96); // 96 DPI
-            pageHeight = pageWidth / imgRatio;
-            // ensure within short dimension
-            if (pageHeight > maxShort) {
-              pageHeight = maxShort;
-              pageWidth = pageHeight * imgRatio;
-            }
-          } else {
-            // Portrait
-            pageHeight = Math.min(maxLong, embeddedImage.height * 72 / 96);
-            pageWidth = pageHeight * imgRatio;
-            if (pageWidth > maxShort) {
-              pageWidth = maxShort;
-              pageHeight = pageWidth / imgRatio;
-            }
-          }
-          // No margin, image fills page exactly
-          drawWidth = pageWidth;
-          drawHeight = pageHeight;
-          x = 0;
-          y = 0;
-        } else {
-          // Standard page sizes
-          if (pageSize === "a4p") [pageWidth, pageHeight] = A4_PORTRAIT;
-          else if (pageSize === "a4l") [pageWidth, pageHeight] = A4_LANDSCAPE;
-          else if (pageSize === "letter") [pageWidth, pageHeight] = LETTER_PORTRAIT;
-          else [pageWidth, pageHeight] = A4_PORTRAIT; // fallback
-
-          // Scale image to fit within page with margin
-          const margin = 36; // 0.5 inch
-          const maxWidth = pageWidth - margin * 2;
-          const maxHeight = pageHeight - margin * 2;
-          const scale = Math.min(maxWidth / embeddedImage.width, maxHeight / embeddedImage.height, 1);
-          drawWidth = embeddedImage.width * scale;
-          drawHeight = embeddedImage.height * scale;
-          x = (pageWidth - drawWidth) / 2;
-          y = (pageHeight - drawHeight) / 2;
-        }
-
-        const page = pdfDoc.addPage([pageWidth, pageHeight]);
-        page.drawImage(embeddedImage, { x, y, width: drawWidth, height: drawHeight });
-
-        setProgress(8 + Math.round(((i + 1) / images.length) * 72));
-        await sleep(50);
+      if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
+        embeddedImage = await pdfDoc.embedJpg(arrayBuffer);
+      } else if (mimeType === "image/png") {
+        embeddedImage = await pdfDoc.embedPng(arrayBuffer);
+      } else {
+        continue;
       }
 
-      setStage("Creating PDF...");
-      setProgress(92);
-      const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
+      let pageWidth: number, pageHeight: number;
+      let drawWidth: number, drawHeight: number;
+      let x: number, y: number;
 
-      const elapsed = performance.now() - start;
-      if (elapsed < 650) await sleep(650 - elapsed);
+      if (pageSize === "fit") {
+        // Page size = image size (no white space at all)
+        pageWidth = embeddedImage.width;
+        pageHeight = embeddedImage.height;
+        drawWidth = pageWidth;
+        drawHeight = pageHeight;
+        x = 0;
+        y = 0;
+      } else {
+        // Standard page size
+        [pageWidth, pageHeight] = pageSizes[pageSize];
 
-      setProgress(100);
-      setStage("Done!");
-      setElapsedLabel(((performance.now() - start) / 1000).toFixed(1));
+        // Fill page completely (cover) - no white borders
+        const scaleX = pageWidth / embeddedImage.width;
+        const scaleY = pageHeight / embeddedImage.height;
+        // Use max to fill entire page, image will overflow and be cropped
+        const scale = Math.max(scaleX, scaleY);
+        drawWidth = embeddedImage.width * scale;
+        drawHeight = embeddedImage.height * scale;
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "converted.pdf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+        // Center the oversized image (crop equally from all sides)
+        x = (pageWidth - drawWidth) / 2;
+        y = (pageHeight - drawHeight) / 2;
+      }
 
-      setSuccessUrl(url);
-      setShowPopup(true);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong, please try again.");
-    } finally {
-      setIsConverting(false);
+      const page = pdfDoc.addPage([pageWidth, pageHeight]);
+      page.drawImage(embeddedImage, {
+        x,
+        y,
+        width: drawWidth,
+        height: drawHeight,
+      });
+
+      setProgress(8 + Math.round(((i + 1) / images.length) * 72));
+      await sleep(50);
     }
-  };
+
+    setStage("Creating PDF...");
+    setProgress(92);
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+
+    const elapsed = performance.now() - start;
+    if (elapsed < 650) await sleep(650 - elapsed);
+
+    setProgress(100);
+    setStage("Done!");
+    setElapsedLabel(((performance.now() - start) / 1000).toFixed(1));
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "converted.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setSuccessUrl(url);
+    setShowPopup(true);
+  } catch (err: any) {
+    setError(err.message || "Something went wrong, please try again.");
+  } finally {
+    setIsConverting(false);
+  }
+};
+  
 
   const closePopup = () => {
     setShowPopup(false);
