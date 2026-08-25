@@ -51,8 +51,8 @@ const tools = [
     badge: "New",
     price: "₹29 Pro",
     proPrice: "₹29 One-time",
-    desc: "Create ATS-friendly resumes with clean professional templates.",
-    features: ["3 Templates", "Live Preview", "Download as PDF", "No Watermark"],
+    desc: "Create ATS-friendly resumes with 5 clean professional templates.",
+    features: ["5 ATS Templates", "Live Sheet Preview", "Download PDF", "Sample Data Fill"],
     path: "/resume-maker",
   },
   {
@@ -99,16 +99,16 @@ const tools = [
   },
   {
     id: 6,
-    name: "Chatbot Help",
+    name: "ULTRON 3.0 AI",
     category: "AI Assistant",
     icon: "💬",
     gradient: "from-purple-400 to-pink-400",
     glow: "rgba(217,70,239,0.35)",
-    badge: "AI",
-    price: "Coming Soon",
-    proPrice: "Free in Pro",
-    desc: "Instant answers to all your document and tool-related queries.",
-    features: ["24/7 Support", "Smart Suggestions", "Quick Replies"],
+    badge: "AI 3.0",
+    price: "Free AI",
+    proPrice: "Neural Engine",
+    desc: "Instant multi-lingual AI assistance for document tools and coding queries.",
+    features: ["Multi-Lingual Engine", "Smart Suggestions", "Embedded Tool Cards"],
     path: "/chatbot",
   },
 ];
@@ -151,52 +151,11 @@ const comingSoonTools = [
   { icon: "⚕️", name: "BMI Calculator", cat: "Utilities" },
 ];
 
-const testimonials = [
-  {
-    name: "Rahul Sharma",
-    role: "Freelance Designer",
-    text: "This toolbox saved me hours every week. Image compressor is lightning fast!",
-    avatar: "👨‍💻",
-  },
-  {
-    name: "Priya Patel",
-    role: "HR Manager",
-    text: "Resume maker is super easy. I recommend it to all candidates.",
-    avatar: "👩‍💼",
-  },
-  {
-    name: "Amit Kumar",
-    role: "Student",
-    text: "PDF merge for college projects? Best free tool ever. No signup needed!",
-    avatar: "👨‍🎓",
-  },
-];
-
-const faqs = [
-  {
-    q: "Is this tool really free?",
-    a: "Yes! Most basic features are free forever. Pro plan is only ₹29 for advanced tools and unlimited access.",
-  },
-  {
-    q: "Do I need to create an account?",
-    a: "No, you can use tools directly without any login. Your files are processed securely and deleted after download.",
-  },
-  {
-    q: "Is my data safe?",
-    a: "Absolutely. We don't store your files. All processing happens on your device or temporary server with auto-delete.",
-  },
-  {
-    q: "What payment methods do you accept?",
-    a: "UPI, Paytm, Google Pay, PhonePe, and all major debit/credit cards via Razorpay.",
-  },
-];
-
 const navLinks = [
   { href: "#tools", label: "Tools" },
   { href: "#showcase", label: "Live Demo" },
-  { href: "#features", label: "Features" },
   { href: "#pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/chatbot", label: "AI Assistant" },
 ];
 
 function parseStatValue(raw) {
@@ -248,7 +207,6 @@ export default function Home() {
     fetchUsers();
   }, []);
 
-  // Performance Optimized Filtering via useMemo
   const filteredTools = useMemo(() => {
     return tools.filter((tool) => {
       const matchesCategory = selectedCategory === "All Tools" || tool.category === selectedCategory;
@@ -267,7 +225,7 @@ export default function Home() {
     });
   }, [selectedCategory, searchQuery]);
 
-  /* ---------------- GSAP: hero load-in + ambient blobs ---------------- */
+  /* GSAP Animations */
   useEffect(() => {
     const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -295,7 +253,6 @@ export default function Home() {
     return () => ctx.revert();
   }, []);
 
-  /* ---------------- GSAP: scroll reveals ---------------- */
   useEffect(() => {
     if (rootRef.current) {
       rootRef.current.classList.add("js-ready");
@@ -317,7 +274,6 @@ export default function Home() {
     return () => ctx.revert();
   }, []);
 
-  /* ---------------- GSAP: animated stat counters ---------------- */
   useEffect(() => {
     const values = ["", "1.5K+", "4.5/5", "No Signup"];
     values[0] = userCount > 0 ? `${userCount}+` : "0+";
@@ -356,6 +312,18 @@ export default function Home() {
         .js-ready .reveal-up.gsap-reveal-visible {
           visibility: visible;
         }
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee-slow {
+          display: flex;
+          width: 200%;
+          animation: marquee 32s linear infinite;
+        }
+        .animate-marquee-slow:hover {
+          animation-play-state: paused;
+        }
       `}</style>
 
       {/* Navbar */}
@@ -377,9 +345,9 @@ export default function Home() {
                 <span className="w-7 h-7 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-sm">👤</span>
                 <span>My Account</span>
               </a>
-              <button className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors shadow-md shadow-blue-500/20">
-                Get Started Free
-              </button>
+              <a href="#tools" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors shadow-md shadow-blue-500/20">
+                Explore Tools
+              </a>
             </div>
 
             <div className="flex md:hidden items-center gap-2">
@@ -404,9 +372,9 @@ export default function Home() {
                   {link.label}
                 </a>
               ))}
-              <button className="mt-2 bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-2.5 rounded-xl font-medium transition-colors text-[15px]">
-                Get Started Free
-              </button>
+              <a href="#tools" className="mt-2 bg-[#0071e3] text-white px-4 py-2.5 rounded-xl font-medium text-center text-[15px]">
+                Explore Tools
+              </a>
             </div>
           )}
         </div>
@@ -421,7 +389,7 @@ export default function Home() {
         <div className="relative max-w-4xl mx-auto text-center">
           <div ref={heroBadgeRef} className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-7 sm:mb-8 text-[#1d1d1f]/70 dark:text-white/70 border border-black/[0.04]">
             <span className="w-1.5 h-1.5 bg-[#30d158] rounded-full" />
-            Trusted by {userCount > 0 ? `${userCount}+` : "..."} users in India
+            Trusted by {userCount > 0 ? `${userCount}+` : "..."} users worldwide
           </div>
           <h1 ref={heroH1Ref} className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-5 sm:mb-6">
             All your daily tools.
@@ -465,11 +433,6 @@ export default function Home() {
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Required</div>
           </div>
         </div>
-        <div className="text-center mt-5">
-          <button onClick={() => setShowUsers(true)} className="text-sm text-[#0071e3] hover:underline font-medium">
-            See our active users →
-          </button>
-        </div>
       </section>
 
       {/* Live 3D Showcase */}
@@ -481,8 +444,8 @@ export default function Home() {
           A live look at Merge PDF, Image Compressor and Resume Builder running end to end — right inside your browser.
         </p>
 
-        <div className="reveal-up w-full max-w-3xl mx-auto" style={{ aspectRatio: "16 / 10" }}>
-          <LaptopScene className="w-full h-full" />
+        <div className="reveal-up w-full max-w-4xl mx-auto">
+          <LaptopScene className="w-full" />
         </div>
       </section>
 
@@ -560,30 +523,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* Coming Soon Tools */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Coming Soon</h2>
-        <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
-          Our team is actively building these upcoming tools. Stay tuned!
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-          {filteredComingSoon.map((tool, i) => (
-            <div
-              key={i}
-              onClick={() => {
-                setSelectedTool(tool);
-                setShowModal(true);
-              }}
-              className="group relative bg-white dark:bg-[#111113] rounded-2xl sm:rounded-3xl border border-black/5 dark:border-white/10 p-4 sm:p-6 flex flex-col items-center text-center cursor-pointer hover:shadow-md transition-all duration-200"
-            >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4">{tool.icon}</div>
-              <h3 className="text-[13px] sm:text-[15px] font-semibold tracking-tight text-gray-800 dark:text-white">{tool.name}</h3>
-              <span className="text-[10px] sm:text-[11px] bg-blue-50 dark:bg-white/10 text-blue-600 dark:text-white/60 px-2 py-0.5 rounded-full mt-2 inline-block">Coming Soon</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Pricing */}
       <section id="pricing" className="bg-[#f5f5f7] dark:bg-white/5 py-14 sm:py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -599,7 +538,7 @@ export default function Home() {
                 <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> Basic Resume Template</li>
                 <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> No Ads, No Signup</li>
               </ul>
-              <button className="w-full bg-[#f5f5f7] dark:bg-white/10 text-[#1d1d1f] dark:text-white py-3 rounded-full font-medium hover:bg-[#e8e8ed] dark:hover:bg-white/20 transition-colors">Start Free</button>
+              <a href="#tools" className="block w-full bg-[#f5f5f7] dark:bg-white/10 text-[#1d1d1f] dark:text-white py-3 rounded-full font-medium hover:bg-[#e8e8ed] dark:hover:bg-white/20 transition-colors text-center text-xs font-bold">Start Free</a>
             </div>
             <div className="bg-[#0071e3] rounded-3xl p-7 sm:p-8 w-full sm:w-72 text-left relative text-white shadow-xl shadow-blue-500/20">
               <span className="absolute top-6 right-6 bg-white/20 text-white text-[11px] px-2.5 py-1 rounded-full font-medium">POPULAR</span>
@@ -609,54 +548,79 @@ export default function Home() {
               <ul className="space-y-2.5 text-[14px] text-white/90 mb-7">
                 <li className="flex items-center gap-2"><span>✓</span> Everything in Free</li>
                 <li className="flex items-center gap-2"><span>✓</span> Unlimited Image Compression</li>
-                <li className="flex items-center gap-2"><span>✓</span> 3+ Resume Templates</li>
+                <li className="flex items-center gap-2"><span>✓</span> 5 ATS Resume Templates</li>
                 <li className="flex items-center gap-2"><span>✓</span> PDF Compress &amp; Convert</li>
                 <li className="flex items-center gap-2"><span>✓</span> Priority Support</li>
               </ul>
-              <Link href="/payment" className="block w-full bg-white text-[#0071e3] py-3 rounded-full font-semibold hover:bg-white/90 transition-colors text-center">Get Pro for ₹29</Link>
+              <Link href="/payment" className="block w-full bg-white text-[#0071e3] py-3 rounded-full font-semibold hover:bg-white/90 transition-colors text-center text-xs">Get Pro for ₹29</Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-black/5 dark:border-white/10 py-10 sm:py-12 mt-8">
+      {/* ── ULTRA-COOL FOUNDER FOOTER ────────────────────────────────────────── */}
+      <footer className="border-t border-black/5 dark:border-white/10 pt-12 pb-8 overflow-hidden relative bg-white dark:bg-[#07090e]">
         <div className="max-w-7xl mx-auto px-4 text-center">
+          
+          {/* FOUNDER BRANDING CARD */}
           <div className="flex flex-col items-center gap-3 pb-8 mb-8 border-b border-black/5 dark:border-white/10">
-            <span className="text-[11px] uppercase tracking-widest text-[#6e6e73] dark:text-white/40 font-medium">Crafted by</span>
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0071e3] to-[#5856d6] flex items-center justify-center text-white font-semibold text-base shadow-md">LK</div>
-            <div>
-              <div className="font-semibold text-[15px] tracking-tight">Lakhan Kashyap</div>
-              <div className="text-[13px] text-[#6e6e73] dark:text-white/50">Founder &amp; Developer</div>
+            <div className="text-[11px] uppercase tracking-widest text-[#0071e3] dark:text-blue-400 font-extrabold">
+              Crafted with Excellence by
+            </div>
+
+            {/* Glowing Circle Founder Avatar */}
+            <div className="relative group cursor-pointer">
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#0071e3] via-indigo-500 to-emerald-400 blur-md opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse" />
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-[#0071e3] to-indigo-600 p-[2.5px]">
+                <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white font-black text-2xl shadow-inner border-2 border-white dark:border-slate-900">
+                  LK
+                </div>
+              </div>
+            </div>
+
+            {/* Founder Name & Role Badges */}
+            <div className="mt-1 space-y-1">
+              <h3 className="font-extrabold text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#0071e3] to-indigo-600 dark:from-white dark:via-blue-400 dark:to-indigo-300">
+                Lakhan Kashyap
+              </h3>
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <span className="text-xs bg-[#0071e3]/10 text-[#0071e3] dark:bg-blue-950/60 dark:text-blue-300 font-bold px-3 py-1 rounded-full border border-[#0071e3]/20">
+                  Founder &amp; Chief Architect
+                </span>
+                <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1 rounded-full border border-emerald-500/20">
+                  ToolBox Suite
+                </span>
+              </div>
             </div>
           </div>
-          <div className="text-[13px] text-[#6e6e73] dark:text-white/50">© {new Date().getFullYear()} ToolBox. All rights reserved.</div>
+
+          {/* ── SMOOTH LOW-SPEED MARQUEE TICKER LINE ───────────────────── */}
+          <div className="w-full overflow-hidden bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl py-3.5 mb-8">
+            <div className="animate-marquee-slow whitespace-nowrap text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 opacity-70">
+              <span className="inline-flex items-center gap-4 px-4">
+                <span>🚀 <strong>Our Mission:</strong> Eliminating heavy app installs &amp; shady sites — providing instant, privacy-first browser utilities for everyone worldwide.</span>
+                <span>•</span>
+                <span>⚡ <strong>100% Client-Side:</strong> Your files never leave your device. Zero server logging.</span>
+                <span>•</span>
+                <span>💡 Built for extreme speed, simplicity, and efficiency.</span>
+                <span>•</span>
+              </span>
+              <span className="inline-flex items-center gap-4 px-4">
+                <span>🚀 <strong>Our Mission:</strong> Eliminating heavy app installs &amp; shady sites — providing instant, privacy-first browser utilities for everyone worldwide.</span>
+                <span>•</span>
+                <span>⚡ <strong>100% Client-Side:</strong> Your files never leave your device. Zero server logging.</span>
+                <span>•</span>
+                <span>💡 Built for extreme speed, simplicity, and efficiency.</span>
+                <span>•</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="text-xs text-[#6e6e73] dark:text-white/50 font-medium">
+            © {new Date().getFullYear()} ToolBox Platform • All rights reserved. Made with  by Lakhan Kashyap.
+          </div>
         </div>
       </footer>
-
-      {/* Modals */}
-      {showModal && selectedTool && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
-            <div className="text-5xl mb-4">{selectedTool.icon}</div>
-            <h2 className="text-2xl font-bold mb-2">{selectedTool.name}</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-2">This tool is currently under development.</p>
-            <button onClick={() => setShowModal(false)} className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold mt-4">Close</button>
-          </div>
-        </div>
-      )}
-
-      {showUsers && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-md w-full shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">👥 Active Users ({userCount})</h2>
-              <button onClick={() => setShowUsers(false)} className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center">✕</button>
-            </div>
-            <p className="text-xs text-slate-500">🔒 Emails are masked to protect privacy.</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
