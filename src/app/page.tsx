@@ -1,9 +1,18 @@
 // @ts-nocheck
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+const LaptopScene = dynamic(() => import("../components/LaptopScene"), { ssr: false });
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,123 +20,135 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+/* ========================================================================== */
+/*  DATA DEFINITIONS                                                          */
+/* ========================================================================== */
+
+const TOOL_CATEGORIES = ["All Tools", "PDF Suite", "Image Tools", "Resume & HR", "Utilities", "AI Assistant"];
+
 const tools = [
   {
     id: 1,
     name: "PDF Editor",
+    category: "PDF Suite",
     icon: "📄",
     gradient: "from-rose-400 to-orange-400",
     glow: "rgba(251,146,60,0.35)",
     badge: "Popular",
     price: "₹0 / Free",
     proPrice: "₹29 Pro",
-    desc: "Merge, split, compress, and convert PDFs instantly.",
+    desc: "Merge, split, compress, and convert PDFs instantly in your browser.",
     features: ["Merge PDF", "Split PDF", "Compress PDF", "Image to PDF"],
     path: "/pdf-tools",
   },
   {
     id: 2,
     name: "Resume Maker",
+    category: "Resume & HR",
     icon: "📝",
     gradient: "from-blue-400 to-indigo-400",
     glow: "rgba(99,102,241,0.35)",
     badge: "New",
     price: "₹29 Pro",
     proPrice: "₹29 One-time",
-    desc: "Create ATS-friendly resumes with beautiful templates.",
+    desc: "Create ATS-friendly resumes with clean professional templates.",
     features: ["3 Templates", "Live Preview", "Download as PDF", "No Watermark"],
     path: "/resume-maker",
   },
   {
     id: 3,
     name: "Image Compressor",
+    category: "Image Tools",
     icon: "🖼️",
     gradient: "from-emerald-400 to-teal-400",
     glow: "rgba(45,212,191,0.35)",
     badge: "Fast",
     price: "₹0 / Free",
     proPrice: "Unlimited",
-    desc: "Reduce image size without losing quality.",
+    desc: "Reduce image size up to 80% without losing visual quality.",
     features: ["Compress up to 80%", "Batch Processing", "High Quality", "No Upload Limit"],
     path: "/image-compressor",
   },
   {
     id: 4,
     name: "QR Code Generator",
+    category: "Utilities",
     icon: "🔳",
     gradient: "from-slate-500 to-gray-700",
     glow: "rgba(100,116,139,0.35)",
     badge: "New",
     price: "₹0 / Free",
     proPrice: "Free",
-    desc: "Create QR codes from any text or URL instantly.",
-    features: ["High-Quality PNG", "Instant Download", "No Signup"],
+    desc: "Create high-resolution QR codes from any text or URL instantly.",
+    features: ["High-Quality PNG", "Instant Download", "No Signup Required"],
     path: "/qr-code-generator",
   },
   {
     id: 5,
     name: "PDF to Word",
+    category: "PDF Suite",
     icon: "📄",
     gradient: "from-amber-400 to-orange-400",
     glow: "rgba(245,158,11,0.35)",
     badge: "New",
     price: "₹0 / Free",
     proPrice: "Free",
-    desc: "Convert PDF documents to editable Word files.",
-    features: ["Text Extraction", "Preserves Formatting", "Free & Fast"],
+    desc: "Convert PDF documents into editable Word (.docx) files smoothly.",
+    features: ["Text Extraction", "Preserves Formatting", "Free & Blazing Fast"],
     path: "/pdf-to-word",
   },
   {
     id: 6,
     name: "Chatbot Help",
+    category: "AI Assistant",
     icon: "💬",
     gradient: "from-purple-400 to-pink-400",
     glow: "rgba(217,70,239,0.35)",
     badge: "AI",
     price: "Coming Soon",
     proPrice: "Free in Pro",
-    desc: "Instant answers to all your tool-related queries.",
+    desc: "Instant answers to all your document and tool-related queries.",
     features: ["24/7 Support", "Smart Suggestions", "Quick Replies"],
     path: "/chatbot",
   },
 ];
 
 const comingSoonTools = [
-  { icon: "🔁", name: "Word to PDF" },
-  { icon: "🖼️", name: "PDF to JPG" },
-  { icon: "🔒", name: "PDF Locker" },
-  { icon: "📊", name: "PDF to Excel" },
-  { icon: "📈", name: "Excel to PDF" },
-  { icon: "📑", name: "PDF to PPT" },
-  { icon: "📊", name: "PPT to PDF" },
-  { icon: "🔢", name: "PDF Page Numberer" },
-  { icon: "✍️", name: "PDF Signature" },
-  { icon: "📖", name: "PDF Reader" },
-  { icon: "📏", name: "Image Resizer" },
-  { icon: "🔄", name: "Format Converter" },
-  { icon: "🎯", name: "Background Remover" },
-  { icon: "✂️", name: "Image Cropper" },
-  { icon: "📸", name: "Passport Photo Maker" },
-  { icon: "🔍", name: "Image to Text (OCR)" },
-  { icon: "😂", name: "Meme Generator" },
-  { icon: "💧", name: "Image Watermark" },
-  { icon: "📝", name: "Text to PDF" },
-  { icon: "🔤", name: "Word Counter" },
-  { icon: "✏️", name: "Grammar Checker" },
-  { icon: "🔎", name: "Plagiarism Checker" },
-  { icon: "📊", name: "Barcode Generator" },
-  { icon: "🧾", name: "Invoice Generator" },
-  { icon: "📨", name: "Letter Writer" },
-  { icon: "🔐", name: "File Encryptor" },
-  { icon: "🗝️", name: "Password Generator" },
-  { icon: "📦", name: "File Compressor" },
-  { icon: "🔍", name: "Duplicate File Finder" },
-  { icon: "🏦", name: "EMI Calculator" },
-  { icon: "🎂", name: "Age Calculator" },
-  { icon: "📊", name: "Percentage Calculator" },
-  { icon: "🧮", name: "GST Calculator" },
-  { icon: "⚖️", name: "Unit Converter" },
-  { icon: "⚕️", name: "BMI Calculator" },
+  { icon: "🔁", name: "Word to PDF", cat: "PDF Suite" },
+  { icon: "🖼️", name: "PDF to JPG", cat: "PDF Suite" },
+  { icon: "🔒", name: "PDF Locker", cat: "PDF Suite" },
+  { icon: "📊", name: "PDF to Excel", cat: "PDF Suite" },
+  { icon: "📈", name: "Excel to PDF", cat: "PDF Suite" },
+  { icon: "📑", name: "PDF to PPT", cat: "PDF Suite" },
+  { icon: "📊", name: "PPT to PDF", cat: "PDF Suite" },
+  { icon: "🔢", name: "PDF Page Numberer", cat: "PDF Suite" },
+  { icon: "✍️", name: "PDF Signature", cat: "PDF Suite" },
+  { icon: "📖", name: "PDF Reader", cat: "PDF Suite" },
+  { icon: "📏", name: "Image Resizer", cat: "Image Tools" },
+  { icon: "🔄", name: "Format Converter", cat: "Image Tools" },
+  { icon: "🎯", name: "Background Remover", cat: "Image Tools" },
+  { icon: "✂️", name: "Image Cropper", cat: "Image Tools" },
+  { icon: "📸", name: "Passport Photo Maker", cat: "Image Tools" },
+  { icon: "🔍", name: "Image to Text (OCR)", cat: "Utilities" },
+  { icon: "😂", name: "Meme Generator", cat: "Image Tools" },
+  { icon: "💧", name: "Image Watermark", cat: "Image Tools" },
+  { icon: "📝", name: "Text to PDF", cat: "PDF Suite" },
+  { icon: "🔤", name: "Word Counter", cat: "Utilities" },
+  { icon: "✏️", name: "Grammar Checker", cat: "AI Assistant" },
+  { icon: "🔎", name: "Plagiarism Checker", cat: "AI Assistant" },
+  { icon: "📊", name: "Barcode Generator", cat: "Utilities" },
+  { icon: "🧾", name: "Invoice Generator", cat: "Utilities" },
+  { icon: "📨", name: "Letter Writer", cat: "Utilities" },
+  { icon: "🔐", name: "File Encryptor", cat: "Utilities" },
+  { icon: "🗝️", name: "Password Generator", cat: "Utilities" },
+  { icon: "📦", name: "File Compressor", cat: "Utilities" },
+  { icon: "🔍", name: "Duplicate File Finder", cat: "Utilities" },
+  { icon: "🏦", name: "EMI Calculator", cat: "Utilities" },
+  { icon: "🎂", name: "Age Calculator", cat: "Utilities" },
+  { icon: "📊", name: "Percentage Calculator", cat: "Utilities" },
+  { icon: "🧮", name: "GST Calculator", cat: "Utilities" },
+  { icon: "⚖️", name: "Unit Converter", cat: "Utilities" },
+  { icon: "⚕️", name: "BMI Calculator", cat: "Utilities" },
 ];
 
 const testimonials = [
@@ -172,10 +193,26 @@ const faqs = [
 
 const navLinks = [
   { href: "#tools", label: "Tools" },
+  { href: "#showcase", label: "Live Demo" },
   { href: "#features", label: "Features" },
   { href: "#pricing", label: "Pricing" },
   { href: "#faq", label: "FAQ" },
 ];
+
+function parseStatValue(raw) {
+  const m = String(raw).match(/([\d.]+)\s*(K|k)?/);
+  if (!m) return null;
+  const num = parseFloat(m[1]);
+  const isK = !!m[2];
+  return { num: isK ? num * 1000 : num, isK, suffix: raw.replace(m[0], "") };
+}
+
+function formatStatValue(value, meta) {
+  if (!meta) return String(value);
+  if (meta.isK) return `${(value / 1000).toFixed(1)}K${meta.suffix}`;
+  if (Number.isInteger(meta.num)) return `${Math.round(value)}${meta.suffix}`;
+  return `${value.toFixed(1)}${meta.suffix}`;
+}
 
 export default function Home() {
   const [selectedTool, setSelectedTool] = useState<any>(null);
@@ -187,6 +224,15 @@ export default function Home() {
   const [showUsers, setShowUsers] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Tools");
+
+  const rootRef = useRef(null);
+  const heroBadgeRef = useRef(null);
+  const heroH1Ref = useRef(null);
+  const heroPRef = useRef(null);
+  const heroBtnsRef = useRef(null);
+  const blobsRef = useRef(null);
+  const statRefs = useRef([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -197,22 +243,121 @@ export default function Home() {
           setUserCount(data.total);
           setUsersList(data.users || []);
         }
-      } catch {}
+      } catch (e) {}
     };
     fetchUsers();
   }, []);
 
-  const filteredTools = tools.filter((tool) => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return true;
-    const searchableText = `${tool.name} ${tool.desc} ${tool.features.join(" ")}`.toLowerCase();
-    return searchableText.includes(query);
-  });
+  // Performance Optimized Filtering via useMemo
+  const filteredTools = useMemo(() => {
+    return tools.filter((tool) => {
+      const matchesCategory = selectedCategory === "All Tools" || tool.category === selectedCategory;
+      const query = searchQuery.toLowerCase().trim();
+      const matchesQuery = !query || `${tool.name} ${tool.desc} ${tool.features.join(" ")}`.toLowerCase().includes(query);
+      return matchesCategory && matchesQuery;
+    });
+  }, [selectedCategory, searchQuery]);
+
+  const filteredComingSoon = useMemo(() => {
+    return comingSoonTools.filter((t) => {
+      const matchesCategory = selectedCategory === "All Tools" || t.cat === selectedCategory;
+      const query = searchQuery.toLowerCase().trim();
+      const matchesQuery = !query || t.name.toLowerCase().includes(query);
+      return matchesCategory && matchesQuery;
+    });
+  }, [selectedCategory, searchQuery]);
+
+  /* ---------------- GSAP: hero load-in + ambient blobs ---------------- */
+  useEffect(() => {
+    const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.from(heroBadgeRef.current, { autoAlpha: 0, y: 14, duration: 0.6 })
+        .from(heroH1Ref.current, { autoAlpha: 0, y: 26, duration: 0.8 }, "-=0.35")
+        .from(heroPRef.current, { autoAlpha: 0, y: 20, duration: 0.7 }, "-=0.45")
+        .from(heroBtnsRef.current?.children || [], { autoAlpha: 0, y: 16, duration: 0.6, stagger: 0.1 }, "-=0.4");
+
+      if (!reduceMotion && blobsRef.current) {
+        gsap.utils.toArray(blobsRef.current.children).forEach((blob, i) => {
+          gsap.to(blob, {
+            y: i % 2 === 0 ? 18 : -14,
+            x: i % 2 === 0 ? -10 : 10,
+            duration: 8 + i,
+            ease: "sine.inOut",
+            repeat: -1,
+            yoyo: true,
+          });
+        });
+      }
+    }, rootRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  /* ---------------- GSAP: scroll reveals ---------------- */
+  useEffect(() => {
+    if (rootRef.current) {
+      rootRef.current.classList.add("js-ready");
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray(".reveal-up").forEach((el) => {
+        gsap.from(el, {
+          autoAlpha: 0,
+          y: 24,
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none none", once: true },
+          immediateRender: false,
+        });
+      });
+    }, rootRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  /* ---------------- GSAP: animated stat counters ---------------- */
+  useEffect(() => {
+    const values = ["", "1.5K+", "4.5/5", "No Signup"];
+    values[0] = userCount > 0 ? `${userCount}+` : "0+";
+
+    const ctx = gsap.context(() => {
+      statRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const meta = parseStatValue(values[i]);
+        if (!meta) return;
+        const proxy = { v: 0 };
+        gsap.to(proxy, {
+          v: meta.num,
+          duration: 1.2,
+          ease: "power2.out",
+          scrollTrigger: { trigger: el, start: "top 92%", once: true },
+          onUpdate: () => {
+            el.textContent = formatStatValue(proxy.v, meta);
+          },
+        });
+      });
+    }, rootRef);
+
+    return () => ctx.revert();
+  }, [userCount]);
 
   return (
     <div
-      className={`${inter.variable} font-sans min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white antialiased`}
+      ref={rootRef}
+      className={`${inter.variable} font-sans min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white antialiased overflow-x-hidden`}
     >
+      <style jsx global>{`
+        .js-ready .reveal-up {
+          visibility: hidden;
+          will-change: transform, opacity;
+        }
+        .js-ready .reveal-up.gsap-reveal-visible {
+          visibility: visible;
+        }
+      `}</style>
+
       {/* Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#fbfbfd]/75 dark:bg-[#040404]/75 border-b border-black/5 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -223,12 +368,8 @@ export default function Home() {
             </a>
 
             <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[#1d1d1f]/80 dark:text-white/80">
-              {navLinks.map(link => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="hover:text-[#0071e3] dark:hover:text-white transition-colors"
-                >
+              {navLinks.map((link) => (
+                <a key={link.href} href={link.href} className="hover:text-[#0071e3] dark:hover:text-white transition-colors">
                   {link.label}
                 </a>
               ))}
@@ -236,14 +377,14 @@ export default function Home() {
                 <span className="w-7 h-7 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-sm">👤</span>
                 <span>My Account</span>
               </a>
-              <button className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors">
+              <button className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors shadow-md shadow-blue-500/20">
                 Get Started Free
               </button>
             </div>
 
             <div className="flex md:hidden items-center gap-2">
               <a href="/account" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-lg">👤</a>
-              <button onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex flex-col items-center justify-center gap-[3px]">
+              <button onClick={() => setMobileMenuOpen((v) => !v)} aria-label="Menu" className="w-9 h-9 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex flex-col items-center justify-center gap-[3px]">
                 <span className={`block w-4 h-[1.5px] bg-current transition-transform ${mobileMenuOpen ? "translate-y-[5px] rotate-45" : ""}`} />
                 <span className={`block w-4 h-[1.5px] bg-current transition-opacity ${mobileMenuOpen ? "opacity-0" : ""}`} />
                 <span className={`block w-4 h-[1.5px] bg-current transition-transform ${mobileMenuOpen ? "-translate-y-[5px] -rotate-45" : ""}`} />
@@ -252,8 +393,8 @@ export default function Home() {
           </div>
 
           {mobileMenuOpen && (
-            <div className="md:hidden pb-5 pt-1 flex flex-col gap-1 animate-in fade-in slide-in-from-top-2">
-              {navLinks.map(link => (
+            <div className="md:hidden pb-5 pt-1 flex flex-col gap-1">
+              {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
@@ -273,32 +414,30 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-16 sm:pt-28 pb-16 sm:pb-24 px-4">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-blue-400/25 via-indigo-400/15 to-purple-400/20 dark:from-blue-500/15 dark:via-indigo-500/10 dark:to-purple-500/15 blur-3xl" />
-          <div className="absolute top-40 -left-20 w-64 h-64 rounded-full bg-emerald-300/20 dark:bg-emerald-500/10 blur-3xl" />
-          <div className="absolute top-24 -right-16 w-64 h-64 rounded-full bg-orange-300/20 dark:bg-orange-500/10 blur-3xl" />
+        <div ref={blobsRef} className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-blue-400/20 via-indigo-400/10 to-purple-400/15 blur-3xl" />
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-7 sm:mb-8 text-[#1d1d1f]/70 dark:text-white/70">
+          <div ref={heroBadgeRef} className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-7 sm:mb-8 text-[#1d1d1f]/70 dark:text-white/70 border border-black/[0.04]">
             <span className="w-1.5 h-1.5 bg-[#30d158] rounded-full" />
             Trusted by {userCount > 0 ? `${userCount}+` : "..."} users in India
           </div>
-          <h1 className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-5 sm:mb-6">
+          <h1 ref={heroH1Ref} className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-5 sm:mb-6">
             All your daily tools.
             <br />
             <span className="text-[#0071e3]">In one place.</span>
           </h1>
-          <p className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
+          <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
             Edit PDFs, create resumes, compress images, and get instant help —
             all with a beautifully simple interface. No signup required, just start using.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+          <div ref={heroBtnsRef} className="flex flex-wrap justify-center gap-3 sm:gap-4">
             <a href="#tools" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px] shadow-lg shadow-blue-500/25">
               Explore Tools
             </a>
-            <a href="#pricing" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
-              See Pricing
+            <a href="#showcase" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
+              Watch it work
             </a>
           </div>
         </div>
@@ -308,19 +447,21 @@ export default function Home() {
       <section className="max-w-5xl mx-auto px-4 mb-16 sm:mb-24">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">{userCount > 0 ? `${userCount}+` : "..."}</div>
+            <div ref={(el) => (statRefs.current[0] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">
+              {userCount > 0 ? `${userCount}+` : "0+"}
+            </div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Active Users</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">1.5K+</div>
+            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">1.5K+</div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Files Processed</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">4.5/5</div>
+            <div ref={(el) => (statRefs.current[2] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">4.5/5</div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Average Rating</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">No Signup</div>
+            <div ref={(el) => (statRefs.current[3] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">No Signup</div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Required</div>
           </div>
         </div>
@@ -331,41 +472,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Why choose ToolBox?</h2>
-        <p className="text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
-          We focus on speed, privacy, and simplicity. No clutter, no ads, just tools that work.
+      {/* Live 3D Showcase */}
+      <section id="showcase" className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">
+          See ToolBox at work
+        </h2>
+        <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-8 sm:mb-12 max-w-xl mx-auto px-2">
+          A live look at Merge PDF, Image Compressor and Resume Builder running end to end — right inside your browser.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {[
-            { icon: "⚡", title: "Lightning Fast", desc: "Process files in seconds, right in your browser." },
-            { icon: "🔒", title: "100% Secure", desc: "Your files are never stored. Auto-delete after processing." },
-            { icon: "💸", title: "Affordable Pro", desc: "Unlock all tools for just ₹29 — one-time, no subscription." },
-          ].map((f, i) => (
-            <div
-              key={i}
-              className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-3xl p-6 sm:p-8 hover:bg-[#eeeef0] dark:hover:bg-white/10 transition-colors"
-            >
-              <div className="w-12 h-12 rounded-full bg-white dark:bg-white/10 flex items-center justify-center text-2xl mb-5 shadow-sm">
-                {f.icon}
-              </div>
-              <h3 className="text-[18px] sm:text-[19px] font-semibold mb-2 tracking-tight">{f.title}</h3>
-              <p className="text-[#6e6e73] dark:text-white/60 text-[14px] sm:text-[15px] leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
+
+        <div className="reveal-up w-full max-w-3xl mx-auto" style={{ aspectRatio: "16 / 10" }}>
+          <LaptopScene className="w-full h-full" />
         </div>
       </section>
 
-      {/* Available Tools with Search Bar */}
+      {/* Available Tools */}
       <section id="tools" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Available tools</h2>
-        <p className="text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-8 sm:mb-10 max-w-2xl mx-auto px-2">
+        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Available tools</h2>
+        <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-8 sm:mb-10 max-w-2xl mx-auto px-2">
           Pick a tool and get started instantly — no login, no hassle.
         </p>
 
+        {/* Category Tabs */}
+        <div className="reveal-up flex justify-center flex-wrap gap-2 max-w-4xl mx-auto mb-6">
+          {TOOL_CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                selectedCategory === cat
+                  ? "bg-[#0071e3] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.04] dark:border-white/5 text-[#1d1d1f]/70 dark:text-white/70 hover:bg-[#e8e8ed]"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
         {/* Search Bar */}
-        <div className="max-w-xl mx-auto mb-10 sm:mb-14">
+        <div className="reveal-up max-w-xl mx-auto mb-10 sm:mb-14">
           <div className="relative">
             <input
               type="text"
@@ -374,48 +520,23 @@ export default function Home() {
               placeholder="Search tools (e.g., PDF, QR, resume...)"
               className="w-full px-5 py-3.5 pr-12 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-[#111113] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] shadow-sm"
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-white/50">
-              {searchQuery ? (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="hover:text-[#0071e3] transition-colors"
-                  aria-label="Clear search"
-                >
-                  ✕
-                </button>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              )}
-            </span>
           </div>
-          {searchQuery && (
-            <p className="text-center text-xs text-[#6e6e73] dark:text-white/50 mt-2">
-              Showing results for "{searchQuery}"
-            </p>
-          )}
         </div>
 
         {/* Tools Grid */}
         {filteredTools.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredTools.map((tool) => (
               <div
                 key={tool.id}
-                className="group relative bg-white dark:bg-[#111113] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col hover:shadow-[0_12px_36px_rgba(0,0,0,0.10)] dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300"
+                className="group relative bg-white dark:bg-[#111113] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col hover:shadow-lg transition-all duration-200"
               >
-                <div
-                  className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center text-2xl mb-5`}
-                  style={{ boxShadow: `0 10px 24px -6px ${tool.glow}` }}
-                >
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center text-2xl mb-5`}>
                   {tool.icon}
                 </div>
                 <div className="flex items-center justify-between mb-2 gap-2">
                   <h3 className="text-[18px] font-semibold tracking-tight">{tool.name}</h3>
-                  <span className="text-[11px] bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white px-2 py-1 rounded-full font-medium whitespace-nowrap">
-                    {tool.badge}
-                  </span>
+                  <span className="text-[11px] bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white px-2 py-1 rounded-full font-medium whitespace-nowrap">{tool.badge}</span>
                 </div>
                 <p className="text-[#6e6e73] dark:text-white/60 text-[14px] mb-4 leading-relaxed">{tool.desc}</p>
                 <ul className="space-y-1.5 mb-4 flex-grow">
@@ -427,21 +548,7 @@ export default function Home() {
                 </ul>
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-black/5 dark:border-white/10">
                   <span className="text-[13px] font-medium text-[#6e6e73] dark:text-white/50">{tool.price}</span>
-                  {tool.path ? (
-                    <Link
-                      href={tool.path}
-                      className="text-[13px] font-semibold text-[#0071e3] hover:underline transition"
-                    >
-                      Use Tool →
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => alert(`${tool.name} will be live soon!`)}
-                      className="text-[13px] font-semibold text-[#0071e3] hover:underline transition"
-                    >
-                      Use Tool →
-                    </button>
-                  )}
+                  <Link href={tool.path} className="text-[13px] font-semibold text-[#0071e3] hover:underline transition">Use Tool →</Link>
                 </div>
               </div>
             ))}
@@ -449,78 +556,29 @@ export default function Home() {
         ) : (
           <div className="text-center py-12">
             <p className="text-lg font-medium text-[#1d1d1f] dark:text-white">No tools found</p>
-            <p className="text-sm text-[#6e6e73] dark:text-white/50 mt-2">Try a different search term.</p>
           </div>
         )}
       </section>
 
       {/* Coming Soon Tools */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Coming Soon</h2>
-        <p className="text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
-          Our team is working on these tools. Stay tuned!
+        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Coming Soon</h2>
+        <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
+          Our team is actively building these upcoming tools. Stay tuned!
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-          {comingSoonTools.map((tool, i) => (
+          {filteredComingSoon.map((tool, i) => (
             <div
               key={i}
               onClick={() => {
                 setSelectedTool(tool);
                 setShowModal(true);
               }}
-              className="group relative bg-white dark:bg-[#111113] rounded-2xl sm:rounded-3xl border border-black/5 dark:border-white/10 p-4 sm:p-6 flex flex-col items-center text-center cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-none transition-all duration-300 hover:-translate-y-1"
+              className="group relative bg-white dark:bg-[#111113] rounded-2xl sm:rounded-3xl border border-black/5 dark:border-white/10 p-4 sm:p-6 flex flex-col items-center text-center cursor-pointer hover:shadow-md transition-all duration-200"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4">
-                {tool.icon}
-              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4">{tool.icon}</div>
               <h3 className="text-[13px] sm:text-[15px] font-semibold tracking-tight text-gray-800 dark:text-white">{tool.name}</h3>
-              <span className="text-[10px] sm:text-[11px] bg-blue-50 dark:bg-white/10 text-blue-600 dark:text-white/60 px-2 py-0.5 rounded-full mt-2 inline-block">
-                Coming Soon
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="bg-[#f5f5f7] dark:bg-white/5 py-14 sm:py-20 mt-8">
-        <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">How it works</h2>
-          <p className="text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
-            Three simple steps to get your work done.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
-            {[
-              { step: "1", title: "Choose a Tool", desc: "Select the tool you need from the list above." },
-              { step: "2", title: "Upload & Process", desc: "Upload your file or fill in details. Our tool does the rest." },
-              { step: "3", title: "Download & Go", desc: "Get your processed file instantly. No waiting, no login." },
-            ].map((s, i) => (
-              <div key={i} className="text-center">
-                <div className="w-12 h-12 mx-auto bg-[#0071e3] text-white rounded-full flex items-center justify-center text-lg font-semibold mb-5 shadow-lg shadow-blue-500/25">
-                  {s.step}
-                </div>
-                <h3 className="text-[18px] font-semibold mb-2 tracking-tight">{s.title}</h3>
-                <p className="text-[#6e6e73] dark:text-white/60 text-[14px] sm:text-[15px] leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="max-w-7xl mx-auto px-4 py-14 sm:py-20">
-        <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">What users say</h2>
-        <p className="text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 px-2">Loved by students, professionals, and creators.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {testimonials.map((t, i) => (
-            <div
-              key={i}
-              className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-3xl p-6 sm:p-7 hover:bg-[#eeeef0] dark:hover:bg-white/10 transition-colors"
-            >
-              <div className="text-3xl mb-4">{t.avatar}</div>
-              <p className="text-[#1d1d1f] dark:text-white/80 text-[14px] sm:text-[15px] leading-relaxed mb-5">"{t.text}"</p>
-              <div className="font-semibold text-[14px] tracking-tight">{t.name}</div>
-              <div className="text-[13px] text-[#6e6e73] dark:text-white/50">{t.role}</div>
+              <span className="text-[10px] sm:text-[11px] bg-blue-50 dark:bg-white/10 text-blue-600 dark:text-white/60 px-2 py-0.5 rounded-full mt-2 inline-block">Coming Soon</span>
             </div>
           ))}
         </div>
@@ -529,21 +587,19 @@ export default function Home() {
       {/* Pricing */}
       <section id="pricing" className="bg-[#f5f5f7] dark:bg-white/5 py-14 sm:py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight mb-3 sm:mb-4">Simple, honest pricing</h2>
-          <p className="text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14">Free forever. Upgrade only when you need more.</p>
+          <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight mb-3 sm:mb-4">Simple, honest pricing</h2>
+          <p className="reveal-up text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14">Free forever. Upgrade only when you need more.</p>
           <div className="flex flex-wrap justify-center gap-5 sm:gap-6">
             <div className="bg-white dark:bg-[#111113] border border-black/5 dark:border-white/10 rounded-3xl p-7 sm:p-8 w-full sm:w-72 text-left">
               <h3 className="text-[15px] font-semibold mb-2 text-[#6e6e73] dark:text-white/60">Free</h3>
               <p className="text-4xl font-semibold tracking-tight mb-5">₹0</p>
               <ul className="space-y-2.5 text-[14px] text-[#1d1d1f]/80 dark:text-white/70 mb-7">
-                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> PDF Merge & Split</li>
+                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> PDF Merge &amp; Split</li>
                 <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> Image Compressor (5/day)</li>
                 <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> Basic Resume Template</li>
                 <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> No Ads, No Signup</li>
               </ul>
-              <button className="w-full bg-[#f5f5f7] dark:bg-white/10 text-[#1d1d1f] dark:text-white py-3 rounded-full font-medium hover:bg-[#e8e8ed] dark:hover:bg-white/20 transition-colors">
-                Start Free
-              </button>
+              <button className="w-full bg-[#f5f5f7] dark:bg-white/10 text-[#1d1d1f] dark:text-white py-3 rounded-full font-medium hover:bg-[#e8e8ed] dark:hover:bg-white/20 transition-colors">Start Free</button>
             </div>
             <div className="bg-[#0071e3] rounded-3xl p-7 sm:p-8 w-full sm:w-72 text-left relative text-white shadow-xl shadow-blue-500/20">
               <span className="absolute top-6 right-6 bg-white/20 text-white text-[11px] px-2.5 py-1 rounded-full font-medium">POPULAR</span>
@@ -554,138 +610,50 @@ export default function Home() {
                 <li className="flex items-center gap-2"><span>✓</span> Everything in Free</li>
                 <li className="flex items-center gap-2"><span>✓</span> Unlimited Image Compression</li>
                 <li className="flex items-center gap-2"><span>✓</span> 3+ Resume Templates</li>
-                <li className="flex items-center gap-2"><span>✓</span> PDF Compress & Convert</li>
+                <li className="flex items-center gap-2"><span>✓</span> PDF Compress &amp; Convert</li>
                 <li className="flex items-center gap-2"><span>✓</span> Priority Support</li>
               </ul>
-              <Link
-                href="/payment"
-                className="block w-full bg-white text-[#0071e3] py-3 rounded-full font-semibold hover:bg-white/90 transition-colors text-center"
-              >
-                Get Pro for ₹29
-              </Link>
+              <Link href="/payment" className="block w-full bg-white text-[#0071e3] py-3 rounded-full font-semibold hover:bg-white/90 transition-colors text-center">Get Pro for ₹29</Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="max-w-3xl mx-auto px-4 py-14 sm:py-20">
-        <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-10 sm:mb-12">Frequently asked questions</h2>
-        <div className="space-y-3">
-          {faqs.map((faq, i) => (
-            <details key={i} className="group bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-5 sm:p-6">
-              <summary className="flex justify-between items-center gap-4 cursor-pointer font-medium text-[14px] sm:text-[15px] tracking-tight list-none">
-                {faq.q}
-                <span className="text-[#6e6e73] dark:text-white/50 shrink-0 text-lg group-open:rotate-45 transition-transform">+</span>
-              </summary>
-              <p className="mt-3 text-[#6e6e73] dark:text-white/60 text-[13px] sm:text-[14px] leading-relaxed">{faq.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="max-w-6xl mx-auto px-4 pb-8">
-        <div className="bg-gradient-to-br from-[#0071e3] to-[#5856d6] rounded-[28px] sm:rounded-[40px] py-12 sm:py-16 px-6 text-center text-white shadow-xl shadow-blue-500/20">
-          <h2 className="text-[26px] sm:text-5xl font-semibold tracking-tight mb-4">Ready to simplify your daily tasks?</h2>
-          <p className="text-[15px] sm:text-[17px] opacity-90 mb-8">Join thousands of happy users. No signup required.</p>
-          <a
-            href="#tools"
-            className="inline-block bg-white text-[#0071e3] px-7 sm:px-8 py-3 sm:py-3.5 rounded-full font-semibold text-[14px] sm:text-[15px] hover:bg-white/90 transition-colors"
-          >
-            Start Using Free →
-          </a>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-black/5 dark:border-white/10 py-10 sm:py-12 mt-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col items-center text-center gap-3 pb-8 sm:pb-10 mb-8 sm:mb-10 border-b border-black/5 dark:border-white/10">
-            <span className="text-[11px] uppercase tracking-widest text-[#6e6e73] dark:text-white/40 font-medium">
-              Crafted by
-            </span>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0071e3] to-[#5856d6] flex items-center justify-center text-white font-semibold text-lg shadow-md ring-4 ring-[#f5f5f7] dark:ring-white/10">
-              LK
-            </div>
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="flex flex-col items-center gap-3 pb-8 mb-8 border-b border-black/5 dark:border-white/10">
+            <span className="text-[11px] uppercase tracking-widest text-[#6e6e73] dark:text-white/40 font-medium">Crafted by</span>
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0071e3] to-[#5856d6] flex items-center justify-center text-white font-semibold text-base shadow-md">LK</div>
             <div>
               <div className="font-semibold text-[15px] tracking-tight">Lakhan Kashyap</div>
-              <div className="text-[13px] text-[#6e6e73] dark:text-white/50">Founder & Developer</div>
+              <div className="text-[13px] text-[#6e6e73] dark:text-white/50">Founder &amp; Developer</div>
             </div>
           </div>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🛠️</span>
-              <span className="font-semibold text-[15px] tracking-tight">ToolBox</span>
-            </div>
-            <div className="text-[13px] text-[#6e6e73] dark:text-white/50">
-              © {new Date().getFullYear()} ToolBox. All rights reserved.
-            </div>
-            <div className="flex gap-5 text-[13px] text-[#6e6e73] dark:text-white/50">
-              <a href="/privacy" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Privacy</a>
-              <a href="/terms" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Terms</a>
-              <a href="/contact" className="hover:text-[#0071e3] dark:hover:text-white transition-colors">Contact</a>
-            </div>
-          </div>
+          <div className="text-[13px] text-[#6e6e73] dark:text-white/50">© {new Date().getFullYear()} ToolBox. All rights reserved.</div>
         </div>
       </footer>
 
-      {/* Coming Soon Modal */}
+      {/* Modals */}
       {showModal && selectedTool && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
             <div className="text-5xl mb-4">{selectedTool.icon}</div>
             <h2 className="text-2xl font-bold mb-2">{selectedTool.name}</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-2">
-              This tool is currently under development.
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Our team is working hard to bring it to you soon. Stay tuned!
-            </p>
-            <button
-              onClick={() => setShowModal(false)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-            >
-              Close
-            </button>
+            <p className="text-gray-600 dark:text-gray-300 mb-2">This tool is currently under development.</p>
+            <button onClick={() => setShowModal(false)} className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold mt-4">Close</button>
           </div>
         </div>
       )}
 
-      {/* Active Users Modal */}
       {showUsers && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                👥 Active Users ({userCount})
-              </h2>
-              <button
-                onClick={() => setShowUsers(false)}
-                className="w-8 h-8 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-sm"
-              >
-                ✕
-              </button>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">👥 Active Users ({userCount})</h2>
+              <button onClick={() => setShowUsers(false)} className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center">✕</button>
             </div>
-
-            {usersList.length > 0 ? (
-              <ul className="space-y-3">
-                {usersList.map((user, idx) => (
-                  <li key={idx} className="flex items-center justify-between bg-[#f5f5f7] dark:bg-white/5 rounded-xl px-4 py-3">
-                    <span className="text-sm font-medium truncate">{user.email}</span>
-                    <span className="text-xs text-[#6e6e73] dark:text-white/50 whitespace-nowrap ml-3">
-                      {user.joined}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#6e6e73]">No users yet.</p>
-            )}
-
-            <p className="mt-4 text-xs text-[#6e6e73] text-center">
-              🔒 Emails are masked to protect privacy.
-            </p>
+            <p className="text-xs text-slate-500">🔒 Emails are masked to protect privacy.</p>
           </div>
         </div>
       )}
