@@ -9,6 +9,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const LaptopScene = dynamic(() => import("../components/LaptopScene"), { ssr: false });
+const VirtualOffice = dynamic(() => import("../components/VirtualOffice"), { ssr: false });
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -152,6 +153,7 @@ const comingSoonTools = [
 ];
 
 const navLinks = [
+  { href: "#office", label: "🏢 Virtual Office" },
   { href: "#tools", label: "Tools" },
   { href: "#showcase", label: "Live Demo" },
   { href: "#pricing", label: "Pricing" },
@@ -179,9 +181,6 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [userCount, setUserCount] = useState<number>(0);
-  const [usersList, setUsersList] = useState<any[]>([]);
-  const [showUsers, setShowUsers] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Tools");
 
@@ -200,7 +199,6 @@ export default function Home() {
         const data = await res.json();
         if (res.ok) {
           setUserCount(data.total);
-          setUsersList(data.users || []);
         }
       } catch (e) {}
     };
@@ -381,7 +379,7 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden pt-16 sm:pt-28 pb-16 sm:pb-24 px-4">
+      <section className="relative overflow-hidden pt-16 sm:pt-28 pb-10 sm:pb-16 px-4">
         <div ref={blobsRef} className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-blue-400/20 via-indigo-400/10 to-purple-400/15 blur-3xl" />
         </div>
@@ -398,21 +396,26 @@ export default function Home() {
           </h1>
           <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
             Edit PDFs, create resumes, compress images, and get instant help —
-            all with a beautifully simple interface. No signup required, just start using.
+            supervised live by our virtual office team. No signup required.
           </p>
           <div ref={heroBtnsRef} className="flex flex-wrap justify-center gap-3 sm:gap-4">
-            <a href="#tools" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px] shadow-lg shadow-blue-500/25">
-              Explore Tools
+            <a href="#office" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px] shadow-lg shadow-blue-500/25">
+              Enter Virtual Office 🏢
             </a>
-            <a href="#showcase" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
-              Watch it work
+            <a href="#tools" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
+              Skip to Tools ↓
             </a>
           </div>
         </div>
       </section>
 
+      {/* ── 🏢 TOP-DOWN LIVING VIRTUAL OFFICE FLOOR ──────────────────────────── */}
+      <section id="office" className="relative scroll-mt-20">
+        <VirtualOffice />
+      </section>
+
       {/* Stats Bar */}
-      <section className="max-w-5xl mx-auto px-4 mb-16 sm:mb-24">
+      <section className="max-w-5xl mx-auto px-4 my-14 sm:my-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
             <div ref={(el) => (statRefs.current[0] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">
@@ -523,6 +526,30 @@ export default function Home() {
         )}
       </section>
 
+      {/* Coming Soon Tools */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Coming Soon</h2>
+        <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
+          Our team is actively building these upcoming tools. Stay tuned!
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+          {filteredComingSoon.map((tool, i) => (
+            <div
+              key={i}
+              onClick={() => {
+                setSelectedTool(tool);
+                setShowModal(true);
+              }}
+              className="group relative bg-white dark:bg-[#111113] rounded-2xl sm:rounded-3xl border border-black/5 dark:border-white/10 p-4 sm:p-6 flex flex-col items-center text-center cursor-pointer hover:shadow-md transition-all duration-200"
+            >
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4">{tool.icon}</div>
+              <h3 className="text-[13px] sm:text-[15px] font-semibold tracking-tight text-gray-800 dark:text-white">{tool.name}</h3>
+              <span className="text-[10px] sm:text-[11px] bg-blue-50 dark:bg-white/10 text-blue-600 dark:text-white/60 px-2 py-0.5 rounded-full mt-2 inline-block">Coming Soon</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="bg-[#f5f5f7] dark:bg-white/5 py-14 sm:py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -617,7 +644,7 @@ export default function Home() {
           </div>
 
           <div className="text-xs text-[#6e6e73] dark:text-white/50 font-medium">
-            © {new Date().getFullYear()} ToolBox Platform • All rights reserved. Made with  by Lakhan Kashyap.
+            © {new Date().getFullYear()} ToolBox Platform • All rights reserved. Made with ❤️ by Lakhan Kashyap.
           </div>
         </div>
       </footer>
