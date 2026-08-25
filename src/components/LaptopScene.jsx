@@ -1,520 +1,421 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import * as THREE from "three";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { useState, useEffect } from "react";
 
 /* ========================================================================== */
-/*  CANVAS DYNAMIC SCREEN TEXTURE (Throttled for 60FPS Smooth Performance)   */
+/*  EXACT SUPABASE-STYLE LIVE ANIMATED TOOL ENGINE SHOWCASE                    */
 /* ========================================================================== */
 
-const SCREEN_W = 1200; // Lower resolution for super fast GPU memory upload
-const SCREEN_H = 750;
-const SCENE_DURATION = 5;
-
-const BRAND = {
-  bg: "#0b0f17",
-  card: "#121824",
-  border: "#1e293b",
-  borderLight: "#334155",
-  text: "#f8fafc",
-  muted: "#94a3b8",
-  subtle: "#64748b",
-  blue: "#0071e3",
-  teal: "#0d9488",
-  green: "#10b981",
-  greenSoft: "rgba(16,185,129,0.15)",
-};
-
-function drawRoundRect(ctx, x, y, w, h, r) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.arcTo(x + w, y, x + w, y + h, radius);
-  ctx.arcTo(x + w, y + h, x, y + h, radius);
-  ctx.arcTo(x, y + h, x, y, radius);
-  ctx.arcTo(x, y, x + w, y, radius);
-  ctx.closePath();
-}
-
-function drawText(ctx, str, x, y, { size = 13, weight = 500, color = BRAND.text, align = "left" } = {}) {
-  ctx.font = `${weight} ${size}px Inter, -apple-system, sans-serif`;
-  ctx.fillStyle = color;
-  ctx.textAlign = align;
-  ctx.textBaseline = "middle";
-  ctx.fillText(str, x, y);
-}
-
-function drawBadge(ctx, x, y, label, bg, fg) {
-  ctx.font = `600 10px Inter, sans-serif`;
-  const w = ctx.measureText(label).width + 14;
-  drawRoundRect(ctx, x, y - 9, w, 18, 9);
-  ctx.fillStyle = bg;
-  ctx.fill();
-  drawText(ctx, label, x + 7, y, { size: 10, weight: 600, color: fg });
-  return w;
-}
-
-const TOOL_SCENES = [
-  {
-    toolName: "PDF Editor & Merger",
-    badge: "Popular Tool",
-    icon: "📄",
-    sidebarActive: 0,
-    files: [
-      { name: "Q4_Financial_Report.pdf", size: "3.4 MB", pages: "18 pages", status: "Done" },
-      { name: "Signed_Agreement_2026.pdf", size: "1.2 MB", pages: "4 pages", status: "Done" },
-      { name: "Project_Proposal_Draft.pdf", size: "4.8 MB", pages: "12 pages", status: "Processing..." },
-      { name: "Tax_Declaration_Form.pdf", size: "850 KB", pages: "2 pages", status: "Queued" },
-    ],
-    actionBtn: "Merge All PDFs",
-    toast: "Merged 4 files → ToolBox_Combined.pdf",
-  },
-  {
-    toolName: "Smart Image Compressor",
-    badge: "80% Reduction",
-    icon: "🖼️",
-    sidebarActive: 1,
-    files: [
-      { name: "hero_banner_4k.png", orig: "4.8 MB", comp: "960 KB (-80%)" },
-      { name: "product_mockup.jpg", orig: "2.4 MB", comp: "420 KB (-82%)" },
-      { name: "profile_avatar.png", orig: "1.1 MB", comp: "210 KB (-81%)" },
-      { name: "portfolio_shot.png", orig: "3.6 MB", comp: "710 KB (-80%)" },
-    ],
-    actionBtn: "Compress All Images",
-    toast: "Saved 9.6 MB space across 4 images!",
-  },
-  {
-    toolName: "ATS Resume Builder",
-    badge: "Pro Template",
-    icon: "📝",
-    sidebarActive: 2,
-    resume: {
-      name: "Lakhan Kashyap",
-      title: "Senior Full Stack Engineer",
-      skills: ["React.js", "Next.js", "Node.js", "TypeScript"],
-    },
-    actionBtn: "Export ATS PDF",
-    toast: "Generated ATS Resume → Lakhan_Resume.pdf",
-  },
+const SHOWCASE_TABS = [
+  { id: "pdf", label: "PDF Editor & Merger", icon: "📄" },
+  { id: "compressor", label: "Image Compressor", icon: "🖼️" },
+  { id: "resume", label: "ATS Resume Builder", icon: "📝" },
+  { id: "qr", label: "QR Code Generator", icon: "🔳" },
 ];
 
-function renderScreenFrame(ctx, sceneIdx, progress) {
-  const scene = TOOL_SCENES[sceneIdx];
-
-  ctx.fillStyle = BRAND.bg;
-  ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
-
-  // Top Titlebar
-  ctx.fillStyle = "#070a0f";
-  ctx.fillRect(0, 0, SCREEN_W, 36);
-
-  const dots = ["#ff5f56", "#ffbd2e", "#27c93f"];
-  dots.forEach((color, i) => {
-    ctx.beginPath();
-    ctx.arc(18 + i * 16, 18, 4.5, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-  });
-
-  drawRoundRect(ctx, SCREEN_W / 2 - 180, 7, 360, 22, 5);
-  ctx.fillStyle = "#1e293b";
-  ctx.fill();
-  drawText(ctx, "🔒 https://toolbox.app/" + scene.toolName.toLowerCase().replace(/ /g, "-"), SCREEN_W / 2, 18, {
-    size: 10.5,
-    color: "#94a3b8",
-    align: "center",
-  });
-
-  // App Nav
-  const NAV_H = 46;
-  ctx.fillStyle = "#0f172a";
-  ctx.fillRect(0, 36, SCREEN_W, NAV_H);
-  ctx.strokeStyle = BRAND.border;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, 36 + NAV_H);
-  ctx.lineTo(SCREEN_W, 36 + NAV_H);
-  ctx.stroke();
-
-  drawText(ctx, "🛠️ ToolBox", 24, 36 + NAV_H / 2, { size: 15, weight: 800, color: "#ffffff" });
-
-  const navs = ["All Tools", "PDF Editor", "Image Compressor", "Resume Builder"];
-  let nx = 150;
-  navs.forEach((item, i) => {
-    const isAct = i === scene.sidebarActive + 1;
-    if (isAct) {
-      drawRoundRect(ctx, nx - 8, 36 + 10, ctx.measureText(item).width + 16, 26, 6);
-      ctx.fillStyle = BRAND.blue;
-      ctx.fill();
-    }
-    drawText(ctx, item, nx, 36 + NAV_H / 2, {
-      size: 12,
-      weight: isAct ? 700 : 500,
-      color: isAct ? "#ffffff" : BRAND.muted,
-    });
-    nx += ctx.measureText(item).width + 24;
-  });
-
-  // Sidebar + Content Split
-  const SIDEBAR_W = 210;
-  const WORK_Y = 36 + NAV_H;
-
-  ctx.fillStyle = "#0d131f";
-  ctx.fillRect(0, WORK_Y, SIDEBAR_W, SCREEN_H - WORK_Y);
-  ctx.strokeStyle = BRAND.border;
-  ctx.beginPath();
-  ctx.moveTo(SIDEBAR_W, WORK_Y);
-  ctx.lineTo(SIDEBAR_W, SCREEN_H);
-  ctx.stroke();
-
-  const sidebarItems = [
-    { name: "PDF Editor", icon: "📄" },
-    { name: "Image Compressor", icon: "🖼️" },
-    { name: "Resume Builder", icon: "📝" },
-    { name: "QR Generator", icon: "🔳" },
-  ];
-
-  sidebarItems.forEach((item, i) => {
-    const sy = WORK_Y + 18 + i * 40;
-    const isAct = i === scene.sidebarActive;
-    if (isAct) {
-      drawRoundRect(ctx, 12, sy, SIDEBAR_W - 24, 32, 8);
-      ctx.fillStyle = "rgba(0,113,227,0.18)";
-      ctx.fill();
-      ctx.strokeStyle = BRAND.blue;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-    drawText(ctx, `${item.icon}  ${item.name}`, 24, sy + 16, {
-      size: 12,
-      weight: isAct ? 700 : 500,
-      color: isAct ? "#ffffff" : BRAND.muted,
-    });
-  });
-
-  // Content Workspace
-  const MAIN_X = SIDEBAR_W + 28;
-  const MAIN_Y = WORK_Y + 24;
-
-  drawText(ctx, `${scene.icon}  ${scene.toolName}`, MAIN_X, MAIN_Y + 12, { size: 20, weight: 800, color: "#ffffff" });
-  drawBadge(ctx, MAIN_X + ctx.measureText(`${scene.icon}  ${scene.toolName}`).width + 20, MAIN_Y + 12, scene.badge, "rgba(16,185,129,0.2)", "#34d399");
-
-  // Action Button
-  const btnW = 150;
-  const btnX = SCREEN_W - 40 - btnW;
-  drawRoundRect(ctx, btnX, MAIN_Y + 4, btnW, 34, 8);
-  ctx.fillStyle = BRAND.blue;
-  ctx.fill();
-  drawText(ctx, `⚡ ${scene.actionBtn}`, btnX + btnW / 2, MAIN_Y + 21, {
-    size: 12,
-    weight: 700,
-    color: "#ffffff",
-    align: "center",
-  });
-
-  // Table / Card Content
-  const TABLE_Y = MAIN_Y + 54;
-  const TABLE_W = SCREEN_W - SIDEBAR_W - 68;
-
-  if (sceneIdx === 0 || sceneIdx === 1) {
-    drawRoundRect(ctx, MAIN_X, TABLE_Y, TABLE_W, 360, 12);
-    ctx.fillStyle = BRAND.card;
-    ctx.fill();
-    ctx.strokeStyle = BRAND.border;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    const activeRowIdx = Math.min(scene.files.length - 1, Math.floor(progress * scene.files.length * 1.2));
-
-    scene.files.forEach((file, i) => {
-      const ry = TABLE_Y + 20 + i * 76;
-      const isDone = i <= activeRowIdx;
-
-      ctx.strokeStyle = "#1e293b";
-      ctx.beginPath();
-      ctx.moveTo(MAIN_X + 16, ry + 60);
-      ctx.lineTo(MAIN_X + TABLE_W - 16, ry + 60);
-      ctx.stroke();
-
-      drawText(ctx, sceneIdx === 0 ? "📄" : "🖼️", MAIN_X + 20, ry + 20, { size: 16 });
-      drawText(ctx, file.name, MAIN_X + 48, ry + 20, { size: 13, weight: 600, color: "#f8fafc" });
-
-      if (sceneIdx === 0) {
-        drawText(ctx, file.pages, MAIN_X + 380, ry + 20, { size: 12, color: BRAND.muted });
-        drawText(ctx, file.size, MAIN_X + 540, ry + 20, { size: 12, color: BRAND.muted });
-      } else {
-        drawText(ctx, file.orig, MAIN_X + 380, ry + 20, { size: 12, color: BRAND.muted });
-        drawText(ctx, file.comp, MAIN_X + 540, ry + 20, { size: 12, weight: 700, color: "#34d399" });
-      }
-
-      if (isDone) {
-        drawBadge(ctx, MAIN_X + TABLE_W - 100, ry + 20, "✓ Ready", "rgba(16,185,129,0.2)", "#34d399");
-      } else {
-        drawBadge(ctx, MAIN_X + TABLE_W - 100, ry + 20, "⏳ Wait", "rgba(0,113,227,0.2)", "#38bdf8");
-      }
-
-      const pbW = TABLE_W - 60;
-      const pbVal = isDone ? 1 : Math.max(0.1, (progress * scene.files.length) - i);
-      drawRoundRect(ctx, MAIN_X + 20, ry + 44, pbW, 5, 2.5);
-      ctx.fillStyle = "#1e293b";
-      ctx.fill();
-      drawRoundRect(ctx, MAIN_X + 20, ry + 44, pbW * Math.min(1, pbVal), 5, 2.5);
-      ctx.fillStyle = isDone ? BRAND.green : BRAND.blue;
-      ctx.fill();
-    });
-  } else {
-    // Resume preview
-    const PANEL_W = (TABLE_W - 20) / 2;
-
-    drawRoundRect(ctx, MAIN_X, TABLE_Y, PANEL_W, 360, 12);
-    ctx.fillStyle = BRAND.card;
-    ctx.fill();
-    ctx.strokeStyle = BRAND.border;
-    ctx.stroke();
-
-    drawText(ctx, "Live ATS Resume Editor", MAIN_X + 20, TABLE_Y + 30, { size: 14, weight: 700, color: "#fff" });
-
-    const PREV_X = MAIN_X + PANEL_W + 20;
-    drawRoundRect(ctx, PREV_X, TABLE_Y, PANEL_W, 360, 12);
-    ctx.fillStyle = "#ffffff";
-    ctx.fill();
-
-    drawText(ctx, scene.resume.name, PREV_X + 24, TABLE_Y + 40, { size: 18, weight: 800, color: "#0f172a" });
-    drawText(ctx, scene.resume.title, PREV_X + 24, TABLE_Y + 64, { size: 12, weight: 600, color: BRAND.blue });
-  }
-
-  // Toast Notification Popup
-  if (progress > 0.65) {
-    const toastAlpha = Math.min(1, (progress - 0.65) / 0.15);
-    ctx.save();
-    ctx.globalAlpha = toastAlpha;
-
-    const TW = 400;
-    const TH = 42;
-    const TX = SCREEN_W / 2 - TW / 2;
-    const TY = SCREEN_H - 54;
-
-    drawRoundRect(ctx, TX, TY, TW, TH, 10);
-    ctx.fillStyle = "#0f172a";
-    ctx.fill();
-    ctx.strokeStyle = BRAND.blue;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    drawText(ctx, "🎉  " + scene.toast, SCREEN_W / 2, TY + TH / 2, {
-      size: 12,
-      weight: 600,
-      color: "#ffffff",
-      align: "center",
-    });
-    ctx.restore();
-  }
-}
-
-/* ========================================================================== */
-/*  OPTIMIZED THREE.JS LAPTOP CANVAS COMPONENT                                */
-/* ========================================================================== */
-
 export default function LaptopScene({ className = "" }) {
-  const mountRef = useRef(null);
+  const [activeTab, setActiveTab] = useState("pdf");
+  
+  // Simulation Ticker State (Step 0 to 5)
+  const [step, setStep] = useState(0);
+  const [typedName, setTypedName] = useState("");
+  const [typedTitle, setTypedTitle] = useState("");
 
+  // Auto Step Progression Engine (Runs active tool live simulation)
   useEffect(() => {
-    const mount = mountRef.current;
-    if (!mount) return;
+    setStep(0);
+    setTypedName("");
+    setTypedTitle("");
 
-    const isTouch = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
-    const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    // 1. Offscreen 2D Canvas for screen content
-    const texCanvas = document.createElement("canvas");
-    texCanvas.width = SCREEN_W;
-    texCanvas.height = SCREEN_H;
-    const tctx = texCanvas.getContext("2d");
-
-    const texture = new THREE.CanvasTexture(texCanvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-
-    // 2. Three.js Scene, Camera, Renderer
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-    camera.position.set(0, 0.4, 6.2);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-    renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Capped at 1.5 for butter smooth 60fps
-    mount.appendChild(renderer.domElement);
-
-    // Studio Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.85);
-    scene.add(ambient);
-
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
-    keyLight.position.set(4, 6, 5);
-    scene.add(keyLight);
-
-    const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.5);
-    fillLight.position.set(-5, 2, 3);
-    scene.add(fillLight);
-
-    // 3. Laptop Mesh Geometry
-    const laptopGroup = new THREE.Group();
-    scene.add(laptopGroup);
-
-    const aluminumMat = new THREE.MeshStandardMaterial({
-      color: 0x222630,
-      metalness: 0.8,
-      roughness: 0.25,
-    });
-
-    const darkBezelMat = new THREE.MeshStandardMaterial({
-      color: 0x080c14,
-      metalness: 0.3,
-      roughness: 0.5,
-    });
-
-    const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.12, 2.45), aluminumMat);
-    baseMesh.position.y = -0.85;
-    laptopGroup.add(baseMesh);
-
-    const trackpadMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(1.1, 0.005, 0.72),
-      new THREE.MeshStandardMaterial({ color: 0x2a303f, metalness: 0.4, roughness: 0.4 })
-    );
-    trackpadMesh.position.set(0, -0.785, 0.55);
-    laptopGroup.add(trackpadMesh);
-
-    const screenPivot = new THREE.Group();
-    screenPivot.position.set(0, -0.79, -1.22);
-    laptopGroup.add(screenPivot);
-
-    const screenBack = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.3, 0.08), aluminumMat);
-    screenBack.position.set(0, 1.15, -0.04);
-    screenPivot.add(screenBack);
-
-    const screenBezel = new THREE.Mesh(new THREE.BoxGeometry(3.46, 2.18, 0.02), darkBezelMat);
-    screenBezel.position.set(0, 1.15, 0.01);
-    screenPivot.add(screenBezel);
-
-    const screenDisplay = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.32, 2.05),
-      new THREE.MeshBasicMaterial({ map: texture })
-    );
-    screenDisplay.position.set(0, 1.15, 0.022);
-    screenPivot.add(screenDisplay);
-
-    // Initial Closed Position for Entrance Animation
-    screenPivot.rotation.x = Math.PI / 2.05;
-    laptopGroup.rotation.x = 0.08;
-    laptopGroup.rotation.y = -0.4;
-    laptopGroup.scale.setScalar(0.75);
-
-    // 4. Resize Handling
-    function handleResize() {
-      if (!mount) return;
-      const w = mount.clientWidth;
-      const h = mount.clientHeight;
-      if (!w || !h) return;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    }
-    handleResize();
-    const resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(mount);
-
-    // 5. GSAP Entrance Animation
-    const entranceTimeline = gsap.timeline({
-      scrollTrigger: {
-        trigger: mount,
-        start: "top 85%",
-        toggleActions: "play none none reverse",
-      },
-    });
-
-    entranceTimeline
-      .to(laptopGroup.scale, { x: 1, y: 1, z: 1, duration: 1.1, ease: "power3.out" }, 0)
-      .to(laptopGroup.rotation, { y: 0, duration: 1.2, ease: "power3.out" }, 0.1)
-      .to(screenPivot.rotation, { x: Math.PI / 2 - 1.68, duration: 1.1, ease: "power2.out" }, 0.2);
-
-    // 6. Throttled Parallax & Throttled 2D Canvas Redraw (15 FPS Canvas updates = Zero Lag!)
-    let targetMouseX = 0;
-    let targetMouseY = 0;
-
-    function handleMouseMove(e) {
-      const rect = mount.getBoundingClientRect();
-      targetMouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 1.5;
-      targetMouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 1.5;
-    }
-
-    if (!isTouch && !reduceMotion) {
-      window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    }
-
-    const clock = new THREE.Clock();
-    let lastCanvasUpdate = 0;
-    let animFrameId;
-
-    function animate() {
-      animFrameId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
-
-      // Throttle 2D Canvas texture updates to 15 FPS (Saves 80% GPU memory transfer load!)
-      if (elapsedTime - lastCanvasUpdate > 1 / 15) {
-        lastCanvasUpdate = elapsedTime;
-
-        const totalCycle = SCENE_DURATION * TOOL_SCENES.length;
-        const currentCycleTime = elapsedTime % totalCycle;
-        const activeSceneIdx = Math.floor(currentCycleTime / SCENE_DURATION) % TOOL_SCENES.length;
-        const sceneProgress = (currentCycleTime % SCENE_DURATION) / SCENE_DURATION;
-
-        renderScreenFrame(tctx, activeSceneIdx, sceneProgress);
-        texture.needsUpdate = true;
-      }
-
-      // Smooth Parallax Interpolation (60 FPS)
-      if (!reduceMotion) {
-        laptopGroup.rotation.y += (targetMouseX * 0.2 - laptopGroup.rotation.y) * 0.05;
-        laptopGroup.rotation.x += (0.08 - targetMouseY * 0.08 - laptopGroup.rotation.x) * 0.05;
-      }
-
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    // 7. Cleanup
-    return () => {
-      cancelAnimationFrame(animFrameId);
-      if (!isTouch && !reduceMotion) {
-        window.removeEventListener("mousemove", handleMouseMove);
-      }
-      resizeObserver.disconnect();
-      entranceTimeline.scrollTrigger?.kill();
-      entranceTimeline.kill();
-
-      renderer.dispose();
-      scene.traverse((obj) => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material)) obj.material.forEach((m) => m.dispose());
-          else obj.material.dispose();
+    const interval = setInterval(() => {
+      setStep((prevStep) => {
+        if (prevStep >= 5) {
+          return 5; // Stay at finished state briefly before scene auto-rotates
         }
+        return prevStep + 1;
       });
-      texture.dispose();
-      if (mount.contains(renderer.domElement)) {
-        mount.removeChild(renderer.domElement);
-      }
-    };
+    }, 1200);
+
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
+  // Typing animation simulation for Resume tool
+  useEffect(() => {
+    if (activeTab === "resume") {
+      const fullText = "Lakhan Kashyap";
+      const fullTitle = "Senior Full Stack Engineer";
+      
+      let nameIdx = 0;
+      let titleIdx = 0;
+
+      const typingTimer = setInterval(() => {
+        if (nameIdx <= fullText.length) {
+          setTypedName(fullText.slice(0, nameIdx));
+          nameIdx++;
+        } else if (titleIdx <= fullTitle.length) {
+          setTypedTitle(fullTitle.slice(0, titleIdx));
+          titleIdx++;
+        }
+      }, 70);
+
+      return () => clearInterval(typingTimer);
+    }
+  }, [activeTab]);
+
+  // Auto Scene Rotation after completing execution
+  useEffect(() => {
+    const sceneRotationTimer = setInterval(() => {
+      setActiveTab((curr) => {
+        const ids = SHOWCASE_TABS.map((t) => t.id);
+        const nextIdx = (ids.indexOf(curr) + 1) % ids.length;
+        return ids[nextIdx];
+      });
+    }, 7500);
+
+    return () => clearInterval(sceneRotationTimer);
   }, []);
 
-  return <div ref={mountRef} className={className} style={{ width: "100%", height: "100%" }} />;
+  /* Helper cursor position calculation based on animation step */
+  const getCursorPos = () => {
+    switch (step) {
+      case 0: return { x: 75, y: 25 }; // Hovering near top button
+      case 1: return { x: 40, y: 45 }; // Selecting row 1
+      case 2: return { x: 45, y: 65 }; // Selecting row 2
+      case 3: return { x: 82, y: 22 }; // Moving to Action CTA button
+      case 4: return { x: 82, y: 22, clicking: true }; // Clicking action button
+      case 5: return { x: 50, y: 88 }; // Hovering success toast
+      default: return { x: 50, y: 50 };
+    }
+  };
+
+  const cursor = getCursorPos();
+
+  return (
+    <div className={`w-full flex flex-col items-center gap-5 ${className}`}>
+      
+      {/* ── TOP FEATURE PILL TABS ───────────────────────────────────────── */}
+      <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3">
+        {SHOWCASE_TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 border ${
+                isActive
+                  ? "bg-[#0071e3] text-white border-transparent shadow-lg shadow-blue-500/25 scale-105"
+                  : "bg-white dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50"
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+              {isActive && (
+                <span className="w-2 h-2 rounded-full bg-white animate-ping ml-1" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── SUPABASE LIGHT-MODE APP WINDOW MOCKUP FRAME ───────────────────── */}
+      <div className="w-full max-w-5xl bg-white dark:bg-[#0d121d] rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col transition-all">
+        
+        {/* MAC TITLEBAR */}
+        <div className="h-10 bg-slate-100/90 dark:bg-[#080c14] border-b border-slate-200/80 dark:border-slate-800 px-4 flex items-center justify-between select-none">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+            <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+            <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
+          </div>
+
+          <div className="text-[11px] font-semibold text-slate-500 font-mono tracking-tight flex items-center gap-1.5">
+            <span className="text-emerald-500">●</span> Live Tool Engine Execution
+          </div>
+
+          <div className="text-[11px] font-bold text-[#0071e3] bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+            Step {step + 1} of 6
+          </div>
+        </div>
+
+        {/* APP MAIN BODY */}
+        <div className="flex min-h-[460px] sm:min-h-[500px] text-slate-800 dark:text-slate-100 overflow-hidden relative">
+          
+          {/* LEFT ICON SIDEBAR */}
+          <div className="w-14 bg-slate-50 dark:bg-[#090d16] border-r border-slate-200 dark:border-slate-800 p-2.5 flex flex-col items-center justify-between shrink-0 select-none">
+            <div className="space-y-4">
+              <div className="w-9 h-9 rounded-xl bg-[#0071e3] text-white font-bold flex items-center justify-center text-sm shadow-md">
+                🛠️
+              </div>
+              <div className="w-8 h-0.5 bg-slate-200 dark:bg-slate-800 mx-auto" />
+              
+              <div className="space-y-2">
+                {[
+                  { icon: "📄", id: "pdf" },
+                  { icon: "🖼️", id: "compressor" },
+                  { icon: "📝", id: "resume" },
+                  { icon: "🔳", id: "qr" },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-base transition ${
+                      activeTab === item.id
+                        ? "bg-[#0071e3] text-white font-bold shadow-md shadow-blue-500/20"
+                        : "text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {item.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-8 h-8 rounded-full bg-[#0071e3]/10 text-[#0071e3] font-bold flex items-center justify-center text-xs">
+              LK
+            </div>
+          </div>
+
+          {/* SUB-NAVIGATION SCHEMA PANEL */}
+          <div className="w-48 sm:w-56 bg-slate-50/50 dark:bg-[#0b0f18] border-r border-slate-200 dark:border-slate-800 p-3.5 hidden sm:flex flex-col justify-between shrink-0 select-none">
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Tool Status
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 mb-4 shadow-sm">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-0.5">
+                  {activeTab === "pdf" && "PDF Engine v2.4"}
+                  {activeTab === "compressor" && "WebP Compression"}
+                  {activeTab === "resume" && "ATS Parser Active"}
+                  {activeTab === "qr" && "Vector Generator"}
+                </div>
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Memory Mode: Active
+                </div>
+              </div>
+
+              <div className="space-y-1.5 text-xs font-medium">
+                <div className="text-[10px] font-bold text-slate-400 uppercase">Live Pipeline</div>
+                <div className={`p-2 rounded-lg transition ${step >= 1 ? "bg-blue-50 dark:bg-blue-950/40 text-[#0071e3] font-bold" : "text-slate-400"}`}>
+                  1. Load Document Files
+                </div>
+                <div className={`p-2 rounded-lg transition ${step >= 2 ? "bg-blue-50 dark:bg-blue-950/40 text-[#0071e3] font-bold" : "text-slate-400"}`}>
+                  2. Process In Browser
+                </div>
+                <div className={`p-2 rounded-lg transition ${step >= 4 ? "bg-blue-50 dark:bg-blue-950/40 text-[#0071e3] font-bold" : "text-slate-400"}`}>
+                  3. Export HD Output
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-100 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500">
+              ⚡ WebAssembly Powered
+            </div>
+          </div>
+
+          {/* MAIN DYNAMIC ANIMATED WORKSPACE */}
+          <div className="flex-1 bg-white dark:bg-[#0d121d] p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden">
+            <div>
+              {/* TOOL HEADER & ACTION BUTTON */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>
+                      {activeTab === "pdf" && "📄 PDF Editor & Merger"}
+                      {activeTab === "compressor" && "🖼️ Smart Image Compressor"}
+                      {activeTab === "resume" && "📝 ATS Resume Builder"}
+                      {activeTab === "qr" && "🔳 Vector QR Code Generator"}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Live browser execution • Zero server logs
+                  </p>
+                </div>
+
+                {/* Animated Primary Button */}
+                <button
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md ${
+                    step >= 4
+                      ? "bg-emerald-600 text-white scale-105 shadow-emerald-500/25"
+                      : "bg-[#0071e3] text-white hover:bg-[#0077ed] shadow-blue-500/20"
+                  }`}
+                >
+                  {step >= 4 ? "✓ Completed!" : "⚡ Start Execution"}
+                </button>
+              </div>
+
+              {/* ── TOOL SPECIFIC LIVE STEP-BY-STEP SIMULATION ──────────── */}
+              {activeTab === "pdf" && (
+                <div className="space-y-3">
+                  <div className="text-xs font-bold text-slate-400">PDF Files Queue</div>
+                  
+                  {[
+                    { name: "Q4_Financial_Report_2026.pdf", pages: "18 Pages", size: "3.4 MB", targetStep: 1 },
+                    { name: "Signed_Vendor_Agreement.pdf", pages: "4 Pages", size: "1.2 MB", targetStep: 2 },
+                    { name: "Project_Proposal_Draft.pdf", pages: "12 Pages", size: "4.8 MB", targetStep: 3 },
+                  ].map((file, idx) => {
+                    const isLoaded = step >= file.targetStep;
+                    const isProcessing = step === file.targetStep;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-xl border transition-all duration-300 flex items-center justify-between text-xs ${
+                          isLoaded
+                            ? "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                            : "bg-slate-50/40 opacity-40 border-dashed border-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 font-semibold text-slate-800 dark:text-slate-100">
+                          <span className="text-base">📄</span>
+                          <span>{file.name}</span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <span className="text-slate-400">{file.pages}</span>
+                          <span className="font-bold text-slate-600 dark:text-slate-300">{file.size}</span>
+                          
+                          {/* Live Progress Bar Indicator */}
+                          <div className="w-24 bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-500 ${isLoaded ? "bg-emerald-500 w-full" : isProcessing ? "bg-[#0071e3] w-1/2" : "w-0"}`}
+                            />
+                          </div>
+
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isLoaded ? "bg-emerald-500/15 text-emerald-600" : "bg-slate-200 text-slate-500"}`}>
+                            {isLoaded ? "Ready" : "Waiting"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {activeTab === "compressor" && (
+                <div className="space-y-3">
+                  <div className="text-xs font-bold text-slate-400">Compression Results</div>
+                  
+                  {[
+                    { name: "hero_banner_4k_desktop.png", orig: "4.8 MB", comp: "960 KB", save: "-80%", targetStep: 1 },
+                    { name: "product_mockup_highres.jpg", orig: "2.4 MB", comp: "420 KB", save: "-82.5%", targetStep: 2 },
+                    { name: "portfolio_shot_raw.png", orig: "3.6 MB", comp: "710 KB", save: "-80.3%", targetStep: 3 },
+                  ].map((img, idx) => {
+                    const isDone = step >= img.targetStep;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-3 font-semibold">
+                          <span className="text-base">🖼️</span>
+                          <span className="text-slate-800 dark:text-white">{img.name}</span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <span className="text-slate-400 line-through">{img.orig}</span>
+                          <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{img.comp}</span>
+                          <span className="text-[10px] font-black bg-emerald-500/15 text-emerald-600 px-2 py-0.5 rounded-md">
+                            {isDone ? img.save : "Calculating..."}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {activeTab === "resume" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Live Typing Input Form */}
+                  <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-200">Live Editor Input</div>
+                    <div>
+                      <div className="text-[10px] text-slate-400 mb-1">Full Name</div>
+                      <div className="bg-white dark:bg-slate-800 p-2 rounded-lg border text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                        <span>{typedName || "Typing..."}</span>
+                        <span className="w-1.5 h-4 bg-[#0071e3] animate-pulse inline-block" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] text-slate-400 mb-1">Job Title</div>
+                      <div className="bg-white dark:bg-slate-800 p-2 rounded-lg border text-xs font-semibold text-slate-700 dark:text-slate-200">
+                        {typedTitle || "Typing..."}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Rendered Resume Sheet */}
+                  <div className="bg-white text-slate-900 p-4 rounded-xl shadow-md border border-slate-200">
+                    <div className="text-lg font-black tracking-tight">{typedName || "Lakhan Kashyap"}</div>
+                    <div className="text-xs font-bold text-[#0071e3] mb-3">{typedTitle || "Full Stack Engineer"}</div>
+                    <div className="border-t pt-2 text-[10px] text-slate-600">
+                      <div className="font-bold text-slate-900">TECHNICAL SKILLS</div>
+                      <div>React • Next.js • TypeScript • Tailwind CSS</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "qr" && (
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 gap-4">
+                  <div>
+                    <div className="text-xs font-bold text-slate-400 mb-1">Target URL Input</div>
+                    <div className="text-sm font-black text-slate-800 dark:text-white font-mono">
+                      https://toolbox.app/lakhan-kashyap
+                    </div>
+                    <div className="text-xs text-emerald-600 font-bold mt-2">✓ Vector HD 2048x2048 Ready</div>
+                  </div>
+
+                  <div className="w-24 h-24 bg-white p-2 rounded-xl shadow-md flex items-center justify-center border">
+                    <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-white text-2xl font-black">
+                      🔳
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── ANIMATED CURSOR SIMULATION (SUPABASE STYLE) ───────────── */}
+            <div
+              className={`absolute pointer-events-none transition-all duration-700 ease-out z-30 ${cursor.clicking ? "scale-90" : "scale-100"}`}
+              style={{
+                top: `${cursor.y}%`,
+                left: `${cursor.x}%`,
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M5.63604 3.46447L18.364 16.1924L11.9999 15.4853L8.46447 20.5355L6.34315 18.4142L9.87868 13.364L3.51462 12.6569L5.63604 3.46447Z"
+                  fill="#0071e3"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                />
+              </svg>
+            </div>
+
+            {/* ── BOTTOM SUCCESS TOAST POPUP ───────────────────────────── */}
+            {step >= 4 && (
+              <div className="mt-4 bg-[#1d1d1f] text-white rounded-xl p-3 border border-[#0071e3] shadow-xl flex items-center justify-between text-xs animate-in fade-in slide-in-from-bottom-3">
+                <div className="flex items-center gap-2 font-semibold">
+                  <span className="text-emerald-400 text-sm">🎉</span>
+                  <span>
+                    {activeTab === "pdf" && "Merged 3 PDF files into ToolBox_Combined.pdf!"}
+                    {activeTab === "compressor" && "Compressed 3 images • Saved 9.8 MB space!"}
+                    {activeTab === "resume" && "Generated ATS Resume → Lakhan_Kashyap_Resume.pdf"}
+                    {activeTab === "qr" && "Exported HD Vector QR Code → portfolio_qr.png"}
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold bg-[#0071e3] text-white px-2.5 py-1 rounded-md">
+                  Downloaded
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
