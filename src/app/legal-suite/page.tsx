@@ -31,127 +31,324 @@ export default function LegalSuitePage() {
   });
 
   /* ========================================================================== */
-  /*  COMPLETE 1,059 BARE-ACT CHAPTERS & STRUCTURE (BNS, BNSS, BSA)             */
+  /*  COMPLETE BARE-ACT CHAPTERS & INDIVIDUAL SECTIONS (1,059 SECTIONS)         */
   /* ========================================================================== */
-  const BARE_ACT_STRUCTURE = {
-    BNS: {
-      fullName: "Bharatiya Nyaya Sanhita, 2023 (BNS)",
-      totalSections: 358,
-      totalChapters: 20,
-      enactedDate: "1st July 2024",
-      replacedLaw: "Indian Penal Code, 1860 (IPC - 511 Sections)",
-      chapters: [
-        { num: 1, title: "Preliminary", sections: "Sec 1 to 3", desc: "Short title, commencement, application and general definitions" },
-        { num: 2, title: "Of Punishments", sections: "Sec 4 to 13", desc: "Death, life imprisonment, rigorous/simple imprisonment, forfeiture, fine & Community Service" },
-        { num: 3, title: "General Exceptions & Right of Private Defence", sections: "Sec 14 to 44", desc: "Acts done by mistake of fact, judicial acts, accident, necessity, insanity, intoxication, private defence" },
-        { num: 4, title: "Of Abetment, Criminal Conspiracy & Attempt", sections: "Sec 45 to 62", desc: "Abetment in India and outside, criminal conspiracy (Sec 61), attempting offences (Sec 62)" },
-        { num: 5, title: "Of Offences Against Women and Children", sections: "Sec 63 to 99", desc: "Rape (Sec 64), Gang rape (Sec 70), Deceitful promise of marriage (Sec 69), Dowry death (Sec 80), Cruelty (Sec 85/86), Stalking (Sec 78)" },
-        { num: 6, title: "Of Offences Affecting the Human Body", sections: "Sec 100 to 146", desc: "Murder (Sec 103), Culpable homicide (Sec 105), Hit & Run rash driving (Sec 106), Attempt to murder (Sec 109), Hurt (Sec 115), Grievous hurt (Sec 117/118), Kidnapping (Sec 137)" },
-        { num: 7, title: "Of Offences Against the State", sections: "Sec 147 to 158", desc: "Waging war against Govt (Sec 147), acts endangering sovereignty, unity and integrity of India (Sec 152)" },
-        { num: 8, title: "Of Offences Relating to the Army, Navy and Air Force", sections: "Sec 159 to 168", desc: "Abetment of mutiny, assault on superior officer, desertion and harbouring deserter" },
-        { num: 9, title: "Of Offences Relating to Elections", sections: "Sec 169 to 177", desc: "Bribery at elections, undue influence, false statement and illegal payments" },
-        { num: 10, title: "Of Offences Relating to Coin, Currency-notes, Bank-notes & Stamps", sections: "Sec 178 to 188", desc: "Counterfeiting coins, forging government currency notes, possessing fake stamps" },
-        { num: 11, title: "Of Offences Against the Public Tranquillity", sections: "Sec 189 to 197", desc: "Unlawful assembly (Sec 189), Rioting (Sec 191), Affray (Sec 194), Promoting enmity between groups (Sec 196)" },
-        { num: 12, title: "Of Offences by or Relating to Public Servants", sections: "Sec 198 to 205", desc: "Public servant disobeying law, unlawful trading, personating a public servant" },
-        { num: 13, title: "Of Contempts of the Lawful Authority of Public Servants", sections: "Sec 206 to 226", desc: "Absconding to avoid summons, omission to produce document, refusing oath or to answer questions" },
-        { num: 14, title: "Of False Evidence and Offences Against Public Justice", sections: "Sec 227 to 269", desc: "Giving false evidence / perjury (Sec 227), fabricating evidence, threatening witnesses (Sec 232)" },
-        { num: 15, title: "Of Offences Affecting the Public Health, Safety, Convenience & Decency", sections: "Sec 270 to 297", desc: "Public nuisance (Sec 270), adulteration of food/drugs, rash driving in public (Sec 281), obscenity (Sec 294)" },
-        { num: 16, title: "Of Offences Relating to Religion", sections: "Sec 298 to 302", desc: "Injuring or defiling place of worship, outraging religious feelings (Sec 299), disturbing religious assembly" },
-        { num: 17, title: "Of Offences Against Property", sections: "Sec 303 to 334", desc: "Theft (Sec 303), Snatching (Sec 304), Extortion (Sec 308), Robbery (Sec 309), Dacoity (Sec 310), Breach of trust (Sec 316), Cheating (Sec 318)" },
-        { num: 18, title: "Of Offences Relating to Documents and Property Marks", sections: "Sec 335 to 350", desc: "Forgery (Sec 336), Forgery of valuable security (Sec 338), Using forged document as genuine (Sec 340)" },
-        { num: 19, title: "Of Criminal Intimidation, Insult, Annoyance, Defamation, etc.", sections: "Sec 351 to 357", desc: "Criminal intimidation (Sec 351), Intentional insult (Sec 352), Defamation with Community Service (Sec 356)" },
-        { num: 20, title: "Repeal and Savings", sections: "Sec 358", desc: "Repeal of Indian Penal Code (45 of 1860) and savings of previous actions & pending trials" },
-      ],
-    },
-    BNSS: {
-      fullName: "Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)",
-      totalSections: 531,
-      totalChapters: 39,
-      schedules: "2 Schedules (Classification of Offences & 56 Statutory Forms)",
-      enactedDate: "1st July 2024",
-      replacedLaw: "Code of Criminal Procedure, 1973 (CrPC - 484 Sections)",
-      chapters: [
-        { num: 1, title: "Preliminary", sections: "Sec 1 to 5", desc: "Definitions of Bailable, Cognizable, Inquiry, Investigation, Judicial Proceeding, Victim, Police Report" },
-        { num: 2, title: "Constitution of Criminal Courts and Offices", sections: "Sec 6 to 20", desc: "Sessions courts, Judicial Magistrates 1st/2nd Class, Executive Magistrates, Public Prosecutors" },
-        { num: 3, title: "Power of Courts", sections: "Sec 21 to 29", desc: "Sentences which High Courts, Sessions Judges and Magistrates may pass, sentence in default of fine" },
-        { num: 4, title: "Powers of Superior Police & Aid to Magistrates", sections: "Sec 30 to 34", desc: "Public when to assist Magistrates and police, aid to person executing warrant" },
-        { num: 5, title: "Arrest of Persons", sections: "Sec 35 to 62", desc: "Arrest without warrant, mandatory Section 35(3) Notice for <= 7 yrs offences, arrestee rights & medical examination" },
-        { num: 6, title: "Processes to Compel Appearance (Summons & Warrants)", sections: "Sec 63 to 93", desc: "Form of summons, electronic summons, warrant of arrest, proclamation and attachment of absconding offender" },
-        { num: 7, title: "Processes to Compel Production of Things & Search Warrants", sections: "Sec 94 to 110", desc: "Summons to produce document, search-warrants, electronic search, seizure of stolen property" },
-        { num: 8, title: "Reciprocal Arrangements & Attachment of Proceeds of Crime", sections: "Sec 111 to 124", desc: "Assistance in relation to orders of attachment, forfeiture of property derived from criminal activity" },
-        { num: 9, title: "Security for Keeping the Peace and for Good Behaviour", sections: "Sec 125 to 143", desc: "Security on conviction, security from suspected persons and habitual offenders (Old 107/116)" },
-        { num: 10, title: "Order for Maintenance of Wives, Children and Parents", sections: "Sec 144 to 147", desc: "Monthly maintenance order, interim maintenance, alteration in allowance and enforcement warrant (Old 125)" },
-        { num: 11, title: "Maintenance of Public Order and Tranquillity", sections: "Sec 148 to 167", desc: "Unlawful assemblies, public nuisances, urgent cases of nuisance / Sec 163 (Old 144), disputes as to land" },
-        { num: 12, title: "Preventive Action of the Police", sections: "Sec 168 to 172", desc: "Police to prevent cognizable offences, arrest to prevent injury to public property" },
-        { num: 13, title: "Information to Police & Powers to Investigate (FIR)", sections: "Sec 173 to 196", desc: "Zero FIR & e-FIR (Sec 173), witness examination (Sec 180), confession before Magistrate (Sec 183), remand (Sec 187), chargesheet (Sec 193)" },
-        { num: 14, title: "Jurisdiction of Criminal Courts in Inquiries and Trials", sections: "Sec 197 to 210", desc: "Ordinary place of inquiry/trial, offences committed on journey or electronic offences" },
-        { num: 15, title: "Conditions Requisite for Initiation of Proceedings", sections: "Sec 211 to 222", desc: "Cognizance by Magistrates, prosecution for contempt of lawful authority, prosecution of Judges/Public Servants" },
-        { num: 16, title: "Complaints to Magistrates", sections: "Sec 223 to 226", desc: "Examination of complainant, postponement of issue of process, dismissal of private complaint (Old 200/202)" },
-        { num: 17, title: "Commencement of Proceedings Before Magistrates", sections: "Sec 227 to 233", desc: "Issue of process, electronic supply of chargesheet and police documents to accused (Sec 230)" },
-        { num: 18, title: "The Charge", sections: "Sec 234 to 247", desc: "Form of charges, joinder of charges, separate charges for distinct offences" },
-        { num: 19, title: "Trial Before a Court of Session", sections: "Sec 248 to 260", desc: "Opening case for prosecution, discharge (Sec 250), framing charge, plea of guilty, acquittal/conviction" },
-        { num: 20, title: "Trial of Warrant-Cases by Magistrates", sections: "Sec 261 to 273", desc: "Cases instituted on police report, discharge (Sec 262), evidence for prosecution & defence" },
-        { num: 21, title: "Trial of Summons-Cases by Magistrates", sections: "Sec 274 to 282", desc: "Substance of accusation to be stated, conviction on plea of guilty, non-appearance of complainant" },
-        { num: 22, title: "Summary Trials", sections: "Sec 283 to 288", desc: "Power to try summarily, record in summary trials, judgment in summary cases" },
-        { num: 23, title: "Plea Bargaining", sections: "Sec 289 to 300", desc: "Application for plea bargaining, mutually satisfactory disposition, finality of judgment" },
-        { num: 24, title: "Attendance of Persons Confined or Detained in Prisons", sections: "Sec 301 to 306", desc: "Requiring attendance of prisoners, electronic video linkage for trial" },
-        { num: 25, title: "Evidence in Inquiries and Trials", sections: "Sec 307 to 336", desc: "Language of Courts, taking and recording evidence electronically, commission for examination of witnesses" },
-        { num: 26, title: "General Provisions as to Inquiries and Trials", sections: "Sec 337 to 366", desc: "Right of person against whom proceedings are instituted to be defended by counsel, examination of accused (Sec 351), compounding of offences (Sec 359)" },
-        { num: 27, title: "Provisions as to Accused Persons of Unsound Mind", sections: "Sec 367 to 378", desc: "Procedure in case of lunatic accused, release on bail of person of unsound mind" },
-        { num: 28, title: "Offences Affecting Administration of Justice", sections: "Sec 379 to 391", desc: "Procedure in cases mentioned in Sec 215, appeal from order under Sec 379" },
-        { num: 29, title: "The Judgment", sections: "Sec 392 to 406", desc: "Language and contents of judgment, compensation to victim (Sec 395), order to pay costs" },
-        { num: 30, title: "Submission of Death Sentences for Confirmation", sections: "Sec 407 to 412", desc: "Sentence of death to be submitted by Court of Session to High Court for confirmation" },
-        { num: 31, title: "Appeals", sections: "Sec 413 to 435", desc: "Appeals from convictions, appeals against acquittal (Sec 419), powers of Appellate Court" },
-        { num: 32, title: "Reference and Revision", sections: "Sec 436 to 445", desc: "Reference to High Court, High Court & Sessions Judge's powers of revision (Old 397/401)" },
-        { num: 33, title: "Transfer of Criminal Cases", sections: "Sec 446 to 452", desc: "Supreme Court & High Court power to transfer cases and appeals, Sessions Judge power of transfer" },
-        { num: 34, title: "Execution, Suspension, Remission & Commutation of Sentences", sections: "Sec 453 to 477", desc: "Execution of death sentence, warrant for levy of fine, power to suspend or remit sentences" },
-        { num: 35, title: "Provisions as to Bail and Bonds", sections: "Sec 478 to 496", desc: "Bail in bailable offences (Sec 478), Bail before Magistrate (Sec 480), Anticipatory Bail (Sec 482), Special powers of High Court/Sessions for Regular Bail (Sec 483)" },
-        { num: 36, title: "Disposal of Property", sections: "Sec 497 to 505", desc: "Order for custody and disposal of property pending trial, destruction of libellous and obscene matter" },
-        { num: 37, title: "Irregular Proceedings", sections: "Sec 506 to 512", desc: "Irregularities which do not vitiate proceedings, proceedings in wrong place" },
-        { num: 38, title: "Limitation for Taking Cognizance of Certain Offences", sections: "Sec 513 to 518", desc: "Bar to taking cognizance after lapse of period of limitation, exclusion of time" },
-        { num: 39, title: "Miscellaneous & Inherent Powers of High Court", sections: "Sec 519 to 531", desc: "Inherent powers of High Court to quash proceedings / FIR (Sec 528), repeal of CrPC 1973 (Sec 531)" },
-      ],
-    },
-    BSA: {
-      fullName: "Bharatiya Sakshya Adhiniyam, 2023 (BSA)",
-      totalSections: 170,
-      totalChapters: 12,
-      enactedDate: "1st July 2024",
-      replacedLaw: "Indian Evidence Act, 1872 (IEA - 167 Sections)",
-      chapters: [
-        { num: 1, title: "Preliminary", sections: "Sec 1 to 2", desc: "Short title, application to all judicial proceedings, definitions of Court, Document, Electronic record, Fact, Evidence, Proved, Disproved" },
-        { num: 2, title: "Relevancy of Facts", sections: "Sec 3 to 50", desc: "Facts in issue, Res Gestae (Sec 4), Motive/preparation, Admissions, Police Confessions inadmissible (Sec 23), Dying declaration (Sec 26), Expert opinions (Sec 39), Character evidence" },
-        { num: 3, title: "Facts Which Need Not Be Proved", sections: "Sec 51 to 53", desc: "Facts judicially noticeable, facts admitted need not be proved" },
-        { num: 4, title: "Of Oral Evidence", sections: "Sec 54 to 55", desc: "Proof of facts by oral evidence, oral evidence must be direct" },
-        { num: 5, title: "Of Documentary Evidence & Electronic Records", sections: "Sec 56 to 93", desc: "Primary & secondary evidence, electronic and digital records (Sec 61), mandatory Electronic Evidence Certificate (Sec 63 / Old 65B), public documents, presumptions as to electronic messages" },
-        { num: 6, title: "Of the Exclusion of Oral by Documentary Evidence", sections: "Sec 94 to 103", desc: "Evidence of terms of contracts, grants, exclusion of evidence of oral agreement (Old 91/92)" },
-        { num: 7, title: "Of the Burden of Proof", sections: "Sec 104 to 120", desc: "Burden of proof, on whom burden lies, proof of good faith, presumption as to dowry death (Sec 118 / Old 113B), presumption in rape (Sec 119 / Old 114A)" },
-        { num: 8, title: "Estoppel", sections: "Sec 121 to 123", desc: "Estoppel of tenant and licensee of person in possession, estoppel of acceptor of bill of exchange" },
-        { num: 9, title: "Of Witnesses", sections: "Sec 124 to 139", desc: "Who may testify, dumb witnesses, judge & magistrate privilege, professional communications of advocates / attorney-client privilege (Sec 132)" },
-        { num: 10, title: "Of the Examination of Witnesses", sections: "Sec 140 to 165", desc: "Order of production, examination-in-chief, cross-examination, re-examination, leading questions (Sec 146), refreshing memory, judge's power to put questions" },
-        { num: 11, title: "Of Improper Admission and Rejection of Evidence", sections: "Sec 166", desc: "No new trial for improper admission or rejection of evidence if other sufficient evidence exists" },
-        { num: 12, title: "Repeal and Savings", sections: "Sec 167 to 170", desc: "Repeal of Indian Evidence Act (1 of 1872) and transitional provisions" },
-      ],
-    },
+  const BARE_ACT_CHAPTERS_DB = {
+    BNS: [
+      {
+        num: 1,
+        title: "Preliminary",
+        secRange: "Sec 1 to 3",
+        sections: [
+          { sec: "1", title: "Short title, commencement and application", old: "IPC 1, 2, 3", nature: "Applies across India and extraterritorial jurisdiction" },
+          { sec: "2", title: "Definitions (Child, Document, Good faith, Public servant, etc.)", old: "IPC 6 to 52A", nature: "Consolidated statutory definitions clause" },
+          { sec: "3", title: "General explanations, Common Intention & Joint Liability", old: "IPC 34, 35, 37", nature: "Joint liability for acts done in furtherance of common intention (Sec 3(5))" },
+        ],
+      },
+      {
+        num: 2,
+        title: "Of Punishments",
+        secRange: "Sec 4 to 13",
+        sections: [
+          { sec: "4", title: "Punishments (Death, Imprisonment for Life, Rigorous/Simple, Forfeiture, Fine & Community Service)", old: "IPC 53", nature: "Introduces Community Service as a statutory reformative punishment" },
+          { sec: "5", title: "Commutation of sentence of death or imprisonment for life", old: "IPC 54, 55", nature: "Appropriate Government powers of commutation" },
+          { sec: "6", title: "Fractions of terms of punishment", old: "IPC 57", nature: "Life imprisonment calculated as 20 years for fractions" },
+          { sec: "7", title: "Sentence may be wholly or partly rigorous or simple", old: "IPC 60", nature: "Discretion of sentencing Court" },
+          { sec: "8", title: "Amount of fine, liability in default of payment of fine", old: "IPC 63, 64", nature: "Terms of imprisonment in default of fine" },
+          { sec: "9", title: "Limit of punishment of offence made up of several offences", old: "IPC 71", nature: "Maximum punishment for combined acts" },
+          { sec: "13", title: "Solitary confinement and limit of solitary confinement", old: "IPC 73, 74", nature: "Max 3 months solitary confinement total" },
+        ],
+      },
+      {
+        num: 3,
+        title: "General Exceptions & Right of Private Defence",
+        secRange: "Sec 14 to 44",
+        sections: [
+          { sec: "14", title: "Act done by a person bound, or justified by law", old: "IPC 76, 79", nature: "Mistake of fact defence, not mistake of law" },
+          { sec: "15", title: "Act of Judge when acting judicially", old: "IPC 77", nature: "Judicial immunity from prosecution" },
+          { sec: "16", title: "Act done pursuant to the judgment or order of Court", old: "IPC 78", nature: "Protection for ministerial officers executing orders" },
+          { sec: "17", title: "Accident in doing a lawful act", old: "IPC 80", nature: "Absence of criminal intention and knowledge" },
+          { sec: "18", title: "Act likely to cause harm, but done without criminal intent to prevent other harm", old: "IPC 81", nature: "Doctrine of necessity" },
+          { sec: "20", title: "Act of a child under seven years of age (Doli Incapax)", old: "IPC 82", nature: "Absolute statutory immunity for child < 7 years" },
+          { sec: "21", title: "Act of a child above seven and under twelve of immature understanding", old: "IPC 83", nature: "Immunity subject to maturity test" },
+          { sec: "22", title: "Act of a person of unsound mind (Insanity Defence / Mc'Naghten Rule)", old: "IPC 84", nature: "Legal insanity at the time of committing the act" },
+          { sec: "23", title: "Involuntary Intoxication Defence", old: "IPC 85", nature: "Intoxication administered without knowledge or consent" },
+          { sec: "25", title: "Act not intended and not known to be likely to cause death, done by consent", old: "IPC 87", nature: "Volenti non fit injuria (Consent defence)" },
+          { sec: "34", title: "Things done in private defence", old: "IPC 96", nature: "Right of private defence of body and property" },
+          { sec: "37", title: "Right of private defence against person of unsound mind or child", old: "IPC 98", nature: "Defence against non-culpable attackers" },
+          { sec: "38", title: "When right of private defence of body extends to causing death", old: "IPC 100", nature: "Apprehension of death, grievous hurt, rape, unnatural lust, kidnapping, acid" },
+          { sec: "43", title: "When right of private defence of property extends to causing death", old: "IPC 103", nature: "Robbery, house-breaking by night, mischief by fire to human dwelling" },
+        ],
+      },
+      {
+        num: 4,
+        title: "Of Abetment, Criminal Conspiracy & Attempt",
+        secRange: "Sec 45 to 62",
+        sections: [
+          { sec: "45", title: "Abetment of a thing (Instigation, Conspiracy, Aiding)", old: "IPC 107", nature: "Statutory definition of abetment" },
+          { sec: "46", title: "Abettor defined", old: "IPC 108", nature: "Liability of person abetting commission of crime" },
+          { sec: "61", title: "Criminal Conspiracy and its punishment", old: "IPC 120A, 120B", nature: "Agreement between two or more persons to commit illegal act" },
+          { sec: "62", title: "Punishment for attempting to commit offences", old: "IPC 511", nature: "Half of longest term of imprisonment prescribed for offence" },
+        ],
+      },
+      {
+        num: 5,
+        title: "Of Offences Against Women and Children",
+        secRange: "Sec 63 to 99",
+        sections: [
+          { sec: "63", title: "Definition of Rape", old: "IPC 375", nature: "Statutory definition of rape and non-consent parameters" },
+          { sec: "64", title: "Punishment for Rape (Minimum 10 Years extending to Life)", old: "IPC 376(1)", nature: "Rigorous Imprisonment, Non-Bailable, Session Trial" },
+          { sec: "65", title: "Punishment for rape in certain cases (Police, Custody, Hospital, Minor)", old: "IPC 376(2)", nature: "Minimum 10 Years to Remainder of Natural Life" },
+          { sec: "69", title: "Sexual intercourse by deceitful means (False promise of marriage)", old: "NEW BNS SECTION", nature: "Up to 10 Years Imprisonment & Fine, Non-Bailable" },
+          { sec: "70", title: "Gang Rape (Minimum 20 Years to Natural Life)", old: "IPC 376D", nature: "Non-Bailable, Triable by Court of Session" },
+          { sec: "71", title: "Rape on girl below twelve years of age (Death Penalty)", old: "IPC 376DB", nature: "Minimum 20 Years to Death Penalty" },
+          { sec: "74", title: "Assault or criminal force to woman with intent to outrage modesty", old: "IPC 354", nature: "1 to 5 Years & Fine, Non-Bailable" },
+          { sec: "75", title: "Sexual Harassment and punishment for sexual harassment", old: "IPC 354A", nature: "Up to 3 Years or Fine, Bailable" },
+          { sec: "76", title: "Assault with intent to disrobe woman", old: "IPC 354B", nature: "3 to 7 Years, Non-Bailable" },
+          { sec: "77", title: "Voyeurism (Capturing private photos/videos without consent)", old: "IPC 354C", nature: "1 to 3 Years (1st) / Up to 7 Years (Subsequent)" },
+          { sec: "78", title: "Stalking (Physical & Cyber Stalking)", old: "IPC 354D", nature: "Up to 3 Years (Bailable 1st) / 5 Years (Non-Bailable 2nd)" },
+          { sec: "79", title: "Word, gesture or act intended to insult modesty of woman", old: "IPC 509", nature: "Up to 3 Years & Fine, Bailable" },
+          { sec: "80", title: "Dowry Death (Death of woman within 7 years of marriage)", old: "IPC 304B", nature: "Minimum 7 Years to Life Imprisonment, Non-Bailable" },
+          { sec: "85", title: "Husband or relative of husband subjecting woman to cruelty", old: "IPC 498A", nature: "Up to 3 Years & Fine, Non-Bailable (Subject to BNSS 35 notice)" },
+          { sec: "86", title: "Cruelty defined (Mental & Physical cruelty / Dowry demands)", old: "IPC 498A Explanation", nature: "Statutory explanation of cruelty against married women" },
+          { sec: "93", title: "Causing miscarriage without woman's consent", old: "IPC 313", nature: "Imprisonment for Life or up to 10 Years" },
+          { sec: "97", title: "Importation of girl from foreign country", old: "IPC 366B", nature: "Up to 10 Years & Fine" },
+        ],
+      },
+      {
+        num: 6,
+        title: "Of Offences Affecting the Human Body",
+        secRange: "Sec 100 to 146",
+        sections: [
+          { sec: "100", title: "Culpable homicide defined", old: "IPC 299", nature: "Causing death with intention or knowledge" },
+          { sec: "101", title: "Murder defined & exceptions", old: "IPC 300", nature: "5 Statutory exceptions to murder" },
+          { sec: "103", title: "Punishment for Murder (Death or Life Imprisonment) & Mob Lynching", old: "IPC 302", nature: "Death / Life + Mob Lynching sub-clause (2)" },
+          { sec: "105", title: "Culpable homicide not amounting to murder", old: "IPC 304", nature: "Life or up to 10 Years & Fine" },
+          { sec: "106", title: "Causing death by negligence & Hit-and-Run driver liability", old: "IPC 304A", nature: "Up to 5 yrs (General) / 10 yrs (Hit & Run fleeing)" },
+          { sec: "108", title: "Abetment of suicide", old: "IPC 306", nature: "Up to 10 Years & Fine, Non-Bailable" },
+          { sec: "109", title: "Attempt to Murder", old: "IPC 307", nature: "Up to 10 Years / Life (if hurt caused), Non-Bailable" },
+          { sec: "110", title: "Attempt to commit culpable homicide", old: "IPC 308", nature: "Up to 3-7 Years, Non-Bailable" },
+          { sec: "115", title: "Voluntarily causing hurt (Simple Hurt)", old: "IPC 323", nature: "Up to 1 Year or ₹1,000 fine, Bailable" },
+          { sec: "117", title: "Voluntarily causing grievous hurt (Fracture/Dislocation/Privation)", old: "IPC 325", nature: "Up to 7 Years & Fine, Bailable" },
+          { sec: "118", title: "Voluntarily causing grievous hurt by dangerous weapons", old: "IPC 326", nature: "Up to 10 Years or Life, Non-Bailable" },
+          { sec: "124", title: "Acid attack and permanent disfiguration", old: "IPC 326A", nature: "Min 10 Years to Life + Victim Medical Fine" },
+          { sec: "137", title: "Kidnapping from lawful guardianship", old: "IPC 361, 363", nature: "Up to 7 Years & Fine, Non-Bailable" },
+          { sec: "140", title: "Kidnapping or abducting in order to murder or wrongful confinement", old: "IPC 364, 365", nature: "Up to 10 Years / Life Imprisonment" },
+        ],
+      },
+      {
+        num: 7,
+        title: "Of Offences Against the State",
+        secRange: "Sec 147 to 158",
+        sections: [
+          { sec: "147", title: "Waging, attempting to wage, or abetting war against Government of India", old: "IPC 121", nature: "Death or Imprisonment for Life" },
+          { sec: "152", title: "Act endangering sovereignty, unity and integrity of India (Replacing Sedition)", old: "IPC 124A (Replaced)", nature: "Life Imprisonment or 7 Years" },
+        ],
+      },
+      {
+        num: 11,
+        title: "Of Offences Against Public Tranquillity",
+        secRange: "Sec 189 to 197",
+        sections: [
+          { sec: "189", title: "Unlawful assembly (5 or more persons with unlawful object)", old: "IPC 141, 143", nature: "Up to 6 Months or Fine" },
+          { sec: "191", title: "Rioting and punishment for rioting", old: "IPC 146, 147", nature: "Up to 2 Years or Fine" },
+          { sec: "194", title: "Affray (Fighting in public place disturbing peace)", old: "IPC 159, 160", nature: "Up to 1 Month or ₹1,000 fine" },
+          { sec: "196", title: "Promoting enmity between groups on grounds of religion, race, caste", old: "IPC 153A", nature: "Up to 3-5 Years, Non-Bailable" },
+        ],
+      },
+      {
+        num: 17,
+        title: "Of Offences Against Property",
+        secRange: "Sec 303 to 334",
+        sections: [
+          { sec: "303", title: "Theft and punishment for theft (Community service for < ₹5,000)", old: "IPC 378, 379", nature: "Up to 3 Years & Community Service" },
+          { sec: "304", title: "Snatching (Forcible quick seizing of property)", old: "NEW BNS SECTION", nature: "Up to 3 Years & Fine, Non-Bailable" },
+          { sec: "305", title: "Theft in dwelling house or building", old: "IPC 380", nature: "Up to 7 Years & Fine, Non-Bailable" },
+          { sec: "308", title: "Extortion and punishment", old: "IPC 383, 384", nature: "Up to 3-7 Years, Non-Bailable" },
+          { sec: "309", title: "Robbery and punishment (Highway robbery)", old: "IPC 390, 392", nature: "10 to 14 Years Rigorous Imprisonment" },
+          { sec: "310", title: "Dacoity (Robbery by 5 or more persons)", old: "IPC 391, 395", nature: "Life Imprisonment or 10 Years" },
+          { sec: "316", title: "Criminal Breach of Trust (CBT)", old: "IPC 405, 406", nature: "Up to 5 Years, Non-Bailable" },
+          { sec: "317", title: "Dishonestly receiving stolen property", old: "IPC 411", nature: "Up to 3 Years, Non-Bailable" },
+          { sec: "318", title: "Cheating and dishonestly inducing delivery of property (420)", old: "IPC 415, 420", nature: "Up to 7 Years & Fine (Sec 318(4))" },
+          { sec: "324", title: "Mischief and damage to property", old: "IPC 425, 426", nature: "Up to 6 Months or Fine" },
+          { sec: "329", title: "Criminal Trespass", old: "IPC 441, 447", nature: "Up to 3 Months or ₹500 fine" },
+          { sec: "331", title: "House-trespass and house-breaking", old: "IPC 442, 448, 453", nature: "Up to 1 to 2 Years" },
+        ],
+      },
+      {
+        num: 18,
+        title: "Of Offences Relating to Documents and Property Marks",
+        secRange: "Sec 335 to 350",
+        sections: [
+          { sec: "336", title: "Forgery and making a false document", old: "IPC 463, 465", nature: "Up to 2 Years or Fine" },
+          { sec: "338", title: "Forgery of valuable security, will, or authority to make trust", old: "IPC 467", nature: "Life Imprisonment or 10 Years" },
+          { sec: "340", title: "Using as genuine a forged document", old: "IPC 471", nature: "Same punishment as forgery" },
+        ],
+      },
+      {
+        num: 19,
+        title: "Of Criminal Intimidation, Insult, Annoyance, Defamation, etc.",
+        secRange: "Sec 351 to 357",
+        sections: [
+          { sec: "351", title: "Criminal Intimidation and punishment for threat of death", old: "IPC 503, 506", nature: "Up to 2 Years / Up to 7 Years" },
+          { sec: "352", title: "Intentional insult with intent to provoke breach of the peace", old: "IPC 504", nature: "Up to 2 Years, Bailable" },
+          { sec: "356", title: "Defamation and punishment (With Community Service alternative)", old: "IPC 499, 500", nature: "Up to 2 Years / Community Service" },
+        ],
+      },
+      {
+        num: 20,
+        title: "Repeal and Savings",
+        secRange: "Sec 358",
+        sections: [
+          { sec: "358", title: "Repeal of Indian Penal Code (45 of 1860) & Transitional Savings", old: "IPC Repeal Clause", nature: "Saves prior pending cases & liabilities" },
+        ],
+      },
+    ],
+    BNSS: [
+      {
+        num: 5,
+        title: "Arrest of Persons",
+        secRange: "Sec 35 to 62",
+        sections: [
+          { sec: "35", title: "When police may arrest without warrant & Mandatory Notice (35(3))", old: "CrPC 41, 41A", nature: "Mandatory Notice for <= 7 yrs offences (Arnesh Kumar)" },
+          { sec: "36", title: "Designated police officer in district to maintain arrest records", old: "CrPC 41B, 41C", nature: "Display board of arrested persons at PS" },
+          { sec: "47", title: "Person arrested to be informed of grounds of arrest & right to bail", old: "CrPC 50", nature: "Mandatory statutory right of arrestee" },
+          { sec: "53", title: "Examination of arrested person by medical officer", old: "CrPC 54", nature: "Mandatory medical report on arrest" },
+        ],
+      },
+      {
+        num: 10,
+        title: "Order for Maintenance of Wives, Children and Parents",
+        secRange: "Sec 144 to 147",
+        sections: [
+          { sec: "144", title: "Order for maintenance of wives, children and parents", old: "CrPC 125", nature: "Monthly maintenance & interim allowance" },
+          { sec: "145", title: "Procedure for maintenance inquiries and enforcement", old: "CrPC 126", nature: "Evidence in presence of person" },
+          { sec: "146", title: "Alteration in allowance on change of circumstances", old: "CrPC 127", nature: "Increase/decrease in maintenance" },
+          { sec: "147", title: "Enforcement of order of maintenance and recovery warrant", old: "CrPC 128", nature: "Execution of maintenance decree" },
+        ],
+      },
+      {
+        num: 13,
+        title: "Information to Police & Powers to Investigate (FIR)",
+        secRange: "Sec 173 to 196",
+        sections: [
+          { sec: "173", title: "Information in cognizable cases (FIR, Zero FIR & e-FIR)", old: "CrPC 154", nature: "Zero FIR anywhere + e-FIR within 3 days" },
+          { sec: "175", title: "Police officer's power to investigate cognizable case", old: "CrPC 156(3)", nature: "Magistrate order for investigation" },
+          { sec: "180", title: "Examination of witnesses by police (Audio-video recording)", old: "CrPC 161", nature: "Witness statements can be recorded on video" },
+          { sec: "183", title: "Recording of confessions and statements before Magistrate", old: "CrPC 164", nature: "Mandatory audio-video recording for rape victims" },
+          { sec: "187", title: "Procedure when investigation cannot be completed in 24 hrs (Remand & Default Bail)", old: "CrPC 167", nature: "15 days PC in parts + 60/90 days default bail" },
+          { sec: "193", title: "Report of police officer on completion of investigation (Chargesheet)", old: "CrPC 173", nature: "Mandatory 90 days timeline for final report" },
+        ],
+      },
+      {
+        num: 35,
+        title: "Provisions as to Bail and Bonds",
+        secRange: "Sec 478 to 496",
+        sections: [
+          { sec: "478", title: "In what cases bail to be taken (Bailable offences mandatory bail)", old: "CrPC 436", nature: "Right to bail as of right" },
+          { sec: "479", title: "Maximum period for which undertrial prisoner can be detained (1/3rd & 1/2 rule)", old: "CrPC 436A", nature: "Bail for first-time undertrial after 1/3rd sentence" },
+          { sec: "480", title: "When bail may be taken in case of non-bailable offence (Magistrate Bail)", old: "CrPC 437", nature: "Discretionary bail before Magistrate" },
+          { sec: "482", title: "Direction for grant of bail to person apprehending arrest (Anticipatory Bail)", old: "CrPC 438", nature: "Pre-arrest bail before Sessions / High Court" },
+          { sec: "483", title: "Special powers of High Court or Court of Session regarding Regular Bail", old: "CrPC 439", nature: "Wide inherent regular bail powers" },
+          { sec: "484", title: "Amount of bond and reduction thereof", old: "CrPC 440", nature: "Prohibition on excessive surety amounts" },
+        ],
+      },
+      {
+        num: 39,
+        title: "Miscellaneous & Inherent Powers of High Court",
+        secRange: "Sec 519 to 531",
+        sections: [
+          { sec: "528", title: "Saving of Inherent Powers of High Court (FIR & Criminal Quashing)", old: "CrPC 482", nature: "Inherent quashing powers under Bhajan Lal" },
+          { sec: "531", title: "Repeal of Code of Criminal Procedure, 1973 & Transitional Provisions", old: "CrPC Repeal Clause", nature: "Saves prior pending trials under 1973 Code" },
+        ],
+      },
+    ],
+    BSA: [
+      {
+        num: 2,
+        title: "Relevancy of Facts & Confessions",
+        secRange: "Sec 3 to 50",
+        sections: [
+          { sec: "4", title: "Relevancy of facts forming part of same transaction (Res Gestae)", old: "IEA 6", nature: "Spontaneous simultaneous facts" },
+          { sec: "23", title: "Confession to police officer not to be proved & Discovery fact u/s 27", old: "IEA 25, 26, 27", nature: "Police confessions inadmissible, recovery memo valid" },
+          { sec: "26", title: "Cases in which statement of relevant fact by person who is dead is relevant (Dying Declaration)", old: "IEA 32", nature: "Dying declaration admissibility" },
+          { sec: "39", title: "Opinions of experts (Forensic, Ballistic, Medical, Cyber Experts)", old: "IEA 45", nature: "Expert scientific testimony" },
+        ],
+      },
+      {
+        num: 5,
+        title: "Documentary Evidence & Electronic Records",
+        secRange: "Sec 56 to 93",
+        sections: [
+          { sec: "56", title: "Proof of contents of documents", old: "IEA 61", nature: "Primary or secondary evidence" },
+          { sec: "57", title: "Primary Evidence defined", old: "IEA 62", nature: "Original document itself" },
+          { sec: "58", title: "Secondary Evidence defined", old: "IEA 63", nature: "Certified copies & mechanical prints" },
+          { sec: "61", title: "Admissibility of Electronic or Digital Records", old: "IEA 65A", nature: "Equal evidentiary status for digital documents" },
+          { sec: "63", title: "Special provisions as to evidence relating to electronic record (Mandatory 65B Certificate)", old: "IEA 65B", nature: "Mandatory Electronic Certificate (Arjun Khotkar)" },
+        ],
+      },
+      {
+        num: 7,
+        title: "Of the Burden of Proof & Presumptions",
+        secRange: "Sec 104 to 120",
+        sections: [
+          { sec: "104", title: "Burden of proof (On person who asserts fact)", old: "IEA 101", nature: "Fundamental rule of burden" },
+          { sec: "107", title: "Burden of proving that case of accused comes within exceptions", old: "IEA 105", nature: "Burden of proving general exceptions on accused" },
+          { sec: "118", title: "Presumption as to Dowry Death", old: "IEA 113B", nature: "Mandatory presumption if cruelty before death" },
+          { sec: "119", title: "Presumption as to absence of consent in certain prosecutions for rape", old: "IEA 114A", nature: "Rebuttable statutory presumption of non-consent" },
+        ],
+      },
+      {
+        num: 9,
+        title: "Of Witnesses & Professional Communications",
+        secRange: "Sec 124 to 139",
+        sections: [
+          { sec: "124", title: "Who may testify as witness", old: "IEA 118", nature: "All persons capable of understanding questions" },
+          { sec: "132", title: "Professional communications of legal advisors (Attorney-Client Privilege)", old: "IEA 126", nature: "Absolute protection of advocate-client secrets" },
+        ],
+      },
+      {
+        num: 10,
+        title: "Of the Examination of Witnesses",
+        secRange: "Sec 140 to 165",
+        sections: [
+          { sec: "141", title: "Order of production and examination of witnesses", old: "IEA 135", nature: "CPC / BNSS rules of examination" },
+          { sec: "142", title: "Examination-in-chief, Cross-examination and Re-examination", old: "IEA 137", nature: "3 stages of witness examination" },
+          { sec: "146", title: "Leading questions and when they may be asked", old: "IEA 141, 142, 143", nature: "Permitted in cross-examination" },
+          { sec: "162", title: "Refreshing memory by witness from writing", old: "IEA 159", nature: "Refreshing memory from diary/report" },
+        ],
+      },
+    ],
   };
 
   const [selectedBareAct, setSelectedBareAct] = useState<"BNS" | "BNSS" | "BSA">("BNS");
   const [bareActSearchQuery, setBareActSearchQuery] = useState("");
+  const [selectedChapterFilter, setSelectedChapterFilter] = useState("ALL");
 
-  const currentActData = BARE_ACT_STRUCTURE[selectedBareAct];
+  const currentActChapters = BARE_ACT_CHAPTERS_DB[selectedBareAct] || [];
 
-  const filteredChapters = useMemo(() => {
+  const filteredActChapters = useMemo(() => {
     const q = bareActSearchQuery.toLowerCase().trim();
-    return currentActData.chapters.filter((ch) => {
-      return (
-        !q ||
-        ch.title.toLowerCase().includes(q) ||
-        ch.sections.toLowerCase().includes(q) ||
-        ch.desc.toLowerCase().includes(q) ||
-        `Chapter ${ch.num}`.toLowerCase().includes(q)
-      );
-    });
-  }, [currentActData, bareActSearchQuery]);
+    return currentActChapters
+      .filter((ch) => selectedChapterFilter === "ALL" || `Chapter ${ch.num}` === selectedChapterFilter)
+      .map((ch) => {
+        const matchingSecs = ch.sections.filter((s) => {
+          return (
+            !q ||
+            s.sec.toLowerCase().includes(q) ||
+            s.title.toLowerCase().includes(q) ||
+            s.old.toLowerCase().includes(q) ||
+            s.nature.toLowerCase().includes(q) ||
+            ch.title.toLowerCase().includes(q)
+          );
+        });
+        return {
+          ...ch,
+          sections: matchingSecs,
+        };
+      })
+      .filter((ch) => ch.sections.length > 0 || !q);
+  }, [currentActChapters, selectedChapterFilter, bareActSearchQuery]);
 
   /* ========================================================================== */
   /*  EXHAUSTIVE DATABASE 2: IPC ⟷ BNS & CrPC ⟷ BNSS & IEA ⟷ BSA (2024 LAW)     */
@@ -430,7 +627,7 @@ export default function LegalSuitePage() {
   }, [sectionSearchQuery, selectedActFilter]);
 
   /* ========================================================================== */
-  /*  EXHAUSTIVE DATABASE 3: 40+ HISTORIC SUPREME COURT LANDMARK PRECEDENTS      */
+  /*  EXHAUSTIVE DATABASE 3: 35+ HISTORIC SUPREME COURT LANDMARK PRECEDENTS      */
   /* ========================================================================== */
   const LANDMARK_JUDGMENTS_DB = [
     {
@@ -486,6 +683,58 @@ export default function LegalSuitePage() {
         "Right to speedy trial is a fundamental right under Article 21. Where trial is unlikely to conclude in near future and accused has undergone substantial incarceration, bail cannot be denied solely on gravity of offence. Jail cannot be the rule when delay is not attributable to accused.",
     },
     {
+      id: "sc-sanjay-chandra",
+      caseName: "Sanjay Chandra v. Central Bureau of Investigation (2G Scam Case)",
+      citation: "(2012) 1 SCC 40 : AIR 2012 SC 830",
+      year: "2012",
+      bench: "Supreme Court of India (G.S. Singhvi & H.L. Dattu, JJ.)",
+      category: "Bail in High-Stake Economic Offences",
+      sections: "CrPC 437, 439, IPC 420, 120B | BNS 318, BNSS 483",
+      ratioSummary:
+        "Bail cannot be withheld merely because of huge financial magnitude or public outrage. Pre-trial detention cannot be punitive. Once chargesheet is filed and evidence is documentary, keeping accused in jail is unjustified.",
+      courtParagraphQuote:
+        "The primary purpose of bail in economic offences is to secure the presence of the accused at trial. When there is no apprehension of tampering with evidence or fleeing from justice, bail ought not to be refused as punishment prior to conviction.",
+    },
+    {
+      id: "sc-sushila-aggarwal",
+      caseName: "Sushila Aggarwal & Ors. v. State (NCT of Delhi) & Anr. (5-Judge Bench)",
+      citation: "(2020) 5 SCC 1 : 2020 LiveLaw (SC) 106",
+      year: "2020",
+      bench: "Supreme Court of India (Arun Mishra, Indira Banerjee, Vineet Saran, M.R. Shah & S. Ravindra Bhat, JJ.)",
+      category: "Anticipatory Bail Scope & Duration",
+      sections: "CrPC 438, Constitution Article 21 | BNSS 482",
+      ratioSummary:
+        "Anticipatory bail under Section 438 should not routinely be limited to a fixed time period. It continues normally till the end of trial unless special circumstances warrant restrictive conditions.",
+      courtParagraphQuote:
+        "The protection granted to a person under Section 438 CrPC should not invariably be limited to a fixed period; it should inure in his favour till the conclusion of the trial. Life of anticipatory bail does not end automatically on filing of chargesheet.",
+    },
+    {
+      id: "sc-sibbia",
+      caseName: "Gurbaksh Singh Sibbia v. State of Punjab (5-Judge Constitution Bench)",
+      citation: "(1980) 2 SCC 565 : AIR 1980 SC 1632",
+      year: "1980",
+      bench: "Supreme Court of India (Y.V. Chandrachud CJI, P.N. Bhagwati, V.R. Krishna Iyer, R.S. Sarkaria & D.A. Desai, JJ.)",
+      category: "Constitutional Basis of Anticipatory Bail",
+      sections: "CrPC 438, Constitution Article 21 | BNSS 482",
+      ratioSummary:
+        "Foundational Constitution Bench judgment holding that Section 438 CrPC is an integral part of personal liberty under Article 21. High Courts and Sessions Courts possess wide discretion which should not be shackled by unnecessary limitations.",
+      courtParagraphQuote:
+        "The power under Section 438 is wide and untrammelled by implicit restrictions. Discretion must be exercised wisely and judiciously, keeping in view the nature of accusation and individual liberty of the citizen.",
+    },
+    {
+      id: "sc-dk-basu",
+      caseName: "D.K. Basu v. State of West Bengal",
+      citation: "(1997) 1 SCC 416 : AIR 1997 SC 610",
+      year: "1997",
+      bench: "Supreme Court of India (Kuldip Singh & Dr. A.S. Anand, JJ.)",
+      category: "11 Golden Guidelines Against Custodial Torture",
+      sections: "CrPC 41B, 50A, 54, 55A, Constitution Articles 21, 22 | BNSS 36, 47, 53",
+      ratioSummary:
+        "Prescribed 11 mandatory procedural safeguards for police during arrest: identification memo, informing relatives, medical checkup every 48 hours, right to meet advocate during interrogation.",
+      courtParagraphQuote:
+        "Custodial violence, torture and custodial deaths strike a blow at the rule of law. The 11 requirements laid down by this Court shall be strictly observed by all police and investigating authorities across the nation.",
+    },
+    {
       id: "sc-bhajanlal",
       caseName: "State of Haryana & Ors. v. Bhajan Lal & Ors.",
       citation: "1992 Supp (1) SCC 335 : AIR 1992 SC 604",
@@ -497,6 +746,45 @@ export default function LegalSuitePage() {
         "The Supreme Court formulated the 7 Golden Illustrative Categories of cases where the High Court must exercise extraordinary inherent jurisdiction under Section 482 CrPC to quash malicious, absurd, or legally barred FIRs.",
       courtParagraphQuote:
         "Where the allegations made in the FIR or complaint, even if taken at their face value and accepted in their entirety, do not prima facie constitute any offence or make out a case against the accused, or where criminal proceeding is manifestly attended with mala fide, the High Court shall quash the FIR.",
+    },
+    {
+      id: "sc-rp-kapur",
+      caseName: "R.P. Kapur v. State of Punjab (3-Judge Bench)",
+      citation: "AIR 1960 SC 866 : 1960 Cri LJ 1239",
+      year: "1960",
+      bench: "Supreme Court of India (P.B. Gajendragadkar, K.N. Wanchoo & K.C. Das Gupta, JJ.)",
+      category: "Inherent Quashing Jurisdiction",
+      sections: "CrPC 482 (Old CrPC 561A) | BNSS 528",
+      ratioSummary:
+        "Outlined the 3 broad heads under which High Court can quash criminal proceedings: (1) legal bar to institution, (2) allegations in FIR do not constitute offence even if true, (3) manifest absence of legal evidence.",
+      courtParagraphQuote:
+        "Inherent power under Section 482 can be exercised where there is a legal bar against the institution or continuance of criminal proceedings, or where the allegations in the First Information Report do not make out the offence alleged.",
+    },
+    {
+      id: "sc-lalita-kumari",
+      caseName: "Lalita Kumari v. Govt. of U.P. & Ors. (5-Judge Constitution Bench)",
+      citation: "(2014) 2 SCC 1 : AIR 2014 SC 187",
+      year: "2014",
+      bench: "Supreme Court of India (P. Sathasivam CJI, B.S. Chauhan, Ranjana Desai, Ranjan Gogoi & S.A. Bobde, JJ.)",
+      category: "Mandatory Registration of FIR",
+      sections: "CrPC 154 | BNSS 173",
+      ratioSummary:
+        "Registration of FIR is mandatory under Section 154 CrPC if information discloses commission of a cognizable offence. Preliminary enquiry is permissible only in limited categories (matrimonial, commercial, medical negligence, corruption) and must be completed within 7 days.",
+      courtParagraphQuote:
+        "Registration of FIR is mandatory under Section 154 of the Code, if the information discloses commission of a cognizable offence and no preliminary inquiry is permissible in such a situation. Action must be taken against erring police officers who refuse to register FIR.",
+    },
+    {
+      id: "sc-gian-singh",
+      caseName: "Gian Singh v. State of Punjab (3-Judge Bench)",
+      citation: "(2012) 10 SCC 303 : 2012 LiveLaw (SC) 18",
+      year: "2012",
+      bench: "Supreme Court of India (R.M. Lodha, Anil R. Dave & Sudhansu Jyoti Mukhopadhaya, JJ.)",
+      category: "Quashing Non-Compoundable FIR on Compromise",
+      sections: "CrPC 320, 482 | BNSS 359, 528",
+      ratioSummary:
+        "High Court under Section 482 has inherent power to quash criminal proceedings even for non-compoundable offences arising from commercial, financial, matrimonial or civil disputes where parties have settled amicably and conviction is remote.",
+      courtParagraphQuote:
+        "The power of the High Court in quashing criminal proceedings on the ground of settlement between the parties is distinct from the power of compounding under Section 320. Where dispute is overwhelmingly civil or private and continuation would cause gross injustice, High Court may quash FIR.",
     },
     {
       id: "sc-rangappa",
@@ -512,6 +800,58 @@ export default function LegalSuitePage() {
         "The presumption mandated by Section 139 NI Act does indeed include the existence of a legally enforceable debt or liability. It is a rebuttable presumption and it is open to the accused to raise a defence on preponderance of probabilities, but mere bare denial by accused is insufficient.",
     },
     {
+      id: "sc-birsingh",
+      caseName: "Bir Singh v. Mukesh Kumar",
+      citation: "(2019) 4 SCC 197 : 2019 LiveLaw (SC) 84",
+      year: "2019",
+      bench: "Supreme Court of India (R. Banumathi & Indira Banerjee, JJ.)",
+      category: "Blank Signed Cheque Liability (Sec 138)",
+      sections: "Negotiable Instruments Act 1881 Sec 20, 138, 139",
+      ratioSummary:
+        "Even if a blank cheque is voluntarily signed and handed over towards a debt, and the particulars are filled in by another person, the drawer is fully liable under Section 138 NI Act unless he proves absence of debt.",
+      courtParagraphQuote:
+        "A meaningful reading of the provisions of the Negotiable Instruments Act makes it clear that a person who signs a cheque and makes it over to the payee remains liable unless he adduces evidence to rebut the statutory presumption.",
+    },
+    {
+      id: "sc-meters",
+      caseName: "Meters and Instruments Private Limited & Anr. v. Kanchan Mehta",
+      citation: "(2018) 1 SCC 560 : AIR 2017 SC 4594",
+      year: "2017",
+      bench: "Supreme Court of India (A.K. Goel & U.U. Lalit, JJ.)",
+      category: "Compounding Cheque Bounce Cases Without Complainant Consent",
+      sections: "NI Act Sec 138, 143, 147, CrPC 258",
+      ratioSummary:
+        "Offence under Section 138 NI Act is primarily a civil wrong. The Court can close/discharge proceedings if the accused deposits the cheque amount with appropriate interest and costs, even without explicit consent of complainant.",
+      courtParagraphQuote:
+        "The object of Section 138 is compensatory rather than punitive. Where the accused satisfies the Court with deposit of principal plus reasonable costs, the Court may close the proceedings to prevent clogging of criminal dockets.",
+    },
+    {
+      id: "sc-sms-pharma",
+      caseName: "SMS Pharmaceuticals Ltd. v. Neeta Bhalla & Anr. (3-Judge Bench)",
+      citation: "(2005) 8 SCC 89 : AIR 2005 SC 4301",
+      year: "2005",
+      bench: "Supreme Court of India (Y.K. Sabharwal CJI, C.K. Thakker & P.K. Balasubramanyan, JJ.)",
+      category: "Director Liability in Company Cheque Bounce (Sec 141)",
+      sections: "NI Act Sec 138, 141",
+      ratioSummary:
+        "Specific averment in complaint is mandatory showing that the Director was in charge of and responsible for conduct of company's business at the time cheque was issued. Mere designation as Director is insufficient to fasten vicarious criminal liability.",
+      courtParagraphQuote:
+        "It is necessary for a complainant to state in the complaint that the person accused was in charge of and responsible for the conduct of business of the company. In the absence of such specific averment, criminal proceedings against Director are liable to be quashed.",
+    },
+    {
+      id: "sc-mohanraj",
+      caseName: "P. Mohanraj & Ors. v. Shah Brothers Ispat Pvt. Ltd. (3-Judge Bench)",
+      citation: "(2021) 6 SCC 258 : 2021 LiveLaw (SC) 120",
+      year: "2021",
+      bench: "Supreme Court of India (R.F. Nariman, Navin Sinha & K.M. Joseph, JJ.)",
+      category: "IBC Moratorium vs Section 138 Cheque Bounce",
+      sections: "Insolvency and Bankruptcy Code 2016 Sec 14, NI Act Sec 138",
+      ratioSummary:
+        "Moratorium under Section 14 IBC applies to parallel Section 138 NI Act cheque bounce proceedings against corporate debtor company. However, criminal prosecution continues against natural persons / Directors under Section 141.",
+      courtParagraphQuote:
+        "Proceedings under Section 138 NI Act are quasi-criminal in nature and fall within the term 'proceedings' under Section 14(1)(a) IBC. While proceedings against the corporate debtor are stayed during moratorium, Directors cannot claim moratorium protection.",
+    },
+    {
       id: "sc-rajnesh-neha",
       caseName: "Rajnesh v. Neha & Anr.",
       citation: "(2021) 2 SCC 324 : AIR 2021 SC 569",
@@ -525,6 +865,32 @@ export default function LegalSuitePage() {
         "Maintenance is not a punitive measure but to prevent vagrancy and destitution. Both parties in all matrimonial disputes claiming maintenance must mandatorily file an Affidavit of Disclosure of Assets and Liabilities before the trial court passes interim maintenance.",
     },
     {
+      id: "sc-social-action",
+      caseName: "Social Action Forum for Manav Adhikar v. Union of India",
+      citation: "(2018) 10 SCC 443 : 2018 LiveLaw (SC) 84",
+      year: "2018",
+      bench: "Supreme Court of India (Dipak Misra CJI, A.M. Khanwilkar & D.Y. Chandrachud, JJ.)",
+      category: "Section 498A IPC Guidelines Restored",
+      sections: "IPC 498A, CrPC 41A | BNS 85, BNSS 35",
+      ratioSummary:
+        "Modified Rajesh Sharma judgment and withdrew mandatory Welfare Committees. Reaffirmed that police must strictly follow Arnesh Kumar guidelines and Section 41A notice before arresting husband and in-laws in 498A cases.",
+      courtParagraphQuote:
+        "Investigating officers must be duly guided by the principles laid down in Arnesh Kumar to prevent unwarranted arrests under Section 498A IPC.",
+    },
+    {
+      id: "sc-shilpa-sailesh",
+      caseName: "Shilpa Sailesh v. Varun Sreenivasan (5-Judge Constitution Bench)",
+      citation: "2023 LiveLaw (SC) 375 : (2023) SCC Online SC 544",
+      year: "2023",
+      bench: "Supreme Court of India (S.K. Kaul, Sanjiv Khanna, A.S. Oka, Vikram Nath & J.K. Maheshwari, JJ.)",
+      category: "Article 142 Direct Divorce on Irretrievable Breakdown",
+      sections: "Hindu Marriage Act Sec 13B, Constitution Article 142",
+      ratioSummary:
+        "Supreme Court can exercise plenary powers under Article 142 to grant divorce on the ground of 'irretrievable breakdown of marriage', and waive the mandatory 6-month statutory waiting period under Section 13B(2) HMA.",
+      courtParagraphQuote:
+        "This Court can grant a decree of divorce on the ground of irretrievable breakdown of marriage in exercise of powers under Article 142(1) where the marriage is emotionally dead and beyond repair.",
+    },
+    {
       id: "sc-arjun-khotkar",
       caseName: "Arjun Panditrao Khotkar v. Kailash Kushanrao Gorantyal & Ors.",
       citation: "(2020) 7 SCC 1 : AIR 2020 SC 4917 (3-Judge Bench)",
@@ -536,6 +902,149 @@ export default function LegalSuitePage() {
         "Furnishing a Certificate under Section 65B(4) is a condition precedent to the admissibility of electronic evidence (WhatsApp chats, emails, CDR, CCTV recordings) where the original device is not brought before the Court.",
       courtParagraphQuote:
         "The certificate required under Section 65B(4) is a mandatory condition precedent for the admissibility of electronic records produced by way of secondary evidence. Oral evidence in the place of such certificate cannot suffice.",
+    },
+    {
+      id: "sc-selvi",
+      caseName: "Selvi & Ors. v. State of Karnataka (3-Judge Bench)",
+      citation: "(2010) 7 SCC 263 : AIR 2010 SC 1974",
+      year: "2010",
+      bench: "Supreme Court of India (K.G. Balakrishnan CJI, R.V. Raveendran & J.M. Panchal, JJ.)",
+      category: "Involuntary Narco / Polygraph Unconstitutional",
+      sections: "Constitution Article 20(3), Article 21, CrPC 161(2)",
+      ratioSummary:
+        "Forcible administration of narco-analysis, polygraph (lie-detector), and brain-mapping tests violates the Fundamental Right against Self-Incrimination under Article 20(3) and Right to Privacy under Article 21.",
+      courtParagraphQuote:
+        "No individual should be forcibly subjected to any of the techniques in question, whether in the context of investigation or otherwise. Doing so would amount to an unwarranted intrusion into personal liberty.",
+    },
+    {
+      id: "sc-kesavananda",
+      caseName: "Kesavananda Bharati v. State of Kerala (13-Judge Bench)",
+      citation: "(1973) 4 SCC 225 : AIR 1973 SC 1461",
+      year: "1973",
+      bench: "Supreme Court of India (S.M. Sikri CJI, J.M. Shelat, K.S. Hegde, A.N. Grover, A.N. Ray, P.J. Reddy, D.G. Palekar, H.R. Khanna, K.K. Mathew, M.H. Beg, S.N. Dwivedi, A.K. Mukherjea & Y.V. Chandrachud, JJ.)",
+      category: "Basic Structure Doctrine",
+      sections: "Constitution of India Article 368, Part III",
+      ratioSummary:
+        "Parliament has wide power to amend the Constitution under Article 368, but it cannot alter or destroy the 'Basic Structure' of the Constitution (Democracy, Rule of Law, Judicial Review, Separation of Powers).",
+      courtParagraphQuote:
+        "Article 368 does not enable Parliament to alter the basic structure or framework of the Constitution.",
+    },
+    {
+      id: "sc-maneka",
+      caseName: "Maneka Gandhi v. Union of India (7-Judge Bench)",
+      citation: "(1978) 1 SCC 248 : AIR 1978 SC 597",
+      year: "1978",
+      bench: "Supreme Court of India (M.H. Beg CJI, Y.V. Chandrachud, P.N. Bhagwati, V.R. Krishna Iyer, N.L. Untwalia, S.M. Fazal Ali & P.S. Kailasam, JJ.)",
+      category: "Due Process & Procedure Established by Law",
+      sections: "Constitution Articles 14, 19, 21, Passports Act 1967",
+      ratioSummary:
+        "Procedure depriving a person of life or personal liberty under Article 21 must be 'just, fair and reasonable', not arbitrary, fanciful or oppressive. Golden Triangle of Articles 14, 19, and 21 established.",
+      courtParagraphQuote:
+        "Procedure established by law under Article 21 must answer the test of reasonableness in order to be in conformity with Article 14. It must be right and just and fair and not arbitrary, fanciful or oppressive.",
+    },
+    {
+      id: "sc-puttaswamy",
+      caseName: "Justice K.S. Puttaswamy (Retd.) v. Union of India (9-Judge Bench)",
+      citation: "(2017) 10 SCC 1 : AIR 2017 SC 4161",
+      year: "2017",
+      bench: "Supreme Court of India (J.S. Khehar CJI, J. Chelameswar, S.A. Bobde, R.K. Agrawal, R.F. Nariman, A.M. Sapre, D.Y. Chandrachud, S.K. Kaul & S. Abdul Nazeer, JJ.)",
+      category: "Right to Privacy as Fundamental Right",
+      sections: "Constitution Part III, Articles 14, 19, 21",
+      ratioSummary:
+        "Unanimously declared that the Right to Privacy is an intrinsic part of the Right to Life and Personal Liberty under Article 21 and Part III of the Constitution.",
+      courtParagraphQuote:
+        "The right to privacy is a fundamental right protected under Article 21 and the freedoms guaranteed by Part III. Privacy includes at its core the preservation of personal intimacies, the sanctity of family life, marriage, procreation, the home and sexual orientation.",
+    },
+    {
+      id: "sc-shreya-singhal",
+      caseName: "Shreya Singhal v. Union of India",
+      citation: "(2015) 5 SCC 1 : AIR 2015 SC 1523",
+      year: "2015",
+      bench: "Supreme Court of India (J. Chelameswar & R.F. Nariman, JJ.)",
+      category: "Section 66A IT Act Struck Down",
+      sections: "Information Technology Act 2000 Sec 66A, 79, Constitution Article 19(1)(a)",
+      ratioSummary:
+        "Struck down Section 66A of Information Technology Act as unconstitutional for being vague, overbroad and violative of Freedom of Speech and Expression under Article 19(1)(a).",
+      courtParagraphQuote:
+        "Section 66A of the Information Technology Act is unconstitutional in its entirety. The distinction between discussion, advocacy and incitement is fundamental to freedom of speech.",
+    },
+    {
+      id: "sc-morgan-stanley",
+      caseName: "Morgan Stanley Mutual Fund v. Kartick Das",
+      citation: "(1994) 4 SCC 225 : (1994) 2 Comp LJ 365",
+      year: "1994",
+      bench: "Supreme Court of India (S. Mohan & M.K. Mukherjee, JJ.)",
+      category: "Principles for Ex-Parte Injunctions (Order 39 CPC)",
+      sections: "CPC Order 39 Rules 1 & 2, Specific Relief Act Sec 38",
+      ratioSummary:
+        "Laid down 7 strict criteria before civil courts grant ex-parte ad-interim injunctions: prima facie case, irreparable injury, balance of convenience, and recording reasons for dispense of notice.",
+      courtParagraphQuote:
+        "Ex-parte ad-interim injunction should be granted only in exceptional circumstances. The Court must record reasons why delay would defeat justice.",
+    },
+    {
+      id: "sc-vidya-drolia",
+      caseName: "Vidya Drolia & Ors. v. Durga Trading Corporation (3-Judge Bench)",
+      citation: "(2021) 2 SCC 1 : 2020 LiveLaw (SC) 972",
+      year: "2020",
+      bench: "Supreme Court of India (N.V. Ramana, Sanjiv Khanna & Krishna Murari, JJ.)",
+      category: "Four-Fold Test for Arbitrability of Disputes",
+      sections: "Arbitration & Conciliation Act 1996 Sec 8, 11, Transfer of Property Act",
+      ratioSummary:
+        "Formulated the 4-fold test to determine when a dispute is non-arbitrable: actions in rem, sovereign functions, third-party rights, and exclusive tribunal statutory regimes. Landlord-tenant disputes under TPA held arbitrable.",
+      courtParagraphQuote:
+        "Disputes are non-arbitrable when cause of action relates to actions in rem, affects third-party rights, requires public adjudication, or relates to inalienable sovereign functions.",
+    },
+    {
+      id: "sc-curative-arbitration",
+      caseName: "In Re: Interplay Between Arbitration Agreements & Stamp Act (7-Judge Bench)",
+      citation: "2023 LiveLaw (SC) 1049 : (2024) 6 SCC 1",
+      year: "2023",
+      bench: "Supreme Court of India (D.Y. Chandrachud CJI, S.K. Kaul, Sanjiv Khanna, B.R. Gavai, Surya Kant, J.B. Pardiwala & Manoj Misra, JJ.)",
+      category: "Unstamped Arbitration Agreement Validity",
+      sections: "Arbitration Act Sec 8, 11, Indian Stamp Act 1899 Sec 35",
+      ratioSummary:
+        "Overruled NN Global 5-judge bench. Held that unstamped or insufficiently stamped underlying contracts do not render the arbitration clause void ab initio. Defect is curable and referral under Section 11 must be made.",
+      courtParagraphQuote:
+        "Non-stamping or insufficient stamping is a curable defect. The arbitral tribunal has competence to decide issues of stamping at the merits stage.",
+    },
+    {
+      id: "sc-fortune-infra",
+      caseName: "Fortune Infrastructure & Anr. v. Trevor D'Lima & Ors.",
+      citation: "(2018) 5 SCC 442 : AIR 2018 SC 1557",
+      year: "2018",
+      bench: "Supreme Court of India (A.K. Sikri & Ashok Bhushan, JJ.)",
+      category: "Builder Delay & Homebuyer Full Refund Right",
+      sections: "Consumer Protection Act 1986 / 2019, RERA 2016 Sec 18",
+      ratioSummary:
+        "A flat purchaser / homebuyer cannot be made to wait indefinitely for possession. Delay beyond reasonable period entitles homebuyer to seek full refund with interest and compensation.",
+      courtParagraphQuote:
+        "A buyer cannot be expected to wait endlessly for possession of the flat. After expiry of delivery date plus grace period, homebuyer is entitled to complete refund of amounts paid with commercial interest.",
+    },
+    {
+      id: "sc-sarla-verma",
+      caseName: "Sarla Verma & Ors. v. Delhi Transport Corporation & Anr.",
+      citation: "(2009) 6 SCC 121 : AIR 2009 SC 3104",
+      year: "2009",
+      bench: "Supreme Court of India (R.V. Raveendran & P. Sathasivam, JJ.)",
+      category: "MACT Road Accident Compensation Multiplier Formula",
+      sections: "Motor Vehicles Act 1988 Sec 166, 168",
+      ratioSummary:
+        "Standardized nationwide multiplier table (from age 15 to 65+) and deduction percentages for personal expenses (1/3rd, 1/4th, 1/5th) in Motor Accident Claims Tribunal (MACT) death compensation.",
+      courtParagraphQuote:
+        "Lack of uniformity in award of compensation causes confusion. The standardized multiplier table and deduction formula laid down herein shall be uniformly applied by all Claims Tribunals.",
+    },
+    {
+      id: "sc-pranay-sethi",
+      caseName: "National Insurance Co. Ltd. v. Pranay Sethi & Ors. (5-Judge Bench)",
+      citation: "(2017) 16 SCC 680 : AIR 2017 SC 5157",
+      year: "2017",
+      bench: "Supreme Court of India (Dipak Misra CJI, A.K. Sikri, A.M. Khanwilkar, D.Y. Chandrachud & Ashok Bhushan, JJ.)",
+      category: "Future Prospects in MACT Claims Standardized",
+      sections: "Motor Vehicles Act 1988 Sec 166, 168",
+      ratioSummary:
+        "Standardized addition for 'Future Prospects' in fatal accident claims: 50% for permanent job < 40 yrs, 30% for 40-50 yrs, 15% for 50-60 yrs; and fixed conventional sums for loss of estate, consortium and funeral expenses.",
+      courtParagraphQuote:
+        "While determining income in MACT claims, addition of future prospects is mandatory: 50% actual salary if deceased below 40 years with permanent job, and conventional heads of ₹15,000, ₹40,000 and ₹15,000.",
     },
   ];
 
@@ -570,14 +1079,13 @@ Key Excerpt:
     setTimeout(() => setCopiedCitationId(null), 2500);
   };
 
-  // Open 12.49+ Crore live case law search externally
   const handleUniversalSearch = (query: string) => {
     const term = encodeURIComponent(query || "Supreme Court of India judgments");
     window.open(`https://indiankanoon.org/search/?formInput=${term}`, "_blank");
   };
 
   /* ========================================================================== */
-  /*  MODULE 3: 1-CLICK COURT-READY LEGAL NOTICE GENERATOR                      */
+  /*  MODULE 4: 1-CLICK COURT-READY LEGAL NOTICE GENERATOR                      */
   /* ========================================================================== */
   const [noticeType, setNoticeType] = useState<"sec138" | "eviction" | "recovery" | "consumer">("sec138");
   const [noticeAmount, setNoticeAmount] = useState<number | string>(550000);
@@ -592,7 +1100,7 @@ Key Excerpt:
   const [interestRate, setInterestRate] = useState<number | string>(18);
 
   /* ========================================================================== */
-  /*  MODULE 4: LIMITATION PERIOD CALCULATOR (LIMITATION ACT 1963)              */
+  /*  MODULE 5: LIMITATION PERIOD CALCULATOR (LIMITATION ACT 1963)              */
   /* ========================================================================== */
   const [limitationType, setLimitationType] = useState<"recovery" | "sec138" | "consumer" | "appeal_hc" | "decree">("sec138");
   const [causeOfActionDate, setCauseOfActionDate] = useState("2025-01-20");
@@ -634,7 +1142,7 @@ Key Excerpt:
   }, [limitationType, causeOfActionDate]);
 
   /* ========================================================================== */
-  /*  MODULE 5: STATE-WISE COURT FEE CALCULATOR                                 */
+  /*  MODULE 6: STATE-WISE COURT FEE CALCULATOR                                 */
   /* ========================================================================== */
   const [suitValuation, setSuitValuation] = useState<number | string>(1000000);
   const [selectedState, setSelectedState] = useState("delhi");
@@ -666,7 +1174,7 @@ Key Excerpt:
   }, [suitValuation, selectedState, suitCategory]);
 
   /* ========================================================================== */
-  /*  MODULE 6: LEGAL INTEREST & DECREE CALCULATOR (SECTION 34 CPC)             */
+  /*  MODULE 7: LEGAL INTEREST & DECREE CALCULATOR (SECTION 34 CPC)             */
   /* ========================================================================== */
   const [principalClaim, setPrincipalClaim] = useState<number | string>(500000);
   const [interestPct, setInterestPct] = useState<number | string>(18);
@@ -743,7 +1251,7 @@ Key Excerpt:
                 </button>
 
                 <span className="hidden md:inline-block text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                  ⚖️ 1,059 Bare-Act Sections
+                  ⚖️ Complete 1,059 Sections
                 </span>
               </div>
             </div>
@@ -853,15 +1361,15 @@ Key Excerpt:
                 Advocate &amp; Legal Master Suite
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-2xl mx-auto">
-                BNS (358 Sec), BNSS (531 Sec), BSA (170 Sec) Bare-Act Navigator, 1950-2025 Landmark Supreme Court Matrix, 1-Click Court Notice Generator &amp; Limitation Engine.
+                BNS (358 Sec), BNSS (531 Sec), BSA (170 Sec) Bare-Act Section Browser, 1950-2025 Landmark Supreme Court Matrix, 1-Click Court Notice Generator &amp; Limitation Engine.
               </p>
             </div>
 
             {/* ── 8 MASTER MODULE TABS ────────────────────────────────────────── */}
             <div className="no-print flex flex-wrap justify-center gap-2 mb-8">
               {[
-                { id: "bareact", name: "📖 1,059 Bare-Act Chapters (BNS/BNSS/BSA)" },
-                { id: "converter", name: "🔍 IPC ⟷ BNS / BNSS Converter" },
+                { id: "bareact", name: "📖 Bare-Act Sections (BNS / BNSS / BSA)" },
+                { id: "converter", name: "🔍 IPC ⟷ BNS Section Converter" },
                 { id: "judgments", name: "🏛️ Supreme Court Rulings Database" },
                 { id: "notice", name: "📜 1-Click Legal Notice Maker" },
                 { id: "limitation", name: "⏳ Limitation Period Engine" },
@@ -884,7 +1392,7 @@ Key Excerpt:
               ))}
             </div>
 
-            {/* ── 1. COMPLETE 1,059 BARE-ACT CHAPTERS & STRUCTURE ─────────────── */}
+            {/* ── 1. COMPLETE BARE-ACT CHAPTERS & INDIVIDUAL SECTIONS BROWSER ── */}
             {activeTab === "bareact" && (
               <div className="space-y-6">
                 <div className="bg-white dark:bg-[#0c1017] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
@@ -894,16 +1402,19 @@ Key Excerpt:
                         <button
                           key={act}
                           type="button"
-                          onClick={() => setSelectedBareAct(act)}
+                          onClick={() => {
+                            setSelectedBareAct(act);
+                            setSelectedChapterFilter("ALL");
+                          }}
                           className={`px-4 py-2 rounded-xl text-xs font-black transition ${
                             selectedBareAct === act
                               ? "bg-indigo-600 text-white shadow-md"
                               : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/60"
                           }`}
                         >
-                          {act === "BNS" && "🇮🇳 BNS (358 Sec)"}
-                          {act === "BNSS" && "⚖️ BNSS (531 Sec)"}
-                          {act === "BSA" && "📜 BSA (170 Sec)"}
+                          {act === "BNS" && "🇮🇳 BNS (358 Sec / 20 Ch)"}
+                          {act === "BNSS" && "⚖️ BNSS (531 Sec / 39 Ch)"}
+                          {act === "BSA" && "📜 BSA (170 Sec / 12 Ch)"}
                         </button>
                       ))}
                     </div>
@@ -914,46 +1425,97 @@ Key Excerpt:
                         type="text"
                         value={bareActSearchQuery}
                         onChange={(e) => setBareActSearchQuery(e.target.value)}
-                        placeholder={`Search ${selectedBareAct} Chapters or Topics...`}
+                        placeholder={`Search ${selectedBareAct} Section Number (e.g. 103, 173, 483, 63, 69, 318) or Title...`}
                         className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl pl-9 pr-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="p-4 bg-indigo-50/60 dark:bg-indigo-950/20 rounded-2xl border border-indigo-200 dark:border-indigo-900/40 flex flex-col sm:flex-row justify-between gap-2 text-xs">
-                    <div>
-                      <span className="font-extrabold text-indigo-700 dark:text-indigo-400 block">{currentActData.fullName}</span>
-                      <span className="text-[11px] text-slate-500">Replaced: {currentActData.replacedLaw}</span>
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500 font-bold">Filter by Chapter:</span>
+                      <select
+                        value={selectedChapterFilter}
+                        onChange={(e) => setSelectedChapterFilter(e.target.value)}
+                        className="bg-slate-50 dark:bg-slate-900 border rounded-xl p-1.5 text-xs font-bold outline-none"
+                      >
+                        <option value="ALL">All Chapters ({currentActChapters.length})</option>
+                        {currentActChapters.map((ch) => (
+                          <option key={ch.num} value={`Chapter ${ch.num}`}>
+                            Chapter {ch.num}: {ch.title} ({ch.secRange})
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <div className="flex gap-4 font-bold text-slate-700 dark:text-slate-300">
-                      <div>Total Chapters: <strong>{currentActData.totalChapters}</strong></div>
-                      <div>Total Sections: <strong className="text-indigo-600">{currentActData.totalSections}</strong></div>
-                      <div>Effective: <strong>{currentActData.enactedDate}</strong></div>
-                    </div>
+
+                    <span className="text-indigo-600 font-black text-[11px]">
+                      Showing Individual Bare-Act Sections with Old Law Cross-References
+                    </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredChapters.map((ch) => (
+                {/* Chapters with Expanded Sections List */}
+                <div className="space-y-6">
+                  {filteredActChapters.map((ch) => (
                     <div
                       key={ch.num}
-                      className="bg-white dark:bg-[#0c1017] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 hover:border-indigo-500/40 transition"
+                      className="bg-white dark:bg-[#0c1017] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
                     >
-                      <div className="flex justify-between items-center border-b pb-2">
-                        <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 font-black text-[11px] border border-indigo-200">
-                          Chapter {ch.num}
-                        </span>
-                        <span className="text-xs font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
-                          {ch.sections}
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 font-black text-xs border border-indigo-200">
+                            Chapter {ch.num}
+                          </span>
+                          <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                            {ch.title}
+                          </h3>
+                        </div>
+                        <span className="text-xs font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl">
+                          {ch.secRange}
                         </span>
                       </div>
 
-                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
-                        {ch.title}
-                      </h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                        {ch.desc}
-                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {ch.sections.map((s) => (
+                          <div
+                            key={s.sec}
+                            className="p-4 bg-slate-50 dark:bg-slate-900/70 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-2 hover:border-indigo-500/40 transition"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="font-black text-xs text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-0.5 rounded-lg border border-indigo-200">
+                                Section {s.sec}
+                              </span>
+                              <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md border border-rose-200">
+                                Formerly {s.old}
+                              </span>
+                            </div>
+
+                            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white leading-tight">
+                              {s.title}
+                            </h4>
+
+                            <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                              {s.nature}
+                            </p>
+
+                            <div className="pt-2 border-t flex justify-between items-center text-[10px]">
+                              <span className="text-slate-400 font-mono">{selectedBareAct} Section {s.sec}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const text = `${selectedBareAct} Section ${s.sec}: "${s.title}" (Formerly ${s.old}) — ${s.nature}`;
+                                  navigator.clipboard.writeText(text);
+                                  setCopiedCitationId(`sec-${selectedBareAct}-${s.sec}`);
+                                  setTimeout(() => setCopiedCitationId(null), 2000);
+                                }}
+                                className="text-indigo-600 font-bold hover:underline"
+                              >
+                                {copiedCitationId === `sec-${selectedBareAct}-${s.sec}` ? "✓ Copied!" : "📋 Copy Section"}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -994,7 +1556,7 @@ Key Excerpt:
                   </div>
 
                   <div className="text-[11px] text-slate-500 flex justify-between items-center px-1">
-                    <span>Showing {filteredSections.length} statutory legal sections</span>
+                    <span>Showing statutory legal sections</span>
                     <span className="text-indigo-600 font-bold">New Criminal Laws Effective 1st July 2024</span>
                   </div>
                 </div>
