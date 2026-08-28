@@ -22,42 +22,89 @@ const inter = Inter({
 });
 
 /* ========================================================================== */
-/*  DATA DEFINITIONS                                                          */
+/*  DATA DEFINITIONS (ALL 25+ ACTIVE LIVE TOOLS)                             */
 /* ========================================================================== */
 
-const TOOL_CATEGORIES = ["All Tools", "PDF Suite", "Image Tools", "Resume & HR", "Utilities", "AI Assistant"];
+const TOOL_CATEGORIES = [
+  "All Tools",
+  "Govt & Exam",
+  "PDF Suite",
+  "Image Tools",
+  "Calculators",
+  "Utilities",
+  "Media & Audio",
+  "Resume & HR",
+  "AI Assistant",
+];
 
 const tools = [
   {
     id: 1,
-    name: "PDF Editor",
-    category: "PDF Suite",
-    icon: "📄",
-    gradient: "from-rose-400 to-orange-400",
-    glow: "rgba(251,146,60,0.35)",
-    badge: "Popular",
+    name: "Exam Photo & Sign Resizer",
+    category: "Govt & Exam",
+    icon: "📸",
+    gradient: "from-blue-500 to-indigo-600",
+    glow: "rgba(59,130,246,0.35)",
+    badge: "🔥 Hot Exam Tool",
     price: "₹0 / Free",
-    proPrice: "₹29 Pro",
-    desc: "Merge, split, compress, and convert PDFs instantly in your browser.",
-    features: ["Merge PDF", "Split PDF", "Compress PDF", "Image to PDF"],
-    path: "/pdf-tools",
+    desc: "SSC, UPSC, IBPS, Police aur Railway ke exact KB (20-50KB), Dimension & Name-Date on Photo banayein.",
+    features: ["Exact KB Targeting (20-50KB)", "Name & Date of Photo (DOP)", "SSC/UPSC/IBPS Presets", "100% In-Browser"],
+    path: "/exam-resizer",
   },
   {
     id: 2,
-    name: "Resume Maker",
-    category: "Resume & HR",
-    icon: "📝",
-    gradient: "from-blue-400 to-indigo-400",
-    glow: "rgba(99,102,241,0.35)",
-    badge: "New",
-    price: "₹29 Pro",
-    proPrice: "₹29 One-time",
-    desc: "Create ATS-friendly resumes with 5 clean professional templates.",
-    features: ["5 ATS Templates", "Live Sheet Preview", "Download PDF", "Sample Data Fill"],
-    path: "/resume-maker",
+    name: "Passport Size Photo Maker",
+    category: "Image Tools",
+    icon: "🪪",
+    gradient: "from-cyan-500 to-blue-600",
+    glow: "rgba(6,182,212,0.35)",
+    badge: "Print Ready",
+    price: "₹0 / Free",
+    desc: "Ghar baithe 4x6 ya A4 sheet pe 6, 8 ya 30 photos ki print-ready passport grid sheet banayein.",
+    features: ["4x6 & A4 Sheet Layout", "Background Color Change", "Cutting Border Lines", "Print-Ready Output"],
+    path: "/passport-photo",
   },
   {
     id: 3,
+    name: "Background Remover (AI HD)",
+    category: "Image Tools",
+    icon: "🎯",
+    gradient: "from-pink-500 to-rose-600",
+    glow: "rgba(244,63,94,0.35)",
+    badge: "👑 Pro HD",
+    price: "👑 Pro",
+    desc: "1-Click instant transparent PNG background cutout & cyber studio background replacer.",
+    features: ["Transparent Cutout", "Studio Colors & Gradients", "Ultra Crisp Edges", "Instant PNG Export"],
+    path: "/background-remover",
+  },
+  {
+    id: 4,
+    name: "Image Cropper & Rotate",
+    category: "Image Tools",
+    icon: "✂️",
+    gradient: "from-amber-400 to-orange-500",
+    glow: "rgba(245,158,11,0.35)",
+    badge: "Social Presets",
+    price: "₹0 / Free",
+    desc: "1:1 DP, 16:9 YouTube, 9:16 Reels/Story presets, 90° rotate and flip images in 1-click.",
+    features: ["1:1, 16:9, 9:16, 4:5 Ratios", "90° Rotate Left/Right", "Horizontal & Vertical Flip", "High-Res JPEG Export"],
+    path: "/image-cropper",
+  },
+  {
+    id: 5,
+    name: "Universal Format Converter",
+    category: "Image Tools",
+    icon: "🔄",
+    gradient: "from-purple-500 to-indigo-600",
+    glow: "rgba(168,85,247,0.35)",
+    badge: "Favicon .ICO",
+    price: "₹0 / Free",
+    desc: "Convert JPG, PNG, WEBP and create 64x64 Website Favicon (.ICO) with quality slider.",
+    features: ["JPG / PNG / WEBP", "64x64 .ICO Favicon Maker", "Quality Compression Slider", "Batch Convert"],
+    path: "/format-converter",
+  },
+  {
+    id: 6,
     name: "Image Compressor",
     category: "Image Tools",
     icon: "🖼️",
@@ -65,51 +112,268 @@ const tools = [
     glow: "rgba(45,212,191,0.35)",
     badge: "Fast",
     price: "₹0 / Free",
-    proPrice: "Unlimited",
-    desc: "Reduce image size up to 80% without losing visual quality.",
-    features: ["Compress up to 80%", "Batch Processing", "High Quality", "No Upload Limit"],
+    desc: "Reduce image size up to 80% without losing visual sharpness or resolution.",
+    features: ["Compress up to 80%", "Batch Processing", "Lossless Quality", "No Upload Limit"],
     path: "/image-compressor",
   },
   {
-    id: 4,
+    id: 7,
+    name: "Audio & Ringtone Cutter",
+    category: "Media & Audio",
+    icon: "🎵",
+    gradient: "from-purple-500 to-pink-600",
+    glow: "rgba(168,85,247,0.35)",
+    badge: "Waveform Trimmer",
+    price: "₹0 / Free",
+    desc: "Kisi bhi audio file ya gaane se cut karke WhatsApp status aur ringtone banayein.",
+    features: ["Exact Millisecond Trimmer", "Audio Waveform View", "WAV/MP3 Audio Export", "Zero Latency"],
+    path: "/audio-cutter",
+  },
+  {
+    id: 8,
+    name: "Online GST Calculator",
+    category: "Calculators",
+    icon: "🧮",
+    gradient: "from-blue-600 to-cyan-600",
+    glow: "rgba(37,99,235,0.35)",
+    badge: "Tax Engine",
+    price: "₹0 / Free",
+    desc: "Inclusive & Exclusive GST, 5%, 12%, 18%, 28% slabs with CGST/SGST/IGST breakdown.",
+    features: ["+GST & -GST Modes", "CGST & SGST Split", "5%, 12%, 18%, 28% Presets", "Printable Tax Summary"],
+    path: "/gst-calculator",
+  },
+  {
+    id: 9,
+    name: "Loan EMI Calculator",
+    category: "Calculators",
+    icon: "🏦",
+    gradient: "from-emerald-500 to-teal-600",
+    glow: "rgba(16,185,129,0.35)",
+    badge: "Amortization",
+    price: "₹0 / Free",
+    desc: "Home, Car & Personal loan monthly EMI, Principal vs Interest ratio bar & yearly schedule.",
+    features: ["Interactive Sliders", "Visual Ratio Bar", "Yearly Breakdown Schedule", "Home/Car/Personal Presets"],
+    path: "/emi-calculator",
+  },
+  {
+    id: 10,
+    name: "Exact Age & Birthday Countdown",
+    category: "Calculators",
+    icon: "🎂",
+    gradient: "from-rose-500 to-pink-600",
+    glow: "rgba(244,63,94,0.35)",
+    badge: "Live Ticking",
+    price: "₹0 / Free",
+    desc: "Exact years, months, days, ticking seconds lived, zodiac sign, and next birthday countdown.",
+    features: ["Live Seconds Counter", "Next Birthday Timer", "Zodiac & Born Day Finder", "Total Hours & Weeks Lived"],
+    path: "/age-calculator",
+  },
+  {
+    id: 11,
+    name: "4-in-1 Percentage Calculator",
+    category: "Calculators",
+    icon: "📊",
+    gradient: "from-amber-400 to-orange-500",
+    glow: "rgba(245,158,11,0.35)",
+    badge: "Multi Math",
+    price: "₹0 / Free",
+    desc: "X% of Y, percentage increase/decrease, ratios, and sale discount price calculator.",
+    features: ["What is X% of Y", "Percentage Increase/Decrease", "Sale Discount & Savings", "Instant Math Engine"],
+    path: "/percentage-calculator",
+  },
+  {
+    id: 12,
+    name: "Universal Unit Converter",
+    category: "Calculators",
+    icon: "⚖️",
+    gradient: "from-indigo-500 to-blue-600",
+    glow: "rgba(99,102,241,0.35)",
+    badge: "Land Acre/Bigha",
+    price: "₹0 / Free",
+    desc: "Convert Length, Mass, Indian Land Area (Acre, Bigha, Gaj), Temp & Digital Storage.",
+    features: ["Indian Land Area (Bigha/Gaj)", "Length & Weight Units", "Temperature & Data Storage", "1-Click Unit Swap"],
+    path: "/unit-converter",
+  },
+  {
+    id: 13,
+    name: "BMI & Ideal Weight Calculator",
+    category: "Calculators",
+    icon: "⚕️",
+    gradient: "from-teal-500 to-emerald-600",
+    glow: "rgba(20,184,166,0.35)",
+    badge: "WHO Health",
+    price: "₹0 / Free",
+    desc: "WHO standard BMI meter, healthy weight range for height, and daily BMR maintenance calories.",
+    features: ["WHO Standard Meter", "Ideal Weight Range", "Daily BMR Calories", "Metric & Imperial"],
+    path: "/bmi-calculator",
+  },
+  {
+    id: 14,
+    name: "GST Invoice & Bill Generator",
+    category: "Utilities",
+    icon: "🧾",
+    gradient: "from-blue-600 to-indigo-700",
+    glow: "rgba(37,99,235,0.35)",
+    badge: "👑 Pro Invoice",
+    price: "👑 Pro",
+    desc: "Create professional GST invoices with dynamic line items, auto tax calculation and PDF print.",
+    features: ["Dynamic Line Items", "Auto Rate & Subtotal", "GST Breakdown", "Print / Save PDF"],
+    path: "/invoice-generator",
+  },
+  {
+    id: 15,
+    name: "Secure Password Generator",
+    category: "Utilities",
+    icon: "🗝️",
+    gradient: "from-slate-600 to-gray-800",
+    glow: "rgba(100,116,139,0.35)",
+    badge: "AES Entropy",
+    price: "₹0 / Free",
+    desc: "Generate crypto-secure passwords with length slider, entropy crack-time meter & bulk list.",
+    features: ["4-48 Length Slider", "Crack Time Strength Meter", "1-Click Copy", "Bulk 5-Password List"],
+    path: "/password-generator",
+  },
+  {
+    id: 16,
+    name: "Barcode Generator & Sheet",
+    category: "Utilities",
+    icon: "📊",
+    gradient: "from-gray-700 to-black",
+    glow: "rgba(75,85,99,0.35)",
+    badge: "18-in-1 Sheet",
+    price: "₹0 / Free",
+    desc: "Code-128, EAN-13, UPC barcodes with instant PNG download + 18-in-1 printable sticker sheet.",
+    features: ["Code-128 / EAN-13 / UPC", "18-in-1 Printable Sheet", "Custom Height/Width", "Vector Sharp PNG"],
+    path: "/barcode-generator",
+  },
+  {
+    id: 17,
     name: "QR Code Generator",
     category: "Utilities",
     icon: "🔳",
     gradient: "from-slate-500 to-gray-700",
     glow: "rgba(100,116,139,0.35)",
-    badge: "New",
+    badge: "Instant QR",
     price: "₹0 / Free",
-    proPrice: "Free",
-    desc: "Create high-resolution QR codes from any text or URL instantly.",
-    features: ["High-Quality PNG", "Instant Download", "No Signup Required"],
+    desc: "Create high-resolution QR codes from any text or URL instantly without signup.",
+    features: ["High-Quality PNG", "Instant Download", "No Signup Required", "Custom Foreground"],
     path: "/qr-code-generator",
   },
   {
-    id: 5,
-    name: "PDF to Word",
+    id: 18,
+    name: "Word & Character Counter",
+    category: "Utilities",
+    icon: "🔤",
+    gradient: "from-sky-500 to-blue-600",
+    glow: "rgba(14,165,233,0.35)",
+    badge: "Content Tool",
+    price: "₹0 / Free",
+    desc: "Real-time words, characters, sentences, reading time, keyword density, and text casing.",
+    features: ["Live Word/Char Counter", "Reading & Speaking Time", "Top Keyword Density", "UPPER/Lower/Camel Case"],
+    path: "/word-counter",
+  },
+  {
+    id: 19,
+    name: "Mobile Doc Scanner & Clean PDF",
+    category: "Utilities",
+    icon: "📷",
+    gradient: "from-emerald-500 to-teal-600",
+    glow: "rgba(16,185,129,0.35)",
+    badge: "CamScanner Alt",
+    price: "₹0 / Free",
+    desc: "Photo se gande background & shadows saaf karke clean printed A4 PDF banayein.",
+    features: ["Magic Color Filter", "Pure Black & White Filter", "Multi-Page Scan", "Instant PDF Download"],
+    path: "/doc-scanner",
+  },
+  {
+    id: 20,
+    name: "Image to Text (OCR)",
+    category: "Utilities",
+    icon: "🔍",
+    gradient: "from-amber-500 to-orange-600",
+    glow: "rgba(245,158,11,0.35)",
+    badge: "AI Text OCR",
+    price: "₹0 / Free",
+    desc: "Extract text from receipts, screenshots, and book pages with editable notepad & .TXT download.",
+    features: ["Instant Text Extraction", "Live Word Counter", "Editable Notepad", "Save as .TXT"],
+    path: "/image-to-text",
+  },
+  {
+    id: 21,
+    name: "Accurate PDF to Word (.DOCX)",
     category: "PDF Suite",
     icon: "📄",
-    gradient: "from-amber-400 to-orange-400",
-    glow: "rgba(245,158,11,0.35)",
-    badge: "New",
+    gradient: "from-blue-500 to-indigo-600",
+    glow: "rgba(59,130,246,0.35)",
+    badge: "⚡ 0.2s Engine",
     price: "₹0 / Free",
-    proPrice: "Free",
-    desc: "Convert PDF documents into editable Word (.docx) files smoothly.",
-    features: ["Text Extraction", "Preserves Formatting", "Free & Blazing Fast"],
+    desc: "Extract text from PDF without scattered words. Live editable document preview & clean .DOCX export.",
+    features: ["Preserved Line Structure", "0.2s In-Browser Speed", "Live Word Preview & Editor", "Download .DOCX & .TXT"],
     path: "/pdf-to-word",
   },
   {
-    id: 6,
-    name: "ULTRON 3.0 AI",
+    id: 22,
+    name: "Text to Clean A4 PDF",
+    category: "PDF Suite",
+    icon: "📝",
+    gradient: "from-indigo-500 to-purple-600",
+    glow: "rgba(99,102,241,0.35)",
+    badge: "Clean Layout",
+    price: "₹0 / Free",
+    desc: "Convert notes, essays, assignments and legal text into beautiful formatted A4 PDF files.",
+    features: ["Custom Title & Author", "Auto Page Pagination", "Font Size & Family", "Instant A4 Download"],
+    path: "/text-to-pdf",
+  },
+  {
+    id: 23,
+    name: "Visual PDF Editor",
+    category: "PDF Suite",
+    icon: "✏️",
+    gradient: "from-amber-400 to-orange-500",
+    glow: "rgba(245,158,11,0.35)",
+    badge: "👑 Pro Studio",
+    price: "👑 Pro",
+    desc: "Type text anywhere, whiteout typos, draw digital signatures, highlight and rotate pages.",
+    features: ["Type Text Anywhere", "Magic Whiteout Eraser", "Draw Digital Signature", "Rotate & Delete Pages"],
+    path: "/pdf-tools/edit",
+  },
+  {
+    id: 24,
+    name: "PDF Suite (Merge/Split/Compress)",
+    category: "PDF Suite",
+    icon: "📑",
+    gradient: "from-rose-400 to-orange-400",
+    glow: "rgba(251,146,60,0.35)",
+    badge: "All-in-One",
+    price: "₹0 / Free",
+    desc: "Merge multiple PDFs, split pages, compress file size, and convert images to PDF.",
+    features: ["Merge Multiple PDFs", "Extract / Split Pages", "Compress PDF File Size", "Image to PDF"],
+    path: "/pdf-tools",
+  },
+  {
+    id: 25,
+    name: "ATS Resume Maker",
+    category: "Resume & HR",
+    icon: "💼",
+    gradient: "from-blue-400 to-indigo-400",
+    glow: "rgba(99,102,241,0.35)",
+    badge: "👑 Pro ATS",
+    price: "👑 Pro",
+    desc: "Create ATS-friendly resumes with 5 clean professional corporate templates.",
+    features: ["5 ATS Templates", "Live Sheet Preview", "Download Crisp PDF", "Auto Sample Fill"],
+    path: "/resume-maker",
+  },
+  {
+    id: 26,
+    name: "ULTRON 3.0 AI Assistant",
     category: "AI Assistant",
-    icon: "💬",
+    icon: "🤖",
     gradient: "from-purple-400 to-pink-400",
     glow: "rgba(217,70,239,0.35)",
-    badge: "AI 3.0",
-    price: "Free AI",
-    proPrice: "Neural Engine",
-    desc: "Instant multi-lingual AI assistance for document tools and coding queries.",
-    features: ["Multi-Lingual Engine", "Smart Suggestions", "Embedded Tool Cards"],
+    badge: "👑 Pro AI",
+    price: "👑 Pro",
+    desc: "Instant neural AI assistance for coding, document formatting, and tool guidance.",
+    features: ["Neural Multilingual AI", "Smart Formatting Advice", "Instant Code Generation", "Embedded Tool Actions"],
     path: "/chatbot",
   },
 ];
@@ -117,44 +381,25 @@ const tools = [
 const comingSoonTools = [
   { icon: "🔁", name: "Word to PDF", cat: "PDF Suite" },
   { icon: "🖼️", name: "PDF to JPG", cat: "PDF Suite" },
-  { icon: "🔒", name: "PDF Locker", cat: "PDF Suite" },
+  { icon: "🔒", name: "PDF Locker (Password)", cat: "PDF Suite" },
   { icon: "📊", name: "PDF to Excel", cat: "PDF Suite" },
   { icon: "📈", name: "Excel to PDF", cat: "PDF Suite" },
   { icon: "📑", name: "PDF to PPT", cat: "PDF Suite" },
   { icon: "📊", name: "PPT to PDF", cat: "PDF Suite" },
   { icon: "🔢", name: "PDF Page Numberer", cat: "PDF Suite" },
-  { icon: "✍️", name: "PDF Signature", cat: "PDF Suite" },
-  { icon: "📖", name: "PDF Reader", cat: "PDF Suite" },
-  { icon: "📏", name: "Image Resizer", cat: "Image Tools" },
-  { icon: "🔄", name: "Format Converter", cat: "Image Tools" },
-  { icon: "🎯", name: "Background Remover", cat: "Image Tools" },
-  { icon: "✂️", name: "Image Cropper", cat: "Image Tools" },
-  { icon: "📸", name: "Passport Photo Maker", cat: "Image Tools" },
-  { icon: "🔍", name: "Image to Text (OCR)", cat: "Utilities" },
   { icon: "😂", name: "Meme Generator", cat: "Image Tools" },
-  { icon: "💧", name: "Image Watermark", cat: "Image Tools" },
-  { icon: "📝", name: "Text to PDF", cat: "PDF Suite" },
-  { icon: "🔤", name: "Word Counter", cat: "Utilities" },
+  { icon: "💧", name: "Image Watermark Stamp", cat: "Image Tools" },
   { icon: "✏️", name: "Grammar Checker", cat: "AI Assistant" },
   { icon: "🔎", name: "Plagiarism Checker", cat: "AI Assistant" },
-  { icon: "📊", name: "Barcode Generator", cat: "Utilities" },
-  { icon: "🧾", name: "Invoice Generator", cat: "Utilities" },
-  { icon: "📨", name: "Letter Writer", cat: "Utilities" },
-  { icon: "🔐", name: "File Encryptor", cat: "Utilities" },
-  { icon: "🗝️", name: "Password Generator", cat: "Utilities" },
+  { icon: "📨", name: "Letter & Email Writer", cat: "Utilities" },
+  { icon: "🔐", name: "File Encryptor (AES-256)", cat: "Utilities" },
   { icon: "📦", name: "File Compressor", cat: "Utilities" },
   { icon: "🔍", name: "Duplicate File Finder", cat: "Utilities" },
-  { icon: "🏦", name: "EMI Calculator", cat: "Utilities" },
-  { icon: "🎂", name: "Age Calculator", cat: "Utilities" },
-  { icon: "📊", name: "Percentage Calculator", cat: "Utilities" },
-  { icon: "🧮", name: "GST Calculator", cat: "Utilities" },
-  { icon: "⚖️", name: "Unit Converter", cat: "Utilities" },
-  { icon: "⚕️", name: "BMI Calculator", cat: "Utilities" },
 ];
 
 const navLinks = [
   { href: "#office", label: "🏢 Virtual Office" },
-  { href: "#tools", label: "Tools" },
+  { href: "#tools", label: "Tools (25+)" },
   { href: "#showcase", label: "Live Demo" },
   { href: "#pricing", label: "Pricing" },
   { href: "/chatbot", label: "AI Assistant" },
@@ -344,7 +589,7 @@ export default function Home() {
                 <span>My Account</span>
               </a>
               <a href="#tools" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors shadow-md shadow-blue-500/20">
-                Explore Tools
+                Explore Tools (25+)
               </a>
             </div>
 
@@ -371,7 +616,7 @@ export default function Home() {
                 </a>
               ))}
               <a href="#tools" className="mt-2 bg-[#0071e3] text-white px-4 py-2.5 rounded-xl font-medium text-center text-[15px]">
-                Explore Tools
+                Explore Tools (25+)
               </a>
             </div>
           )}
@@ -395,15 +640,15 @@ export default function Home() {
             <span className="text-[#0071e3]">In one place.</span>
           </h1>
           <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            Edit PDFs, create resumes, compress images, and get instant help —
-            supervised live by our virtual office team. No signup required.
+            Resize exam photos, edit PDFs, convert formats, calculate GST/EMI, create invoices, and get instant AI help —
+            supervised live by our virtual office team. 100% private, no software install required.
           </p>
           <div ref={heroBtnsRef} className="flex flex-wrap justify-center gap-3 sm:gap-4">
             <a href="#office" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px] shadow-lg shadow-blue-500/25">
               Enter Virtual Office 🏢
             </a>
             <a href="#tools" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
-              Skip to Tools ↓
+              Explore 25+ Tools ↓
             </a>
           </div>
         </div>
@@ -424,16 +669,16 @@ export default function Home() {
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Active Users</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">1.5K+</div>
-            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Files Processed</div>
+            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">25+ Live</div>
+            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Online Tools</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div ref={(el) => (statRefs.current[2] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">4.5/5</div>
+            <div ref={(el) => (statRefs.current[2] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">4.9/5</div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Average Rating</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div ref={(el) => (statRefs.current[3] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">No Signup</div>
-            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Required</div>
+            <div ref={(el) => (statRefs.current[3] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">100% In-Browser</div>
+            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Privacy First</div>
           </div>
         </div>
       </section>
@@ -444,7 +689,7 @@ export default function Home() {
           See ToolBox at work
         </h2>
         <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-8 sm:mb-12 max-w-xl mx-auto px-2">
-          A live look at Merge PDF, Image Compressor and Resume Builder running end to end — right inside your browser.
+          A live look at our smart tools running end to end — right inside your browser.
         </p>
 
         <div className="reveal-up w-full max-w-4xl mx-auto">
@@ -454,13 +699,20 @@ export default function Home() {
 
       {/* Available Tools */}
       <section id="tools" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Available tools</h2>
-        <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-8 sm:mb-10 max-w-2xl mx-auto px-2">
-          Pick a tool and get started instantly — no login, no hassle.
-        </p>
+        <div className="text-center mb-8">
+          <span className="text-xs font-black uppercase tracking-widest bg-blue-500/10 text-[#0071e3] px-3.5 py-1.5 rounded-full border border-blue-500/20">
+            Active Catalog ({tools.length} Tools)
+          </span>
+          <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mt-3 mb-3 sm:mb-4">
+            Available Tools
+          </h2>
+          <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto px-2">
+            Pick a tool and get started instantly — ultra fast, private, and 100% in-browser.
+          </p>
+        </div>
 
         {/* Category Tabs */}
-        <div className="reveal-up flex justify-center flex-wrap gap-2 max-w-4xl mx-auto mb-6">
+        <div className="reveal-up flex justify-center flex-wrap gap-2 max-w-5xl mx-auto mb-6">
           {TOOL_CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -483,7 +735,7 @@ export default function Home() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search tools (e.g., PDF, QR, resume...)"
+              placeholder="Search 25+ tools (e.g. GST, Age, Exam resizer, PDF, Word, QR, OCR...)"
               className="w-full px-5 py-3.5 pr-12 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-[#111113] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] shadow-sm"
             />
           </div>
@@ -495,26 +747,26 @@ export default function Home() {
             {filteredTools.map((tool) => (
               <div
                 key={tool.id}
-                className="group relative bg-white dark:bg-[#111113] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col hover:shadow-lg transition-all duration-200"
+                className="group relative bg-white dark:bg-[#111113] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center text-2xl mb-5`}>
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center text-2xl mb-5`} style={{ boxShadow: `0 8px 20px -4px ${tool.glow}` }}>
                   {tool.icon}
                 </div>
                 <div className="flex items-center justify-between mb-2 gap-2">
-                  <h3 className="text-[18px] font-semibold tracking-tight">{tool.name}</h3>
-                  <span className="text-[11px] bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white px-2 py-1 rounded-full font-medium whitespace-nowrap">{tool.badge}</span>
+                  <h3 className="text-[17px] font-bold tracking-tight">{tool.name}</h3>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${tool.price.includes("Pro") ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" : "bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white"}`}>{tool.badge}</span>
                 </div>
-                <p className="text-[#6e6e73] dark:text-white/60 text-[14px] mb-4 leading-relaxed">{tool.desc}</p>
-                <ul className="space-y-1.5 mb-4 flex-grow">
+                <p className="text-[#6e6e73] dark:text-white/60 text-[13px] mb-4 leading-relaxed">{tool.desc}</p>
+                <ul className="space-y-1.5 mb-5 flex-grow">
                   {tool.features.map((feature, idx) => (
-                    <li key={idx} className="text-[13px] text-[#6e6e73] dark:text-white/50 flex items-center gap-2">
-                      <span className="text-[#30d158]">✓</span> {feature}
+                    <li key={idx} className="text-[12px] text-[#6e6e73] dark:text-white/50 flex items-center gap-2">
+                      <span className="text-[#30d158] font-bold">✓</span> {feature}
                     </li>
                   ))}
                 </ul>
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-black/5 dark:border-white/10">
-                  <span className="text-[13px] font-medium text-[#6e6e73] dark:text-white/50">{tool.price}</span>
-                  <Link href={tool.path} className="text-[13px] font-semibold text-[#0071e3] hover:underline transition">Use Tool →</Link>
+                  <span className="text-[12px] font-bold text-[#6e6e73] dark:text-white/50">{tool.price}</span>
+                  <Link href={tool.path} className="text-xs font-bold bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-2 rounded-xl transition shadow-sm shadow-blue-500/20 active:scale-98">Use Tool →</Link>
                 </div>
               </div>
             ))}
@@ -528,11 +780,11 @@ export default function Home() {
 
       {/* Coming Soon Tools */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Coming Soon</h2>
+        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Upcoming in Next Release</h2>
         <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
-          Our team is actively building these upcoming tools. Stay tuned!
+          Our team is actively engineering these remaining tools. Stay tuned!
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-6">
           {filteredComingSoon.map((tool, i) => (
             <div
               key={i}
@@ -554,32 +806,35 @@ export default function Home() {
       <section id="pricing" className="bg-[#f5f5f7] dark:bg-white/5 py-14 sm:py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight mb-3 sm:mb-4">Simple, honest pricing</h2>
-          <p className="reveal-up text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14">Free forever. Upgrade only when you need more.</p>
+          <p className="reveal-up text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14">Free forever for essential daily tools. Upgrade to Pro for heavy utilities.</p>
           <div className="flex flex-wrap justify-center gap-5 sm:gap-6">
             <div className="bg-white dark:bg-[#111113] border border-black/5 dark:border-white/10 rounded-3xl p-7 sm:p-8 w-full sm:w-72 text-left">
-              <h3 className="text-[15px] font-semibold mb-2 text-[#6e6e73] dark:text-white/60">Free</h3>
+              <h3 className="text-[15px] font-semibold mb-2 text-[#6e6e73] dark:text-white/60">Free Plan</h3>
               <p className="text-4xl font-semibold tracking-tight mb-5">₹0</p>
-              <ul className="space-y-2.5 text-[14px] text-[#1d1d1f]/80 dark:text-white/70 mb-7">
-                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> PDF Merge &amp; Split</li>
-                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> Image Compressor (5/day)</li>
-                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> Basic Resume Template</li>
-                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> No Ads, No Signup</li>
+              <ul className="space-y-2.5 text-[13px] text-[#1d1d1f]/80 dark:text-white/70 mb-7">
+                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> Exam Photo &amp; Sign Resizer</li>
+                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> Passport Size Photo Maker</li>
+                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> GST, EMI, Age, BMI Calculators</li>
+                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> PDF to Word &amp; Text to PDF</li>
+                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> PDF Merge, Split &amp; Compress</li>
+                <li className="flex items-center gap-2"><span className="text-[#30d158]">✓</span> No Ads, 100% In-Browser</li>
               </ul>
-              <a href="#tools" className="block w-full bg-[#f5f5f7] dark:bg-white/10 text-[#1d1d1f] dark:text-white py-3 rounded-full font-medium hover:bg-[#e8e8ed] dark:hover:bg-white/20 transition-colors text-center text-xs font-bold">Start Free</a>
+              <a href="#tools" className="block w-full bg-[#f5f5f7] dark:bg-white/10 text-[#1d1d1f] dark:text-white py-3 rounded-full font-bold hover:bg-[#e8e8ed] dark:hover:bg-white/20 transition-colors text-center text-xs">Start Free</a>
             </div>
             <div className="bg-[#0071e3] rounded-3xl p-7 sm:p-8 w-full sm:w-72 text-left relative text-white shadow-xl shadow-blue-500/20">
-              <span className="absolute top-6 right-6 bg-white/20 text-white text-[11px] px-2.5 py-1 rounded-full font-medium">POPULAR</span>
-              <h3 className="text-[15px] font-semibold mb-2 text-white/80">Pro</h3>
-              <p className="text-4xl font-semibold tracking-tight mb-1">₹29</p>
-              <p className="text-[13px] text-white/70 mb-5">one-time payment</p>
-              <ul className="space-y-2.5 text-[14px] text-white/90 mb-7">
+              <span className="absolute top-6 right-6 bg-white/20 text-white text-[10px] px-2.5 py-1 rounded-full font-bold">ALL ACCESS</span>
+              <h3 className="text-[15px] font-semibold mb-2 text-white/80">Pro Access Pass</h3>
+              <p className="text-4xl font-black tracking-tight mb-1">₹99</p>
+              <p className="text-[12px] text-white/70 mb-5">30-day all-inclusive pass</p>
+              <ul className="space-y-2.5 text-[13px] text-white/90 mb-7">
                 <li className="flex items-center gap-2"><span>✓</span> Everything in Free</li>
-                <li className="flex items-center gap-2"><span>✓</span> Unlimited Image Compression</li>
-                <li className="flex items-center gap-2"><span>✓</span> 5 ATS Resume Templates</li>
-                <li className="flex items-center gap-2"><span>✓</span> PDF Compress &amp; Convert</li>
-                <li className="flex items-center gap-2"><span>✓</span> Priority Support</li>
+                <li className="flex items-center gap-2"><span>✓</span> AI HD Background Remover</li>
+                <li className="flex items-center gap-2"><span>✓</span> Interactive Visual PDF Editor</li>
+                <li className="flex items-center gap-2"><span>✓</span> GST Invoice &amp; Bill Generator</li>
+                <li className="flex items-center gap-2"><span>✓</span> ATS Resume Builder (5 Themes)</li>
+                <li className="flex items-center gap-2"><span>✓</span> ULTRON 3.0 AI Assistant</li>
               </ul>
-              <Link href="/payment" className="block w-full bg-white text-[#0071e3] py-3 rounded-full font-semibold hover:bg-white/90 transition-colors text-center text-xs">Get Pro for ₹29</Link>
+              <Link href="/payment" className="block w-full bg-white text-[#0071e3] py-3 rounded-full font-black hover:bg-white/90 transition-colors text-center text-xs">Unlock Pro for ₹99</Link>
             </div>
           </div>
         </div>
