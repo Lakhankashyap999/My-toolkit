@@ -21,16 +21,12 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-/* ========================================================================== */
-/*  DATA DEFINITIONS (ALL 25+ ACTIVE LIVE TOOLS)                             */
-/* ========================================================================== */
-
 const TOOL_CATEGORIES = [
   "All Tools",
   "Govt & Exam",
   "PDF Suite",
-  "Image Tools",
   "Calculators",
+  "Image Tools",
   "Utilities",
   "Media & Audio",
   "Resume & HR",
@@ -40,6 +36,24 @@ const TOOL_CATEGORIES = [
 const tools = [
   {
     id: 1,
+    name: "CA & Tax Master Suite",
+    category: "Calculators",
+    icon: "💎",
+    gradient: "from-amber-400 via-orange-500 to-red-500",
+    glow: "rgba(245,158,11,0.45)",
+    badge: "🌟 NEW RELEASE • TOP PRO",
+    price: "👑 Pro Pass",
+    desc: "Old vs New Tax Regime comparator (Budget 2024), GST Engine, TDS Matrix (Sec 206AA) & Official Printable CA Memo.",
+    features: [
+      "GST Master & GSTR Late Fee",
+      "Complete TDS Matrix & Sec 206AA",
+      "Depreciation IT WDV vs Co. Act SLM",
+      "Printable Official CA Memo Sheet",
+    ],
+    path: "/tax-suite",
+  },
+  {
+    id: 2,
     name: "Exam Photo & Sign Resizer",
     category: "Govt & Exam",
     icon: "📸",
@@ -52,7 +66,7 @@ const tools = [
     path: "/exam-resizer",
   },
   {
-    id: 2,
+    id: 3,
     name: "Passport Size Photo Maker",
     category: "Image Tools",
     icon: "🪪",
@@ -65,7 +79,7 @@ const tools = [
     path: "/passport-photo",
   },
   {
-    id: 3,
+    id: 4,
     name: "Background Remover (AI HD)",
     category: "Image Tools",
     icon: "🎯",
@@ -78,7 +92,7 @@ const tools = [
     path: "/background-remover",
   },
   {
-    id: 4,
+    id: 5,
     name: "Image Cropper & Rotate",
     category: "Image Tools",
     icon: "✂️",
@@ -91,7 +105,7 @@ const tools = [
     path: "/image-cropper",
   },
   {
-    id: 5,
+    id: 6,
     name: "Universal Format Converter",
     category: "Image Tools",
     icon: "🔄",
@@ -104,7 +118,7 @@ const tools = [
     path: "/format-converter",
   },
   {
-    id: 6,
+    id: 7,
     name: "Image Compressor",
     category: "Image Tools",
     icon: "🖼️",
@@ -117,7 +131,7 @@ const tools = [
     path: "/image-compressor",
   },
   {
-    id: 7,
+    id: 8,
     name: "Audio & Ringtone Cutter",
     category: "Media & Audio",
     icon: "🎵",
@@ -130,7 +144,7 @@ const tools = [
     path: "/audio-cutter",
   },
   {
-    id: 8,
+    id: 9,
     name: "Online GST Calculator",
     category: "Calculators",
     icon: "🧮",
@@ -143,7 +157,7 @@ const tools = [
     path: "/gst-calculator",
   },
   {
-    id: 9,
+    id: 10,
     name: "Loan EMI Calculator",
     category: "Calculators",
     icon: "🏦",
@@ -156,7 +170,7 @@ const tools = [
     path: "/emi-calculator",
   },
   {
-    id: 10,
+    id: 11,
     name: "Exact Age & Birthday Countdown",
     category: "Calculators",
     icon: "🎂",
@@ -169,7 +183,7 @@ const tools = [
     path: "/age-calculator",
   },
   {
-    id: 11,
+    id: 12,
     name: "4-in-1 Percentage Calculator",
     category: "Calculators",
     icon: "📊",
@@ -182,7 +196,7 @@ const tools = [
     path: "/percentage-calculator",
   },
   {
-    id: 12,
+    id: 13,
     name: "Universal Unit Converter",
     category: "Calculators",
     icon: "⚖️",
@@ -195,7 +209,7 @@ const tools = [
     path: "/unit-converter",
   },
   {
-    id: 13,
+    id: 14,
     name: "BMI & Ideal Weight Calculator",
     category: "Calculators",
     icon: "⚕️",
@@ -208,7 +222,7 @@ const tools = [
     path: "/bmi-calculator",
   },
   {
-    id: 14,
+    id: 15,
     name: "GST Invoice & Bill Generator",
     category: "Utilities",
     icon: "🧾",
@@ -221,7 +235,7 @@ const tools = [
     path: "/invoice-generator",
   },
   {
-    id: 15,
+    id: 16,
     name: "Secure Password Generator",
     category: "Utilities",
     icon: "🗝️",
@@ -234,7 +248,7 @@ const tools = [
     path: "/password-generator",
   },
   {
-    id: 16,
+    id: 17,
     name: "Barcode Generator & Sheet",
     category: "Utilities",
     icon: "📊",
@@ -247,7 +261,7 @@ const tools = [
     path: "/barcode-generator",
   },
   {
-    id: 17,
+    id: 18,
     name: "QR Code Generator",
     category: "Utilities",
     icon: "🔳",
@@ -260,7 +274,7 @@ const tools = [
     path: "/qr-code-generator",
   },
   {
-    id: 18,
+    id: 19,
     name: "Word & Character Counter",
     category: "Utilities",
     icon: "🔤",
@@ -273,7 +287,7 @@ const tools = [
     path: "/word-counter",
   },
   {
-    id: 19,
+    id: 20,
     name: "Mobile Doc Scanner & Clean PDF",
     category: "Utilities",
     icon: "📷",
@@ -286,7 +300,7 @@ const tools = [
     path: "/doc-scanner",
   },
   {
-    id: 20,
+    id: 21,
     name: "Image to Text (OCR)",
     category: "Utilities",
     icon: "🔍",
@@ -299,7 +313,7 @@ const tools = [
     path: "/image-to-text",
   },
   {
-    id: 21,
+    id: 22,
     name: "Accurate PDF to Word (.DOCX)",
     category: "PDF Suite",
     icon: "📄",
@@ -312,7 +326,7 @@ const tools = [
     path: "/pdf-to-word",
   },
   {
-    id: 22,
+    id: 23,
     name: "Text to Clean A4 PDF",
     category: "PDF Suite",
     icon: "📝",
@@ -325,7 +339,7 @@ const tools = [
     path: "/text-to-pdf",
   },
   {
-    id: 23,
+    id: 24,
     name: "Visual PDF Editor",
     category: "PDF Suite",
     icon: "✏️",
@@ -338,7 +352,7 @@ const tools = [
     path: "/pdf-tools/edit",
   },
   {
-    id: 24,
+    id: 25,
     name: "PDF Suite (Merge/Split/Compress)",
     category: "PDF Suite",
     icon: "📑",
@@ -351,7 +365,7 @@ const tools = [
     path: "/pdf-tools",
   },
   {
-    id: 25,
+    id: 26,
     name: "ATS Resume Maker",
     category: "Resume & HR",
     icon: "💼",
@@ -364,7 +378,7 @@ const tools = [
     path: "/resume-maker",
   },
   {
-    id: 26,
+    id: 27,
     name: "ULTRON 3.0 AI Assistant",
     category: "AI Assistant",
     icon: "🤖",
@@ -399,7 +413,7 @@ const comingSoonTools = [
 
 const navLinks = [
   { href: "#office", label: "🏢 Virtual Office" },
-  { href: "#tools", label: "Tools (25+)" },
+  { href: "#tools", label: "Tools (27+)" },
   { href: "#showcase", label: "Live Demo" },
   { href: "#pricing", label: "Pricing" },
   { href: "/chatbot", label: "AI Assistant" },
@@ -468,7 +482,6 @@ export default function Home() {
     });
   }, [selectedCategory, searchQuery]);
 
-  /* GSAP Animations */
   useEffect(() => {
     const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -518,7 +531,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const values = ["", "1.5K+", "4.5/5", "No Signup"];
+    const values = ["", "2.5K+", "4.9/5", "100% Client-Side"];
     values[0] = userCount > 0 ? `${userCount}+` : "0+";
 
     const ctx = gsap.context(() => {
@@ -589,7 +602,7 @@ export default function Home() {
                 <span>My Account</span>
               </a>
               <a href="#tools" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors shadow-md shadow-blue-500/20">
-                Explore Tools (25+)
+                Explore Tools (27+)
               </a>
             </div>
 
@@ -616,7 +629,7 @@ export default function Home() {
                 </a>
               ))}
               <a href="#tools" className="mt-2 bg-[#0071e3] text-white px-4 py-2.5 rounded-xl font-medium text-center text-[15px]">
-                Explore Tools (25+)
+                Explore Tools (27+)
               </a>
             </div>
           )}
@@ -640,7 +653,7 @@ export default function Home() {
             <span className="text-[#0071e3]">In one place.</span>
           </h1>
           <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            Resize exam photos, edit PDFs, convert formats, calculate GST/EMI, create invoices, and get instant AI help —
+            Calculate CA Taxes, resize exam photos, edit PDFs, convert formats, generate invoices, and get instant AI help —
             supervised live by our virtual office team. 100% private, no software install required.
           </p>
           <div ref={heroBtnsRef} className="flex flex-wrap justify-center gap-3 sm:gap-4">
@@ -648,13 +661,13 @@ export default function Home() {
               Enter Virtual Office 🏢
             </a>
             <a href="#tools" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
-              Explore 25+ Tools ↓
+              Explore 27+ Tools ↓
             </a>
           </div>
         </div>
       </section>
 
-      {/* ── 🏢 TOP-DOWN LIVING VIRTUAL OFFICE FLOOR ──────────────────────────── */}
+      {/* Virtual Office Floor */}
       <section id="office" className="relative scroll-mt-20">
         <VirtualOffice />
       </section>
@@ -669,7 +682,7 @@ export default function Home() {
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Active Users</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">25+ Live</div>
+            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">27+ Live</div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Online Tools</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
@@ -683,7 +696,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Live 3D Showcase */}
+      {/* 3D Laptop Showcase */}
       <section id="showcase" className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
         <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">
           See ToolBox at work
@@ -697,7 +710,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Available Tools */}
+      {/* Available Tools Grid */}
       <section id="tools" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="text-center mb-8">
           <span className="text-xs font-black uppercase tracking-widest bg-blue-500/10 text-[#0071e3] px-3.5 py-1.5 rounded-full border border-blue-500/20">
@@ -711,7 +724,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Category Tabs */}
+        {/* Categories */}
         <div className="reveal-up flex justify-center flex-wrap gap-2 max-w-5xl mx-auto mb-6">
           {TOOL_CATEGORIES.map((cat) => (
             <button
@@ -728,20 +741,20 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Search Bar */}
+        {/* Search */}
         <div className="reveal-up max-w-xl mx-auto mb-10 sm:mb-14">
           <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 25+ tools (e.g. GST, Age, Exam resizer, PDF, Word, QR, OCR...)"
+              placeholder="Search 27+ tools (e.g. CA Tax, GST, TDS, EMI, PDF, Word, QR, OCR...)"
               className="w-full px-5 py-3.5 pr-12 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-[#111113] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] shadow-sm"
             />
           </div>
         </div>
 
-        {/* Tools Grid */}
+        {/* Grid Cards */}
         {filteredTools.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredTools.map((tool) => (
@@ -754,7 +767,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center justify-between mb-2 gap-2">
                   <h3 className="text-[17px] font-bold tracking-tight">{tool.name}</h3>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${tool.price.includes("Pro") ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" : "bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white"}`}>{tool.badge}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${tool.badge.includes("NEW") ? "bg-amber-500 text-white shadow-sm" : tool.price.includes("Pro") ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" : "bg-[#0071e3]/10 text-[#0071e3] dark:bg-white/10 dark:text-white"}`}>{tool.badge}</span>
                 </div>
                 <p className="text-[#6e6e73] dark:text-white/60 text-[13px] mb-4 leading-relaxed">{tool.desc}</p>
                 <ul className="space-y-1.5 mb-5 flex-grow">
@@ -778,7 +791,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* Coming Soon Tools */}
+      {/* Upcoming Tools */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">Upcoming in Next Release</h2>
         <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-10 sm:mb-14 max-w-2xl mx-auto px-2">
@@ -827,7 +840,7 @@ export default function Home() {
               <p className="text-4xl font-black tracking-tight mb-1">₹99</p>
               <p className="text-[12px] text-white/70 mb-5">30-day all-inclusive pass</p>
               <ul className="space-y-2.5 text-[13px] text-white/90 mb-7">
-                <li className="flex items-center gap-2"><span>✓</span> Everything in Free</li>
+                <li className="flex items-center gap-2"><span>✓</span> 💎 CA &amp; Tax Master Suite</li>
                 <li className="flex items-center gap-2"><span>✓</span> AI HD Background Remover</li>
                 <li className="flex items-center gap-2"><span>✓</span> Interactive Visual PDF Editor</li>
                 <li className="flex items-center gap-2"><span>✓</span> GST Invoice &amp; Bill Generator</li>
@@ -840,17 +853,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── ULTRA-COOL FOUNDER FOOTER ────────────────────────────────────────── */}
+      {/* Founder Footer */}
       <footer className="border-t border-black/5 dark:border-white/10 pt-12 pb-8 overflow-hidden relative bg-white dark:bg-[#07090e]">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          
-          {/* FOUNDER BRANDING CARD */}
           <div className="flex flex-col items-center gap-3 pb-8 mb-8 border-b border-black/5 dark:border-white/10">
             <div className="text-[11px] uppercase tracking-widest text-[#0071e3] dark:text-blue-400 font-extrabold">
               Crafted with Excellence by
             </div>
 
-            {/* Glowing Circle Founder Avatar */}
             <div className="relative group cursor-pointer">
               <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#0071e3] via-indigo-500 to-emerald-400 blur-md opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse" />
               <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-[#0071e3] to-indigo-600 p-[2.5px]">
@@ -860,7 +870,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Founder Name & Role Badges */}
             <div className="mt-1 space-y-1">
               <h3 className="font-extrabold text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#0071e3] to-indigo-600 dark:from-white dark:via-blue-400 dark:to-indigo-300">
                 Lakhan Kashyap
@@ -876,7 +885,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── SMOOTH LOW-SPEED MARQUEE TICKER LINE ───────────────────── */}
           <div className="w-full overflow-hidden bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl py-3.5 mb-8">
             <div className="animate-marquee-slow whitespace-nowrap text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 opacity-70">
               <span className="inline-flex items-center gap-4 px-4">
