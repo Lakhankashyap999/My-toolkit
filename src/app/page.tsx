@@ -21,8 +21,13 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+/* ========================================================================== */
+/*  DATA DEFINITIONS (CA & TAX SUITE AT #1 TOP PRIORITY)                      */
+/* ========================================================================== */
+
 const TOOL_CATEGORIES = [
   "All Tools",
+  "Legal & Court",
   "Govt & Exam",
   "PDF Suite",
   "Calculators",
@@ -51,6 +56,24 @@ const tools = [
       "Printable Official CA Memo Sheet",
     ],
     path: "/tax-suite",
+  },
+  {
+    id: 2,
+    name: "Advocate & Legal Master Suite",
+    category: "Legal & Court",
+    icon: "⚖️",
+    gradient: "from-indigo-600 via-purple-600 to-blue-600",
+    glow: "rgba(99,102,241,0.45)",
+    badge: "🏛️ NEW • LAW PRO",
+    price: "👑 Pro Pass",
+    desc: "IPC to BNS (2024 Law) Section Converter, 1950-2025 Supreme Court Landmark Rulings Matrix, 1-Click Court Notice Generator & Limitation Engine.",
+    features: [
+      "IPC ⟷ BNS & CrPC ⟷ BNSS (2024)",
+      "Supreme Court Precedents Matrix",
+      "1-Click Sec 138 / Eviction Notices",
+      "Limitation & Court Fee Calculator",
+    ],
+    path: "/legal-suite",
   },
   {
     id: 2,
@@ -482,6 +505,7 @@ export default function Home() {
     });
   }, [selectedCategory, searchQuery]);
 
+  /* GSAP Animations */
   useEffect(() => {
     const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -602,7 +626,7 @@ export default function Home() {
                 <span>My Account</span>
               </a>
               <a href="#tools" className="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 rounded-full font-medium transition-colors shadow-md shadow-blue-500/20">
-                Explore Tools (27+)
+                Explore Tools (28+)
               </a>
             </div>
 
@@ -629,7 +653,7 @@ export default function Home() {
                 </a>
               ))}
               <a href="#tools" className="mt-2 bg-[#0071e3] text-white px-4 py-2.5 rounded-xl font-medium text-center text-[15px]">
-                Explore Tools (27+)
+                Explore Tools (28+)
               </a>
             </div>
           )}
@@ -653,7 +677,7 @@ export default function Home() {
             <span className="text-[#0071e3]">In one place.</span>
           </h1>
           <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            Calculate CA Taxes, resize exam photos, edit PDFs, convert formats, generate invoices, and get instant AI help —
+            Calculate CA Taxes, IPC to BNS Legal Converter, resize exam photos, edit PDFs, convert formats, generate invoices, and get instant AI help —
             supervised live by our virtual office team. 100% private, no software install required.
           </p>
           <div ref={heroBtnsRef} className="flex flex-wrap justify-center gap-3 sm:gap-4">
@@ -661,7 +685,7 @@ export default function Home() {
               Enter Virtual Office 🏢
             </a>
             <a href="#tools" className="bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white px-6 sm:px-7 py-3 rounded-full font-medium transition-colors text-[14px] sm:text-[15px]">
-              Explore 27+ Tools ↓
+              Explore 28+ Tools ↓
             </a>
           </div>
         </div>
@@ -682,7 +706,7 @@ export default function Home() {
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Active Users</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">27+ Live</div>
+            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">28+ Live</div>
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Online Tools</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
