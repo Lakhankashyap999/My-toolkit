@@ -27,7 +27,7 @@ type ChatMessage = {
 const genId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
 
 export default function UltronChatbotPage() {
-  // Initialize Brain instance (singleton in component lifecycle)
+  // Local Brain Orchestrator
   const brain = useMemo(() => new UltronBrain(), []);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -46,15 +46,15 @@ export default function UltronChatbotPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load Brain Stats & Greeting on Mount
+  // Initialize UI on Mount
   useEffect(() => {
     setBrainStats(brain.getStats());
 
-    const initialGreeting = `Namaste! 👋 Main **ULTRON 5.0 Autonomous Neural Brain** hoon.
+    const initialGreeting = `Namaste! 👋 Main **ULTRON 5.0** hoon — aapka autonomous conversational AI Brain.
 
-Mujhe **Lakhan Kashyap** sir ne architect kiya hai. Mere andar **600+ Word Vector Lexicon**, **200+ Node Knowledge Graph**, **Chain-of-Thought Reasoning Engine**, aur **Autonomous Learning Module** built-in hai.
+Mujhe **Lakhan Kashyap** sir ne architect kiya hai. Main sirf ratte-rataye answer nahi deta, balki aapki baat ko dhyan se samajhta hoon, situation analyze karta hoon, aur exact solution nikalta hoon.
 
-Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)**, **Resume**, **Exam Photo Resize**, ya koi bhi general problem Hinglish/English me pooch sakte hain!`;
+Bataiye aaj kya problem ya query hai aapki?`;
 
     setMessages([
       {
@@ -64,12 +64,11 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
         confidence: 0.99,
         emotion: "happy",
         actionChips: [
-          { label: "⚖️ Supreme Court Bail Precedents", prompt: "Bail ke liye Supreme Court ke kya landmark niyam hain?" },
-          { label: "💼 12 Lakh Salary Live Tax", prompt: "12 lakh salary par AY 2025-26 me kitna income tax banega?" },
-          { label: "📜 Cheque Bounce 138 Protocol", prompt: "Cheque bounce ho gaya kya karu notice kaise bhejein?" },
-          { label: "🔍 IPC 302/420 to BNS Mapping", prompt: "IPC 302 aur IPC 420 ka naya BNS section kya hai?" },
-          { label: "📸 UPSC/SSC Exam Photo Size", prompt: "UPSC aur SSC ke liye photo aur signature dimensions kya hain?" },
-          { label: "🧠 Tumhara Brain Kaise Kaam Karta Hai?", prompt: "Who are you and what are your capabilities?" },
+          { label: "⚖️ Dost ne paise wapas nahi kiye kya karu?", prompt: "Bhai mere dost ne mujhse paise liye the ab wapas nahi de raha kya legal action lu?" },
+          { label: "💼 12 Lakh Salary par kitna tax lagega?", prompt: "Meri saal ki 12 lakh gross salary hai kitna income tax banega?" },
+          { label: "📜 Cheque Bounce 138 Notice", prompt: "Cheque bounce ho gaya kya karu notice kaise bhejein?" },
+          { label: "🔍 IPC to BNS Conversion", prompt: "IPC 302 aur 420 ka naya BNS section kya hai?" },
+          { label: "📸 UPSC/SSC Exam Photo Size", prompt: "UPSC aur SSC ke liye photo aur signature resize kaise karein?" },
         ],
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       },
@@ -80,22 +79,26 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
 
-  // Serverless AI fallback for very complex/creative queries
-  const queryFallbackAI = async (prompt: string): Promise<string> => {
+  // Dynamic Multi-Turn Conversational Reasoning Engine
+  const queryDynamicAI = async (prompt: string, historyList: ChatMessage[]): Promise<string> => {
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: prompt }),
+        body: JSON.stringify({
+          message: prompt,
+          history: historyList.map((m) => ({ type: m.type, text: m.text })),
+        }),
       });
+
       const data = await res.json();
       if (res.ok && data.response) {
         return data.response;
       }
-      return "Main aapki query ko evaluate kar raha hoon. Aap ToolBox ke live engines jaise Legal Suite (/legal-suite) aur Tax Suite (/tax-suite) ko direct access kar sakte hain!";
     } catch (e) {
-      return "ToolBox Suite ke 28+ specialized engines 100% free available hain!";
+      console.warn("Dynamic API fallback engaged:", e);
     }
+    return "Main aapki query analyze kar raha hoon. Kya aap is situation ke baare me thoda aur detail share karenge?";
   };
 
   const processInput = async (userInputText: string) => {
@@ -109,54 +112,55 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const updatedHistory = [...messages, userMsg];
+    setMessages(updatedHistory);
     setInput("");
     setIsThinking(true);
 
     try {
-      // 1. Process with Local ULTRON Neural Brain
+      // 1. Run local cognitive vector layer for entity extraction & thought chain
       const brainResponse: BrainResponse = brain.think(text);
       setBrainStats(brain.getStats());
 
-      // If local brain is confident or found specific domain answers
-      if (brainResponse.confidence >= 0.4 || brainResponse.toolSuggestion) {
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: genId(),
-              type: "bot",
-              text: brainResponse.text,
-              toolPath: brainResponse.toolSuggestion?.path,
-              toolLabel: brainResponse.toolSuggestion?.label,
-              actionChips: brainResponse.chips,
-              confidence: brainResponse.confidence,
-              emotion: getDominantEmotion(brainResponse.emotion),
-              reasoningSteps: brainResponse.reasoning,
-              selfReflection: brainResponse.selfReflection,
-              learnedFactsCount: brainResponse.learnedFacts.length,
-              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            },
-          ]);
-          setIsThinking(false);
-        }, 350);
-      } else {
-        // 2. Fallback to Cloud Neural Route for ultra-open-ended creative/code generation
-        const aiReply = await queryFallbackAI(text);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: genId(),
-            type: "bot",
-            text: aiReply,
-            confidence: 0.85,
-            emotion: "curious",
-            reasoningSteps: brainResponse.reasoning,
-            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          },
-        ]);
-        setIsThinking(false);
+      // 2. Query dynamic conversational AI with full history for real human-like dialogue
+      const aiReply = await queryDynamicAI(text, updatedHistory);
+
+      // 3. Proactively attach relevant tool badges if detected
+      let detectedToolPath: string | undefined;
+      let detectedToolLabel: string | undefined;
+      const lower = text.toLowerCase();
+
+      if (lower.includes("tax") || lower.includes("salary") || lower.includes("itr") || lower.includes("80c") || lower.includes("hra")) {
+        detectedToolPath = "/tax-suite";
+        detectedToolLabel = "Open CA & Tax Master Suite";
+      } else if (lower.includes("cheque") || lower.includes("notice") || lower.includes("bail") || lower.includes("bns") || lower.includes("court") || lower.includes("vakeel") || lower.includes("paise")) {
+        detectedToolPath = "/legal-suite";
+        detectedToolLabel = "Open Advocate Legal Suite";
+      } else if (lower.includes("resume") || lower.includes("cv") || lower.includes("ats")) {
+        detectedToolPath = "/resume-maker";
+        detectedToolLabel = "Build ATS Resume Now";
+      } else if (lower.includes("photo") || lower.includes("upsc") || lower.includes("ssc") || lower.includes("20kb") || lower.includes("50kb")) {
+        detectedToolPath = "/exam-resizer";
+        detectedToolLabel = "Resize Exam Photo Instantly";
       }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: genId(),
+          type: "bot",
+          text: aiReply,
+          toolPath: detectedToolPath,
+          toolLabel: detectedToolLabel,
+          confidence: brainResponse.confidence || 0.94,
+          emotion: getDominantEmotion(brainResponse.emotion) || "neutral",
+          reasoningSteps: brainResponse.reasoning,
+          selfReflection: brainResponse.selfReflection,
+          learnedFactsCount: brainResponse.learnedFacts.length,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+      setIsThinking(false);
     } catch (err) {
       console.error("Brain execution error:", err);
       setIsThinking(false);
@@ -176,7 +180,7 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
       case "urgent": return "🚨 Priority Action";
       case "curious": return "🤓 Analytical";
       case "grateful": return "🙏 Warm";
-      default: return "🧠 Neutral Core";
+      default: return "🧠 Thoughtful Core";
     }
   };
 
@@ -194,11 +198,11 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
               <div className="flex items-center gap-2">
                 <span className="text-base sm:text-lg font-black tracking-tight text-white">ULTRON 5.0</span>
                 <span className="text-[10px] bg-indigo-500/20 text-indigo-400 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30 uppercase tracking-wider">
-                  Neural Brain Core
+                  Conversational AI Brain
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 font-medium hidden sm:block">
-                Vector Lexicon • Knowledge Graph • Chain-of-Thought Reasoning
+                Socratic Reasoning • Thought Chain • Real Problem Solver
               </p>
             </div>
           </Link>
@@ -242,7 +246,7 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
             </div>
             <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800 col-span-2 sm:col-span-1">
               <div className="text-[10px] text-slate-500 uppercase font-bold">Architecture</div>
-              <div className="text-sm font-black text-amber-400">Autonomous v{brainStats.version}</div>
+              <div className="text-sm font-black text-amber-400">Conversational v{brainStats.version}</div>
             </div>
           </div>
         </div>
@@ -258,10 +262,10 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
           <div className="px-5 py-3 border-b border-slate-800/80 bg-[#060910] flex items-center justify-between select-none">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-500/50" />
-              <span className="text-xs font-bold text-slate-200">ULTRON Cognitive Engine Online</span>
+              <span className="text-xs font-bold text-slate-200">ULTRON Conversational Brain Active</span>
             </div>
             <div className="text-[10px] font-mono text-indigo-400 font-bold hidden sm:inline">
-              Self-Contained Browser AI • 0-Latency Local Vector Inference
+              Multi-Turn Memory • Socratic Reasoning • Dynamic Responses
             </div>
           </div>
 
@@ -380,7 +384,7 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
                   🧠
                 </div>
                 <div className="bg-[#0d121f] border border-slate-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-2.5">
-                  <span className="text-xs font-bold text-slate-300">ULTRON Neural Vector Space Computing</span>
+                  <span className="text-xs font-bold text-slate-300">ULTRON Analyzing &amp; Formulating Thought</span>
                   <div className="flex gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
                     <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping delay-150" />
@@ -396,12 +400,11 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
           {/* Quick Category Action Chips Bar */}
           <div className="px-4 py-2.5 border-t border-slate-800/80 bg-[#060910] flex gap-2 overflow-x-auto scrollbar-none">
             {[
-              { label: "⚖️ Bail Precedents", prompt: "Bail ke liye Supreme Court ke kya landmark niyam hain?" },
-              { label: "💼 10 Lakh Salary Tax", prompt: "10 lakh salary par kitna income tax banega?" },
+              { label: "⚖️ Dost ne paise nahi diye kya karu?", prompt: "Bhai mere dost ne mujhse paise liye the ab wapas nahi de raha kya legal action lu?" },
+              { label: "💼 12 Lakh Salary Tax", prompt: "12 lakh salary par AY 2025-26 me kitna income tax banega?" },
               { label: "📜 Cheque Bounce 138", prompt: "Cheque bounce ho gaya kya karu notice kaise bhejein?" },
               { label: "🔍 IPC to BNS Conversion", prompt: "IPC 302 aur IPC 420 ka naya BNS section kya hai?" },
               { label: "📸 UPSC/SSC Photo Resizer", prompt: "UPSC aur SSC ke liye photo resize kaise karein?" },
-              { label: "📝 ATS Resume Builder", prompt: "ATS Resume Builder kaise use karein?" },
             ].map((item, idx) => (
               <button
                 key={idx}
@@ -422,7 +425,7 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Poochiye: Legal Sections, Live Tax Calculations, UPSC Photo Specs, Coding..."
+              placeholder="Apni problem ya sawal Hindi/Hinglish/English me poonchiye..."
               className="flex-1 px-4 py-3 rounded-xl border border-slate-800 bg-[#0d121f] text-slate-100 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
             />
             <button
@@ -430,7 +433,7 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
               disabled={isThinking || !input.trim()}
               className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 disabled:bg-slate-800 text-white px-5 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 active:scale-95 transition shrink-0 flex items-center gap-1.5"
             >
-              <span>Ask Brain</span>
+              <span>Send</span>
               <span>→</span>
             </button>
           </div>
@@ -438,7 +441,7 @@ Aap mujhse **Legal (BNS 103, 318, Bail Rulings)**, **Income Tax (AY 25-26 Slabs)
 
         {/* Footer Credit */}
         <div className="mt-3 text-center text-xs text-slate-500">
-          ULTRON 5.0 Autonomous Neural Cognitive Core • Conceived &amp; Architected by Lakhan Kashyap • ToolBox Suite
+          ULTRON 5.0 Autonomous Conversational AI Brain • Conceived &amp; Architected by Lakhan Kashyap • ToolBox Suite
         </div>
       </div>
     </div>
