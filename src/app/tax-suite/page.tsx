@@ -12,6 +12,7 @@ import {
   DTAA_TREATIES,
   computeNRIStatus,
   USFilingStatus,
+  US_STATE_TAX_PRESETS,
 } from "../../lib/international-tax-db";
 
 export default function TaxSuitePage() {
@@ -30,7 +31,7 @@ export default function TaxSuitePage() {
 
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
-  const [showClientProfileBar, setShowClientProfileBar] = useState(true);
+  const [showClientProfileBar, setShowClientProfileBar] = useState(false);
 
   // Client Details for Master Dashboard, Official Memo & Excel Export
   const [clientInfo, setClientInfo] = useState({
@@ -50,10 +51,11 @@ export default function TaxSuitePage() {
     currency: "USD ($)",
     swiftBic: "CHASUS33XXX",
     iban: "US64CHAS00000012345678",
+    clientEmail: "client@example.com",
   });
 
   /* ========================================================================== */
-  /*  INDIA MODULE 1: OLD VS NEW REGIME + SURCHARGE & MARGINAL RELIEF (2025-26) */
+  /*  INDIA MODULE 1: OLD VS NEW REGIME + SURCHARGE & MARGINAL RELIEF (AY 25-26)*/
   /* ========================================================================== */
   const [grossSalary, setGrossSalary] = useState<number | string>(1500000);
   const [otherIncome, setOtherIncome] = useState<number | string>(50000);
@@ -73,7 +75,7 @@ export default function TaxSuitePage() {
   const regimeCalculation = useMemo(() => {
     const gross = (Number(grossSalary) || 0) + (Number(otherIncome) || 0);
 
-    // --- NEW REGIME (Budget 2024 Slabs) ---
+    // --- NEW REGIME (Budget 2024 Slabs - AY 2025-26) ---
     const stdDedNew = 75000;
     const taxableNew = Math.max(0, gross - stdDedNew);
 
@@ -99,7 +101,7 @@ export default function TaxSuitePage() {
       baseTaxNew = 0;
     }
 
-    // Surcharge New Regime
+    // Surcharge New Regime (Capped at 25%)
     let surchargeNew = 0;
     if (taxableNew > 20000000) surchargeNew = baseTaxNew * 0.25;
     else if (taxableNew > 10000000) surchargeNew = baseTaxNew * 0.15;
@@ -122,7 +124,7 @@ export default function TaxSuitePage() {
     const totalOldDeductions = stdDedOld + ded80C + dedNPS + ded80D + dedHRA + dedHomeLoan + ded80E + ded80G + ded80TTA;
     const taxableOld = Math.max(0, gross - totalOldDeductions);
 
-    // Exemption limit by age
+    // Basic Exemption limit by age
     let basicExemption = 250000;
     if (ageCategory === "senior") basicExemption = 300000;
     if (ageCategory === "superSenior") basicExemption = 500000;
@@ -193,23 +195,26 @@ export default function TaxSuitePage() {
   ]);
 
   /* ========================================================================== */
-  /*  INDIA MODULE 2: CAPITAL GAINS ENGINE (BUDGET 2024 AMENDMENTS)             */
+  /*  INDIA MODULE 2: CAPITAL GAINS (BUDGET 2024 STATUTORY RATES)               */
   /* ========================================================================== */
-  const [stcgEquity, setStcgEquity] = useState<number | string>(100000); // 20%
-  const [ltcgEquity, setLtcgEquity] = useState<number | string>(250000); // 12.5% above 1.25L
-  const [ltcgProperty, setLtcgProperty] = useState<number | string>(500000); // 12.5%
+  const [stcgEquity, setStcgEquity] = useState<number | string>(100000); // Sec 111A: 20%
+  const [ltcgEquity, setLtcgEquity] = useState<number | string>(250000); // Sec 112A: 12.5% > 1.25L
+  const [ltcgProperty, setLtcgProperty] = useState<number | string>(500000); // Sec 112: 12.5%
+  const [stcgDebtOther, setStcgDebtOther] = useState<number | string>(0); // Slab rate
 
   const capitalGainsCalculation = useMemo(() => {
     const stcgEq = Number(stcgEquity) || 0;
     const ltcgEq = Number(ltcgEquity) || 0;
     const ltcgProp = Number(ltcgProperty) || 0;
+    const stcgOther = Number(stcgDebtOther) || 0;
 
-    const taxStcgEq = stcgEq * 0.2;
-    const taxableLtcgEq = Math.max(0, ltcgEq - 125000);
-    const taxLtcgEq = taxableLtcgEq * 0.125;
-    const taxLtcgProp = ltcgProp * 0.125;
+    const taxStcgEq = stcgEq * 0.2; // 20% under Budget 2024
+    const taxableLtcgEq = Math.max(0, ltcgEq - 125000); // ₹1.25 Lakh exemption limit
+    const taxLtcgEq = taxableLtcgEq * 0.125; // 12.5%
+    const taxLtcgProp = ltcgProp * 0.125; // 12.5%
+    const taxStcgOther = stcgOther * 0.3; // Slab estimate (30%)
 
-    const totalBaseCgTax = taxStcgEq + taxLtcgEq + taxLtcgProp;
+    const totalBaseCgTax = taxStcgEq + taxLtcgEq + taxLtcgProp + taxStcgOther;
     const cessCg = totalBaseCgTax * 0.04;
     const totalCgTax = Math.round(totalBaseCgTax + cessCg);
 
@@ -221,14 +226,16 @@ export default function TaxSuitePage() {
       taxLtcgEq,
       ltcgProp,
       taxLtcgProp,
+      stcgOther,
+      taxStcgOther,
       totalBaseCgTax,
       cessCg,
       totalCgTax,
     };
-  }, [stcgEquity, ltcgEquity, ltcgProperty]);
+  }, [stcgEquity, ltcgEquity, ltcgProperty, stcgDebtOther]);
 
   /* ========================================================================== */
-  /*  INDIA MODULE 3: ADVANCE TAX & SECTION 234A/B/C INTEREST CALCULATOR        */
+  /*  INDIA MODULE 3: ADVANCE TAX & SECTION 234A/B/C INTEREST ENGINE            */
   /* ========================================================================== */
   const [estimatedTaxLiability, setEstimatedTaxLiability] = useState<number | string>(200000);
   const [tdsPaid, setTdsPaid] = useState<number | string>(50000);
@@ -269,7 +276,7 @@ export default function TaxSuitePage() {
   }, [estimatedTaxLiability, tdsPaid, advanceTaxPaid, delayFilingMonths]);
 
   /* ========================================================================== */
-  /*  INDIA MODULE 4: MASTER GST ENGINE (INCLUSIVE/EXCLUSIVE & LATE FEES)       */
+  /*  INDIA MODULE 4: GST MASTER ENGINE & LATE FEES & SEC 50(1) INTEREST        */
   /* ========================================================================== */
   const [gstMode, setGstMode] = useState<"exclusive" | "inclusive">("exclusive");
   const [gstAmount, setGstAmount] = useState<number | string>(100000);
@@ -330,7 +337,7 @@ export default function TaxSuitePage() {
   }, [gstMode, gstAmount, gstRate, gstCessRate, gstSupplyType, returnType, daysLate, gstLiability]);
 
   /* ========================================================================== */
-  /*  INDIA MODULE 5: TDS / TCS MASTER MATRIX (20+ SECTIONS WITH 206AA)         */
+  /*  INDIA MODULE 5: TDS & TCS MASTER MATRIX (ALL 25+ STATUTORY SECTIONS)      */
   /* ========================================================================== */
   const [tdsSection, setTdsSection] = useState("194J_P");
   const [tdsBillAmount, setTdsBillAmount] = useState<number | string>(150000);
@@ -344,18 +351,18 @@ export default function TaxSuitePage() {
     "194C_I": { name: "Contractor (Individual/HUF)", sectionCode: "194C", rate: 1.0, threshold: 30000, desc: "Single > ₹30,000 or Aggregate > ₹1,00,000 per year" },
     "194C_C": { name: "Contractor (Company/Firm)", sectionCode: "194C", rate: 2.0, threshold: 30000, desc: "Single > ₹30,000 or Aggregate > ₹1,00,000 per year" },
     "194J_P": { name: "Professional Fees / Royalty", sectionCode: "194J", rate: 10.0, threshold: 30000, desc: "CA, Doctor, Lawyer, Technical Consultancy > ₹30,000/yr" },
-    "194J_T": { name: "Technical Services & BPO", sectionCode: "194J", rate: 2.0, threshold: 30000, desc: "Tech services, Call center ops (Special reduced 2% rate)" },
-    "194I_Land": { name: "Rent on Land, Building & Furniture", sectionCode: "194I", rate: 10.0, threshold: 240000, desc: "Annual rent payment exceeding ₹2,40,000" },
+    "194J_T": { name: "Technical Services & BPO Call Centers", sectionCode: "194J", rate: 2.0, threshold: 30000, desc: "Tech services, Call center operations (Special reduced 2% rate)" },
+    "194I_Land": { name: "Rent on Land, Building & Furniture", sectionCode: "194I", rate: 10.0, threshold: 240000, desc: "Annual rental payment exceeding ₹2,40,000" },
     "194I_Plant": { name: "Rent on Plant, Machinery & Equipment", sectionCode: "194I", rate: 2.0, threshold: 240000, desc: "Annual rental payment exceeding ₹2,40,000" },
     "194IA": { name: "Transfer of Immovable Property", sectionCode: "194IA", rate: 1.0, threshold: 5000000, desc: "Property purchase value exceeding ₹50 Lakhs" },
-    "194IB": { name: "Rent by Individual/HUF (> ₹50k/mo)", sectionCode: "194IB", rate: 5.0, threshold: 50000, desc: "Monthly rent exceeding ₹50,000 by non-audit persons" },
+    "194IB": { name: "Rent by Individual/HUF (> ₹50k/month)", sectionCode: "194IB", rate: 5.0, threshold: 50000, desc: "Monthly rent exceeding ₹50,000 by non-audit persons" },
     "194H": { name: "Commission & Brokerage", sectionCode: "194H", rate: 5.0, threshold: 15000, desc: "Commission/Brokerage payment exceeding ₹15,000" },
-    "194Q": { name: "Purchase of Goods (> ₹50 Lakhs)", sectionCode: "194Q", rate: 0.1, threshold: 5000000, desc: "0.1% on purchase value exceeding ₹50L (Turnover > ₹10 Cr)" },
-    "194A": { name: "Interest other than Securities", sectionCode: "194A", rate: 10.0, threshold: 40000, desc: "Interest from banks/NBFCs exceeding ₹40,000" },
+    "194Q": { name: "Purchase of Goods (> ₹50 Lakhs)", sectionCode: "194Q", rate: 0.1, threshold: 5000000, desc: "0.1% on purchase value exceeding ₹50L (Buyer turnover > ₹10 Cr)" },
+    "194A": { name: "Interest other than Securities", sectionCode: "194A", rate: 10.0, threshold: 40000, desc: "Interest from banks/NBFCs exceeding ₹40,000 (₹50k for Seniors)" },
     "194R": { name: "Business Benefit or Perquisite", sectionCode: "194R", rate: 10.0, threshold: 20000, desc: "Value of benefit/perquisite in course of business > ₹20,000" },
-    "194M": { name: "Contract/Commission by Ind/HUF", sectionCode: "194M", rate: 5.0, threshold: 5000000, desc: "Payments exceeding ₹50 Lakhs per year" },
-    "194N": { name: "Cash Withdrawal from Banks", sectionCode: "194N", rate: 2.0, threshold: 10000000, desc: "Aggregate cash withdrawal exceeding ₹1 Crore" },
-    "194S": { name: "Transfer of Crypto / VDA", sectionCode: "194S", rate: 1.0, threshold: 10000, desc: "Virtual Digital Assets purchase > ₹10k/₹50k" },
+    "194M": { name: "Contract/Commission by Non-Audit Ind/HUF", sectionCode: "194M", rate: 5.0, threshold: 5000000, desc: "Payments exceeding ₹50 Lakhs per year" },
+    "194N": { name: "Cash Withdrawal from Banks (> ₹1 Cr)", sectionCode: "194N", rate: 2.0, threshold: 10000000, desc: "Aggregate cash withdrawal exceeding ₹1 Crore" },
+    "194S": { name: "Transfer of Crypto / VDA", sectionCode: "194S", rate: 1.0, threshold: 10000, desc: "Virtual Digital Assets purchase > ₹10,000 / ₹50,000" },
     "206C_1H": { name: "TCS on Sale of Goods (> ₹50 Lakhs)", sectionCode: "206C(1H)", rate: 0.1, threshold: 5000000, desc: "TCS collected from buyer on receipts > ₹50 Lakhs" },
     "206C_1G": { name: "TCS on Foreign Remittance (LRS)", sectionCode: "206C(1G)", rate: 5.0, threshold: 700000, desc: "Foreign tour packages / remittance > ₹7 Lakhs" },
   };
@@ -384,7 +391,7 @@ export default function TaxSuitePage() {
   }, [tdsSection, tdsBillAmount, payeePanAvailable, tdsDelayMonths]);
 
   /* ========================================================================== */
-  /*  INDIA MODULE 6: DEPRECIATION & DTA/DTL TIMING DIFFERENCE ENGINE           */
+  /*  INDIA MODULE 6: DEPRECIATION & DTA/DTL TIMING DIFFERENCE (AS-22 / IND AS) */
   /* ========================================================================== */
   const [assetCost, setAssetCost] = useState<number | string>(500000);
   const [assetCategory, setAssetCategory] = useState("plant");
@@ -442,7 +449,7 @@ export default function TaxSuitePage() {
   }, [assetCost, assetCategory, usedLessThan180Days, isAdditionalDepApplicable, usefulLifeYears, salvagePercent]);
 
   /* ========================================================================== */
-  /*  INDIA MODULE 7: FINANCIAL AUDIT RATIOS & CMA DATA ANALYSIS                */
+  /*  INDIA MODULE 7: FINANCIAL AUDIT RATIOS & BANK CMA DATA ANALYSIS           */
   /* ========================================================================== */
   const [currentAssets, setCurrentAssets] = useState<number | string>(1200000);
   const [currentLiabilities, setCurrentLiabilities] = useState<number | string>(800000);
@@ -550,6 +557,7 @@ export default function TaxSuitePage() {
   const [uaeRevenue, setUaeRevenue] = useState<number | string>(750000);
   const [uaeExpenses, setUaeExpenses] = useState<number | string>(200000);
   const [uaeIsFreeZone, setUaeIsFreeZone] = useState(false);
+  const [uaeHasSbr, setUaeHasSbr] = useState(false);
   const [uaeVatRevenue, setUaeVatRevenue] = useState<number | string>(500000);
 
   const uaeTaxCalc = useMemo(() => {
@@ -557,9 +565,10 @@ export default function TaxSuitePage() {
       annualRevenueAed: Number(uaeRevenue) || 0,
       operatingExpensesAed: Number(uaeExpenses) || 0,
       isFreeZoneQualifying: uaeIsFreeZone,
+      hasSmallBusinessRelief: uaeHasSbr,
       vatSubjectRevenueAed: Number(uaeVatRevenue) || 0,
     });
-  }, [uaeRevenue, uaeExpenses, uaeIsFreeZone, uaeVatRevenue]);
+  }, [uaeRevenue, uaeExpenses, uaeIsFreeZone, uaeHasSbr, uaeVatRevenue]);
 
   /* ========================================================================== */
   /*  GLOBAL MODULE 3: 🇬🇧 UK HMRC TAX & NATIONAL INSURANCE (2024-2025)         */
@@ -567,14 +576,16 @@ export default function TaxSuitePage() {
   const [ukSalary, setUkSalary] = useState<number | string>(55000);
   const [ukSelfEmployed, setUkSelfEmployed] = useState<number | string>(0);
   const [ukPension, setUkPension] = useState<number | string>(4000);
+  const [ukCorpProfit, setUkCorpProfit] = useState<number | string>(60000);
 
   const ukTaxCalc = useMemo(() => {
     return calculateUKTax({
       grossSalaryGbp: Number(ukSalary) || 0,
       selfEmployedProfitGbp: Number(ukSelfEmployed) || 0,
       pensionContributionGbp: Number(ukPension) || 0,
+      companyProfitGbp: Number(ukCorpProfit) || 0,
     });
-  }, [ukSalary, ukSelfEmployed, ukPension]);
+  }, [ukSalary, ukSelfEmployed, ukPension, ukCorpProfit]);
 
   /* ========================================================================== */
   /*  GLOBAL MODULE 4: ✈️ DTAA WITHHOLDING TAX (WHT) & FOREIGN TAX CREDIT       */
@@ -633,6 +644,7 @@ export default function TaxSuitePage() {
   const [invRate, setInvRate] = useState<number | string>(120);
   const [invQty, setInvQty] = useState<number | string>(40);
   const [invTaxPercent, setInvTaxPercent] = useState<number | string>(0);
+  const [invDesc, setInvDesc] = useState("Cross-Border Software Architecture & Cloud Migration Services");
 
   const invCalculation = useMemo(() => {
     const subtotal = (Number(invRate) || 0) * (Number(invQty) || 0);
@@ -706,8 +718,8 @@ export default function TaxSuitePage() {
             <tr><td colspan="4" class="sec-header">SECTION 2: CAPITAL GAINS COMPUTATION (BUDGET 2024 AMENDMENTS)</td></tr>
             <tr><th>Capital Gains Head</th><th>Gain Amount (₹)</th><th>Tax Rate (%)</th><th>Tax Payable (₹)</th></tr>
             <tr><td>STCG Listed Equity (Sec 111A)</td><td class="num-cell">${capitalGainsCalculation.stcgEq}</td><td>20.00%</td><td class="num-cell">${capitalGainsCalculation.taxStcgEq}</td></tr>
-            <tr><td>LTCG Listed Equity (Sec 112A)</td><td class="num-cell">${capitalGainsCalculation.ltcgEq}</td><td>12.50% (>1.25L)</td><td class="num-cell">${capitalGainsCalculation.taxLtcgEq}</td></tr>
-            <tr><td>LTCG Immovable Property</td><td class="num-cell">${capitalGainsCalculation.ltcgProp}</td><td>12.50%</td><td class="num-cell">${capitalGainsCalculation.taxLtcgProp}</td></tr>
+            <tr><td>LTCG Listed Equity (Sec 112A)</td><td class="num-cell">${capitalGainsCalculation.ltcgEq}</td><td>12.50% (&gt;1.25L)</td><td class="num-cell">${capitalGainsCalculation.taxLtcgEq}</td></tr>
+            <tr><td>LTCG Immovable Property (Sec 112)</td><td class="num-cell">${capitalGainsCalculation.ltcgProp}</td><td>12.50%</td><td class="num-cell">${capitalGainsCalculation.taxLtcgProp}</td></tr>
             <tr class="bold-total"><td colspan="3">Total Capital Gains Tax Payable (Inc 4% Cess)</td><td class="num-cell">₹${capitalGainsCalculation.totalCgTax}</td></tr>
             <tr><td colspan="4" style="height: 12px; border: none;"></td></tr>
 
@@ -763,7 +775,7 @@ export default function TaxSuitePage() {
   return (
     <AuthGate>
       <ProGate>
-        <div className="min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white pb-24 antialiased font-sans">
+        <div className="min-h-screen bg-[#f8fafc] dark:bg-[#06080d] text-[#0f172a] dark:text-[#f8fafc] pb-24 antialiased font-sans transition-colors duration-200">
           
           <style jsx global>{`
             @media print {
@@ -792,22 +804,23 @@ export default function TaxSuitePage() {
             }
           `}</style>
 
-          {/* Top Sticky Header */}
-          <nav className="no-print border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-md sticky top-0 z-40">
-            <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
-              <Link href="/" className="flex items-center gap-2 font-bold text-sm text-[#0071e3] shrink-0">
-                ← Back to ToolBox
+          {/* ── 💎 TOP STICKY NAVBAR ────────────────────────────────────────── */}
+          <nav className="no-print border-b border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#0c1017]/90 backdrop-blur-xl sticky top-0 z-40 shadow-xs">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+              <Link href="/" className="flex items-center gap-2 font-black text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:opacity-80 transition shrink-0">
+                <span className="text-base">←</span>
+                <span className="hidden sm:inline">Back to Home</span>
               </Link>
               
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                 {/* 1-CLICK EXCEL EXPORT BUTTON */}
                 <button
                   type="button"
                   onClick={handleExportExcel}
-                  className="px-3 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition flex items-center gap-1.5 shadow-sm shadow-emerald-500/20 active:scale-95 whitespace-nowrap"
+                  className="px-3 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 whitespace-nowrap"
                 >
                   <span>📊</span>
-                  <span className="hidden sm:inline">{downloadSuccess ? "✓ Downloaded Excel!" : "Export Complete Client Excel (.XLS)"}</span>
+                  <span className="hidden sm:inline">{downloadSuccess ? "✓ Downloaded Excel!" : "Export Client Excel (.XLS)"}</span>
                   <span className="sm:hidden">{downloadSuccess ? "✓ Done" : "Excel"}</span>
                 </button>
 
@@ -815,85 +828,85 @@ export default function TaxSuitePage() {
                 <button
                   type="button"
                   onClick={() => setShowPrintModal(true)}
-                  className="px-3 sm:px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm active:scale-95 whitespace-nowrap"
+                  className="px-3 sm:px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 transition flex items-center gap-1.5 shadow-md whitespace-nowrap"
                 >
                   <span>🖨️</span>
-                  <span className="hidden sm:inline">Print Official CA Memo</span>
+                  <span className="hidden sm:inline">Print CA Memo</span>
                   <span className="sm:hidden">Memo</span>
                 </button>
 
-                <span className="hidden md:inline-block text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  💎 CA &amp; CPA Master Suite
+                <span className="hidden lg:inline-block text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  💎 CA &amp; CPA PRO
                 </span>
               </div>
             </div>
           </nav>
 
-          <div className="max-w-6xl mx-auto px-4 pt-6">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6">
             
             {/* ── 🌟 MASTER REGION TOGGLE SWITCHER (INDIA vs GLOBAL) ─────────── */}
-            <div className="no-print flex justify-center mb-8">
-              <div className="bg-slate-200/80 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-300 dark:border-slate-800 flex items-center gap-1 shadow-inner max-w-xl w-full">
+            <div className="no-print flex justify-center mb-6 sm:mb-8">
+              <div className="bg-slate-200/90 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-300 dark:border-slate-800 flex items-center gap-1.5 shadow-inner max-w-xl w-full">
                 <button
                   type="button"
                   onClick={() => setSuiteRegion("india")}
-                  className={`flex-1 py-3 rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 ${
+                  className={`flex-1 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 ${
                     suiteRegion === "india"
-                      ? "bg-white dark:bg-[#0071e3] text-[#0071e3] dark:text-white shadow-md font-bold scale-[1.02]"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                      ? "bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-lg font-bold scale-[1.02]"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  <span className="text-base">🇮🇳</span>
+                  <span className="text-base sm:text-lg">🇮🇳</span>
                   <span>INDIA DOMESTIC (CA PRO)</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setSuiteRegion("global")}
-                  className={`flex-1 py-3 rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 ${
+                  className={`flex-1 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 ${
                     suiteRegion === "global"
-                      ? "bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md font-bold scale-[1.02]"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                      ? "bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 text-white shadow-lg font-bold scale-[1.02]"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  <span className="text-base">🌍</span>
+                  <span className="text-base sm:text-lg">🌍</span>
                   <span>GLOBAL &amp; NRI (CPA PRO)</span>
                 </button>
               </div>
             </div>
 
             {/* ── 👤 ACTIVE CLIENT & FIRM MASTER BAR ─────────────────────────── */}
-            <div className="no-print bg-white dark:bg-[#0c1017] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md mb-8 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{suiteRegion === "india" ? "👤" : "🌐"}</span>
+            <div className="no-print bg-white dark:bg-[#0c1017] p-4 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-md mb-6 sm:mb-8 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/80">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-xl sm:text-2xl">{suiteRegion === "india" ? "👤" : "🌐"}</span>
                   <div>
-                    <h3 className="text-sm font-black tracking-tight text-slate-900 dark:text-white">
+                    <h3 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-white">
                       {suiteRegion === "india" ? "Active Client & CA Firm Master Profile" : "International Entity & CPA Master Profile"}
                     </h3>
-                    <p className="text-[11px] text-slate-500">
-                      Edit details below — syncs live across all modules, Excel download &amp; Official Print Memo.
+                    <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400">
+                      Syncs automatically across all 14 compliance tools, Excel downloads &amp; Official Print Memos.
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowClientProfileBar(!showClientProfileBar)}
-                  className="text-xs font-bold text-[#0071e3] bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-900/40"
+                  className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-900/40 hover:bg-blue-100 transition"
                 >
-                  {showClientProfileBar ? "▲ Minimize Header" : "▼ Edit Client Profile"}
+                  {showClientProfileBar ? "▲ Minimize" : "▼ Edit Client"}
                 </button>
               </div>
 
               {showClientProfileBar && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-2">
                   <div>
                     <label className="font-bold text-slate-500 block mb-1">Assessee / Client Name</label>
                     <input
                       type="text"
                       value={clientInfo.name}
                       onChange={(e) => setClientInfo({ ...clientInfo, name: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-2.5 font-bold outline-none focus:ring-2 focus:ring-[#0071e3]"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 font-bold outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g. M/s Sharma Enterprises"
                     />
                   </div>
@@ -903,17 +916,17 @@ export default function TaxSuitePage() {
                       type="text"
                       value={suiteRegion === "india" ? clientInfo.pan : clientInfo.taxIdEin}
                       onChange={(e) => setClientInfo({ ...clientInfo, [suiteRegion === "india" ? "pan" : "taxIdEin"]: e.target.value.toUpperCase() })}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-2.5 font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-[#0071e3]"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g. AAACS1234F"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-500 block mb-1">CA Firm / Practitioner</label>
+                    <label className="font-bold text-slate-500 block mb-1">CA / CPA Firm Name</label>
                     <input
                       type="text"
                       value={clientInfo.caFirm}
                       onChange={(e) => setClientInfo({ ...clientInfo, caFirm: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-2.5 font-bold outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 font-bold outline-none"
                       placeholder="e.g. Kashyap & Associates, CAs"
                     />
                   </div>
@@ -923,7 +936,7 @@ export default function TaxSuitePage() {
                       type="date"
                       value={clientInfo.date}
                       onChange={(e) => setClientInfo({ ...clientInfo, date: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-2 font-bold outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 font-bold outline-none"
                     />
                   </div>
                 </div>
@@ -931,17 +944,17 @@ export default function TaxSuitePage() {
             </div>
 
             {/* Header Title */}
-            <div className="no-print text-center mb-8">
+            <div className="no-print text-center mb-6 sm:mb-8">
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-2">
-                <span>⚡</span> ALL-IN-ONE CA COMPLIANCE &amp; GLOBAL TAX SUITE (A TO Z)
+                <span>⚡</span> ALL-IN-ONE STATUTORY TAX COMPLIANCE &amp; GLOBAL SUITE (A TO Z)
               </div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-1">
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight mt-1 text-slate-900 dark:text-white">
                 {suiteRegion === "india" ? "Chartered Accountant Master Suite" : "Global & International CPA Master Suite"}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-2xl mx-auto">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-2xl mx-auto px-2">
                 {suiteRegion === "india"
-                  ? "Income Tax (Budget 2024), Capital Gains, Advance Tax 234A/B/C, GST Engine, 20+ Section TDS/TCS Matrix, Audit Depreciation (WDV vs SLM + DTA/DTL), Bank CMA Ratios & 1-Click Excel."
-                  : "USA IRS 1040 (2024-2025 Slabs + FICA), UAE FTA Corporate Tax (9%) & 5% VAT, UK HMRC Income Tax & NICs, DTAA Withholding Tax Treaties, NRI 182-Day Residence Test & Multi-Currency Commercial Invoicing."}
+                  ? "Income Tax (Budget 2024 - AY 25-26), Capital Gains, Advance Tax 234A/B/C, GST Master, 20+ Section TDS/TCS Matrix, Audit Depreciation (WDV vs SLM + DTA/DTL), Bank CMA Ratios & 1-Click Excel."
+                  : "USA IRS 1040 (2024-2025 Slabs + FICA), UAE FTA Corporate Tax (9%) & 5% VAT, UK HMRC Income Tax & NICs, DTAA Withholding Treaties, NRI 182-Day Residence Test & Multi-Currency Commercial Invoicing."}
               </p>
             </div>
 
@@ -949,9 +962,9 @@ export default function TaxSuitePage() {
                 SECTION A: 🇮🇳 INDIA DOMESTIC TAX SUITE (ALL 8 ORIGINAL MODULES)
                ════════════════════════════════════════════════════════════════ */}
             {suiteRegion === "india" && (
-              <div className="space-y-8">
+              <div className="space-y-6 sm:space-y-8">
                 {/* ── 8 MASTER MODULE TABS ────────────────────────────────────────── */}
-                <div className="no-print flex flex-wrap justify-center gap-2 mb-8">
+                <div className="no-print flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-6 sm:mb-8">
                   {[
                     { id: "regime", name: "⚖️ Old vs New Regime (AY 25-26)" },
                     { id: "capitalgains", name: "📈 Capital Gains (Budget 2024)" },
@@ -966,10 +979,10 @@ export default function TaxSuitePage() {
                       key={t.id}
                       type="button"
                       onClick={() => setActiveTab(t.id as any)}
-                      className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                         activeTab === t.id
-                          ? "bg-[#0071e3] text-white shadow-lg shadow-blue-500/20 ring-2 ring-blue-500/30 scale-[1.01]"
-                          : "bg-white dark:bg-[#0c1017] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25 ring-2 ring-blue-500/30 scale-[1.01]"
+                          : "bg-white dark:bg-[#0c1017] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
                       }`}
                     >
                       <span>{t.name}</span>
@@ -980,9 +993,9 @@ export default function TaxSuitePage() {
                 {/* ── 1. OLD VS NEW REGIME MODULE ────────────────────────────────── */}
                 {activeTab === "regime" && (
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className="lg:col-span-6 bg-white dark:bg-[#0c1017] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+                    <div className="lg:col-span-6 bg-white dark:bg-[#0c1017] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
                       <div className="flex justify-between items-center pb-2 border-b">
-                        <span className="text-xs font-black uppercase text-[#0071e3]">Income &amp; Deductions</span>
+                        <span className="text-xs font-black uppercase text-blue-600 dark:text-blue-400">Income &amp; Deductions</span>
                         <select
                           value={ageCategory}
                           onChange={(e) => setAgeCategory(e.target.value as any)}
@@ -994,14 +1007,14 @@ export default function TaxSuitePage() {
                         </select>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="text-xs font-bold block mb-1">Gross Salary / CTC (₹)</label>
                           <input
                             type="number"
                             value={grossSalary}
                             onChange={(e) => setGrossSalary(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-3 text-sm font-black outline-none focus:ring-2 focus:ring-[#0071e3]"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-3 text-sm font-black outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
                         <div>
@@ -1082,7 +1095,7 @@ export default function TaxSuitePage() {
                         <span className="text-[11px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">
                           Client Savings Recommendation
                         </span>
-                        <div className="text-3xl font-black mt-3">
+                        <div className="text-2xl sm:text-3xl font-black mt-3">
                           {regimeCalculation.betterRegime === "New Regime"
                             ? `⚡ New Regime Saves ₹${regimeCalculation.savings.toLocaleString("en-IN")}`
                             : `⚡ Old Regime Saves ₹${regimeCalculation.savings.toLocaleString("en-IN")}`}
@@ -1092,19 +1105,19 @@ export default function TaxSuitePage() {
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white dark:bg-[#0c1017] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs space-y-2">
-                          <div className="font-black text-[#0071e3] text-sm">New Regime (Default)</div>
-                          <div className="text-2xl font-black">₹{regimeCalculation.totalTaxNew.toLocaleString("en-IN")}</div>
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div className="bg-white dark:bg-[#0c1017] p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs space-y-2">
+                          <div className="font-black text-blue-600 dark:text-blue-400 text-sm">New Regime (Default)</div>
+                          <div className="text-xl sm:text-2xl font-black">₹{regimeCalculation.totalTaxNew.toLocaleString("en-IN")}</div>
                           <div className="text-slate-500 text-[11px] pt-1 border-t">
                             Taxable: ₹{regimeCalculation.taxableNew.toLocaleString("en-IN")}
                           </div>
-                          <div className="text-slate-400 text-[10px]">Std Ded: ₹75,000 | Rebate 87A: ₹{regimeCalculation.rebateNew.toLocaleString("en-IN")}</div>
+                          <div className="text-slate-400 text-[10px]">Std Ded: ₹75,000 | Rebate: ₹{regimeCalculation.rebateNew.toLocaleString("en-IN")}</div>
                         </div>
 
-                        <div className="bg-white dark:bg-[#0c1017] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs space-y-2">
+                        <div className="bg-white dark:bg-[#0c1017] p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs space-y-2">
                           <div className="font-black text-slate-700 dark:text-slate-300 text-sm">Old Regime</div>
-                          <div className="text-2xl font-black">₹{regimeCalculation.totalTaxOld.toLocaleString("en-IN")}</div>
+                          <div className="text-xl sm:text-2xl font-black">₹{regimeCalculation.totalTaxOld.toLocaleString("en-IN")}</div>
                           <div className="text-slate-500 text-[11px] pt-1 border-t">
                             Taxable: ₹{regimeCalculation.taxableOld.toLocaleString("en-IN")}
                           </div>
@@ -1117,7 +1130,7 @@ export default function TaxSuitePage() {
 
                 {/* ── 2. CAPITAL GAINS MODULE (BUDGET 2024) ───────────────────────── */}
                 {activeTab === "capitalgains" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="border-b pb-3">
                       <span className="text-xs font-black uppercase text-amber-500">
                         Budget 2024 Revised Capital Gains Tax Slabs (Effective July 23, 2024)
@@ -1148,7 +1161,7 @@ export default function TaxSuitePage() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold block mb-1">LTCG on Immovable Property</label>
+                        <label className="text-xs font-bold block mb-1">LTCG on Immovable Property (Sec 112)</label>
                         <input
                           type="number"
                           value={ltcgProperty}
@@ -1159,28 +1172,28 @@ export default function TaxSuitePage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
                         <span className="text-[11px] font-bold text-slate-400">STCG Tax (20%)</span>
-                        <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                        <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">
                           ₹{capitalGainsCalculation.taxStcgEq.toLocaleString("en-IN")}
                         </div>
                       </div>
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
                         <span className="text-[11px] font-bold text-slate-400">LTCG Equity Tax (12.5%)</span>
-                        <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                        <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">
                           ₹{capitalGainsCalculation.taxLtcgEq.toLocaleString("en-IN")}
                         </div>
                       </div>
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
                         <span className="text-[11px] font-bold text-slate-400">Property LTCG Tax (12.5%)</span>
-                        <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                        <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">
                           ₹{capitalGainsCalculation.taxLtcgProp.toLocaleString("en-IN")}
                         </div>
                       </div>
                       <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl">
-                        <span className="text-[11px] font-bold text-emerald-600">Total Tax Payable (Inc Cess)</span>
-                        <div className="text-xl font-black text-emerald-600 mt-1">
+                        <span className="text-[11px] font-bold text-emerald-600">Total Tax (Inc Cess)</span>
+                        <div className="text-lg sm:text-xl font-black text-emerald-600 mt-1">
                           ₹{capitalGainsCalculation.totalCgTax.toLocaleString("en-IN")}
                         </div>
                       </div>
@@ -1190,7 +1203,7 @@ export default function TaxSuitePage() {
 
                 {/* ── 3. ADVANCE TAX & 234A/B/C MODULE ────────────────────────────── */}
                 {activeTab === "advancetax" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                       <div>
                         <label className="text-xs font-bold block mb-1">Estimated Tax Liability (₹)</label>
@@ -1230,31 +1243,31 @@ export default function TaxSuitePage() {
                       </div>
                     </div>
 
-                    <div className="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border space-y-3">
-                      <span className="text-xs font-black uppercase text-[#0071e3]">
+                    <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border space-y-3">
+                      <span className="text-xs font-black uppercase text-blue-600 dark:text-blue-400">
                         Statutory Advance Tax Installment Schedule (Section 208/211)
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
                         <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border">
                           <div className="text-slate-400 font-bold">15th June (15%)</div>
-                          <div className="text-base font-black mt-1">₹{advanceTaxCalculation.inst1.toLocaleString("en-IN")}</div>
+                          <div className="text-sm sm:text-base font-black mt-1">₹{advanceTaxCalculation.inst1.toLocaleString("en-IN")}</div>
                         </div>
                         <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border">
                           <div className="text-slate-400 font-bold">15th Sept (45%)</div>
-                          <div className="text-base font-black mt-1">₹{advanceTaxCalculation.inst2.toLocaleString("en-IN")}</div>
+                          <div className="text-sm sm:text-base font-black mt-1">₹{advanceTaxCalculation.inst2.toLocaleString("en-IN")}</div>
                         </div>
                         <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border">
                           <div className="text-slate-400 font-bold">15th Dec (75%)</div>
-                          <div className="text-base font-black mt-1">₹{advanceTaxCalculation.inst3.toLocaleString("en-IN")}</div>
+                          <div className="text-sm sm:text-base font-black mt-1">₹{advanceTaxCalculation.inst3.toLocaleString("en-IN")}</div>
                         </div>
                         <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border">
                           <div className="text-slate-400 font-bold">15th March (100%)</div>
-                          <div className="text-base font-black mt-1">₹{advanceTaxCalculation.inst4.toLocaleString("en-IN")}</div>
+                          <div className="text-sm sm:text-base font-black mt-1">₹{advanceTaxCalculation.inst4.toLocaleString("en-IN")}</div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
                         <span className="text-[11px] font-bold text-slate-400">Sec 234A Interest (Late Return)</span>
                         <div className="text-lg font-black text-rose-500 mt-1">₹{advanceTaxCalculation.interest234A.toLocaleString("en-IN")}</div>
@@ -1275,15 +1288,15 @@ export default function TaxSuitePage() {
                 {activeTab === "gst" && (
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                      <div className="lg:col-span-6 bg-white dark:bg-[#0c1017] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+                      <div className="lg:col-span-6 bg-white dark:bg-[#0c1017] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
                         <div className="flex justify-between items-center pb-2 border-b">
-                          <span className="text-xs font-black uppercase text-[#0071e3]">Tax Invoice Engine</span>
+                          <span className="text-xs font-black uppercase text-blue-600 dark:text-blue-400">Tax Invoice Engine</span>
                           <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
                             <button
                               type="button"
                               onClick={() => setGstMode("exclusive")}
                               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                                gstMode === "exclusive" ? "bg-white dark:bg-slate-800 text-[#0071e3] shadow-sm" : "text-slate-500"
+                                gstMode === "exclusive" ? "bg-white dark:bg-slate-800 text-blue-600 shadow-sm" : "text-slate-500"
                               }`}
                             >
                               + Exclusive
@@ -1292,7 +1305,7 @@ export default function TaxSuitePage() {
                               type="button"
                               onClick={() => setGstMode("inclusive")}
                               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                                gstMode === "inclusive" ? "bg-white dark:bg-slate-800 text-[#0071e3] shadow-sm" : "text-slate-500"
+                                gstMode === "inclusive" ? "bg-white dark:bg-slate-800 text-blue-600 shadow-sm" : "text-slate-500"
                               }`}
                             >
                               - Inclusive
@@ -1308,7 +1321,7 @@ export default function TaxSuitePage() {
                             type="number"
                             value={gstAmount}
                             onChange={(e) => setGstAmount(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border rounded-2xl p-3 text-lg font-black outline-none focus:ring-2 focus:ring-[#0071e3]"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border rounded-2xl p-3 text-lg font-black outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
 
@@ -1361,11 +1374,11 @@ export default function TaxSuitePage() {
                           <span className="text-[11px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">
                             GST Tax Breakdown
                           </span>
-                          <div className="text-3xl font-black mt-3">
-                            Total Invoice: ₹{gstCalculation.finalTotal.toLocaleString("en-IN")}
+                          <div className="text-2xl sm:text-3xl font-black mt-3">
+                            Total: ₹{gstCalculation.finalTotal.toLocaleString("en-IN")}
                           </div>
                           <p className="text-xs text-white/80 mt-1">
-                            Base Price: ₹{gstCalculation.basePrice.toLocaleString("en-IN")} + GST: ₹{gstCalculation.totalGst.toLocaleString("en-IN")}
+                            Base: ₹{gstCalculation.basePrice.toLocaleString("en-IN")} + GST: ₹{gstCalculation.totalGst.toLocaleString("en-IN")}
                           </p>
                         </div>
 
@@ -1395,7 +1408,7 @@ export default function TaxSuitePage() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#0c1017] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+                    <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
                       <div className="flex items-center justify-between pb-2 border-b">
                         <span className="text-xs font-black uppercase text-rose-500">
                           GSTR-3B / GSTR-1 Late Filing Penalty &amp; Sec 50(1) Interest (18% p.a.)
@@ -1434,18 +1447,18 @@ export default function TaxSuitePage() {
                         </div>
                       </div>
 
-                      <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-2xl border grid grid-cols-3 gap-4 text-center text-xs">
+                      <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-2xl border grid grid-cols-3 gap-3 text-center text-xs">
                         <div>
-                          <span className="text-slate-400 font-bold">Late Fee Payable</span>
-                          <div className="text-lg font-black text-rose-500 mt-0.5">₹{gstCalculation.actualLateFee.toLocaleString("en-IN")}</div>
+                          <span className="text-slate-400 font-bold">Late Fee</span>
+                          <div className="text-base sm:text-lg font-black text-rose-500 mt-0.5">₹{gstCalculation.actualLateFee.toLocaleString("en-IN")}</div>
                         </div>
                         <div>
-                          <span className="text-slate-400 font-bold">Sec 50(1) Interest (18% p.a.)</span>
-                          <div className="text-lg font-black text-amber-500 mt-0.5">₹{gstCalculation.interestPenalty.toLocaleString("en-IN")}</div>
+                          <span className="text-slate-400 font-bold">Sec 50(1) Interest</span>
+                          <div className="text-base sm:text-lg font-black text-amber-500 mt-0.5">₹{gstCalculation.interestPenalty.toLocaleString("en-IN")}</div>
                         </div>
                         <div>
-                          <span className="text-slate-400 font-bold">Total Statutory Due</span>
-                          <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">₹{gstCalculation.totalLateDue.toLocaleString("en-IN")}</div>
+                          <span className="text-slate-400 font-bold">Total Due</span>
+                          <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5">₹{gstCalculation.totalLateDue.toLocaleString("en-IN")}</div>
                         </div>
                       </div>
                     </div>
@@ -1454,7 +1467,7 @@ export default function TaxSuitePage() {
 
                 {/* ── 5. TDS & TCS MASTER MATRIX MODULE ──────────────────────────── */}
                 {activeTab === "tds" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
@@ -1463,7 +1476,7 @@ export default function TaxSuitePage() {
                         <select
                           value={tdsSection}
                           onChange={(e) => setTdsSection(e.target.value)}
-                          className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0071e3]"
+                          className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           {Object.entries(TDS_DATA).map(([k, s]) => (
                             <option key={k} value={k}>
@@ -1484,7 +1497,7 @@ export default function TaxSuitePage() {
                           type="number"
                           value={tdsBillAmount}
                           onChange={(e) => setTdsBillAmount(e.target.value)}
-                          className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-3 text-base font-black outline-none focus:ring-2 focus:ring-[#0071e3]"
+                          className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl p-3 text-base font-black outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -1500,7 +1513,7 @@ export default function TaxSuitePage() {
                           id="pan-check"
                           checked={payeePanAvailable}
                           onChange={(e) => setPayeePanAvailable(e.target.checked)}
-                          className="w-5 h-5 accent-[#0071e3]"
+                          className="w-5 h-5 accent-blue-600"
                         />
                         <div>
                           <label htmlFor="pan-check" className="text-xs font-bold cursor-pointer text-slate-800 dark:text-slate-200">
@@ -1515,21 +1528,21 @@ export default function TaxSuitePage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
-                        <span className="text-[11px] font-bold text-slate-400">Applicable Rate</span>
-                        <div className="text-xl font-black text-[#0071e3] mt-1">{tdsCalculation.effectiveRate}%</div>
+                        <span className="text-[11px] font-bold text-slate-400">Rate</span>
+                        <div className="text-lg sm:text-xl font-black text-blue-600 dark:text-blue-400 mt-1">{tdsCalculation.effectiveRate}%</div>
                       </div>
                       <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 rounded-2xl">
                         <span className="text-[11px] font-bold text-rose-600">TDS to Deduct</span>
-                        <div className="text-xl font-black text-rose-600 mt-1">₹{tdsCalculation.tdsAmount.toLocaleString("en-IN")}</div>
+                        <div className="text-lg sm:text-xl font-black text-rose-600 mt-1">₹{tdsCalculation.tdsAmount.toLocaleString("en-IN")}</div>
                       </div>
                       <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl">
                         <span className="text-[11px] font-bold text-emerald-600">Net Pay to Vendor</span>
-                        <div className="text-xl font-black text-emerald-600 mt-1">₹{tdsCalculation.netPayable.toLocaleString("en-IN")}</div>
+                        <div className="text-lg sm:text-xl font-black text-emerald-600 mt-1">₹{tdsCalculation.netPayable.toLocaleString("en-IN")}</div>
                       </div>
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
-                        <span className="text-[11px] font-bold text-slate-400">Challan 281 Due Date</span>
+                        <span className="text-[11px] font-bold text-slate-400">Challan 281 Due</span>
                         <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-2">7th of Next Month</div>
                       </div>
                     </div>
@@ -1538,10 +1551,10 @@ export default function TaxSuitePage() {
 
                 {/* ── 6. DEPRECIATION & DTA/DTL TIMING DIFFERENCE ─────────────────── */}
                 {activeTab === "depreciation" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-bold block mb-1">Asset Purchase / Book Cost (₹)</label>
+                        <label className="text-xs font-bold block mb-1">Asset Cost (₹)</label>
                         <input
                           type="number"
                           value={assetCost}
@@ -1579,7 +1592,7 @@ export default function TaxSuitePage() {
                           id="half-year"
                           checked={usedLessThan180Days}
                           onChange={(e) => setUsedLessThan180Days(e.target.checked)}
-                          className="w-4 h-4 accent-[#0071e3]"
+                          className="w-4 h-4 accent-blue-600"
                         />
                         <label htmlFor="half-year" className="text-xs font-bold cursor-pointer">
                           Put to Use &lt; 180 Days (50% Half Rate u/s 32)
@@ -1591,7 +1604,7 @@ export default function TaxSuitePage() {
                           id="addl-dep"
                           checked={isAdditionalDepApplicable}
                           onChange={(e) => setIsAdditionalDepApplicable(e.target.checked)}
-                          className="w-4 h-4 accent-[#0071e3]"
+                          className="w-4 h-4 accent-blue-600"
                         />
                         <label htmlFor="addl-dep" className="text-xs font-bold cursor-pointer">
                           Additional Depreciation @ 20% (Manufacturing Plant)
@@ -1601,11 +1614,11 @@ export default function TaxSuitePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-3xl space-y-2 text-xs">
-                        <div className="flex justify-between font-bold text-[#0071e3]">
+                        <div className="flex justify-between font-bold text-blue-600 dark:text-blue-400">
                           <span>Income Tax Act (WDV)</span>
                           <span>Rate: {depCalculation.effectiveItRate}%</span>
                         </div>
-                        <div className="text-xl font-black text-slate-900 dark:text-white">
+                        <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                           Dep: ₹{depCalculation.itDepAmount.toLocaleString("en-IN")}
                         </div>
                         <div className="text-slate-500 pt-2 border-t">
@@ -1618,7 +1631,7 @@ export default function TaxSuitePage() {
                           <span>Companies Act (SLM)</span>
                           <span>Life: {usefulLifeYears} Yrs</span>
                         </div>
-                        <div className="text-xl font-black text-slate-900 dark:text-white">
+                        <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                           Dep: ₹{depCalculation.coDepAmount.toLocaleString("en-IN")}
                         </div>
                         <div className="text-slate-500 pt-2 border-t">
@@ -1631,11 +1644,11 @@ export default function TaxSuitePage() {
                           <span>AS-22 / Ind AS 12</span>
                           <span>{depCalculation.isDTL ? "DTL (Liability)" : "DTA (Asset)"}</span>
                         </div>
-                        <div className="text-xl font-black text-slate-900 dark:text-white">
+                        <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                           Timing Diff: ₹{Math.abs(depCalculation.timingDiff).toLocaleString("en-IN")}
                         </div>
                         <div className="text-slate-500 pt-2 border-t">
-                          Deferred Tax Impact: <strong>₹{depCalculation.deferredTaxImpact.toLocaleString("en-IN")}</strong>
+                          Deferred Tax: <strong>₹{depCalculation.deferredTaxImpact.toLocaleString("en-IN")}</strong>
                         </div>
                       </div>
                     </div>
@@ -1644,9 +1657,9 @@ export default function TaxSuitePage() {
 
                 {/* ── 7. FINANCIAL AUDIT RATIOS & BANK CMA DATA ───────────────────── */}
                 {activeTab === "ratios" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="border-b pb-2 flex justify-between items-center">
-                      <span className="text-xs font-black uppercase text-[#0071e3]">
+                      <span className="text-xs font-black uppercase text-blue-600 dark:text-blue-400">
                         Financial Statement Inputs for CMA / Bank CC Limits
                       </span>
                       <span className="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full border">
@@ -1701,7 +1714,7 @@ export default function TaxSuitePage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold block mb-0.5">Annual Turnover / Sales (₹)</label>
+                        <label className="text-xs font-bold block mb-0.5">Annual Sales (₹)</label>
                         <input
                           type="number"
                           value={annualTurnover}
@@ -1732,25 +1745,25 @@ export default function TaxSuitePage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
                       <div className={`p-4 rounded-2xl border ${ratiosCalculation.isCRHealthy ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200" : "bg-rose-50 border-rose-200"}`}>
                         <span className="text-slate-400 font-bold block">Current Ratio</span>
-                        <div className="text-xl font-black mt-1">{ratiosCalculation.currentRatio} : 1</div>
+                        <div className="text-lg sm:text-xl font-black mt-1">{ratiosCalculation.currentRatio} : 1</div>
                         <span className="text-[10px] text-slate-500 font-bold">Benchmark &gt;= 1.33</span>
                       </div>
 
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
                         <span className="text-slate-400 font-bold block">Quick Ratio</span>
-                        <div className="text-xl font-black mt-1">{ratiosCalculation.quickRatio} : 1</div>
+                        <div className="text-lg sm:text-xl font-black mt-1">{ratiosCalculation.quickRatio} : 1</div>
                         <span className="text-[10px] text-slate-500 font-bold">Benchmark &gt;= 1.00</span>
                       </div>
 
                       <div className={`p-4 rounded-2xl border ${ratiosCalculation.isDERHealthy ? "bg-slate-50 dark:bg-slate-900" : "bg-rose-50 border-rose-200"}`}>
                         <span className="text-slate-400 font-bold block">Debt to Equity</span>
-                        <div className="text-xl font-black mt-1">{ratiosCalculation.debtEquityRatio} : 1</div>
+                        <div className="text-lg sm:text-xl font-black mt-1">{ratiosCalculation.debtEquityRatio} : 1</div>
                         <span className="text-[10px] text-slate-500 font-bold">Benchmark &lt;= 2.00</span>
                       </div>
 
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
                         <span className="text-slate-400 font-bold block">Net Profit Margin</span>
-                        <div className="text-xl font-black text-emerald-600 mt-1">{ratiosCalculation.netProfitMargin}%</div>
+                        <div className="text-lg sm:text-xl font-black text-emerald-600 mt-1">{ratiosCalculation.netProfitMargin}%</div>
                         <span className="text-[10px] text-slate-500 font-bold">ROE: {ratiosCalculation.roe}%</span>
                       </div>
                     </div>
@@ -1759,7 +1772,7 @@ export default function TaxSuitePage() {
 
                 {/* ── 8. NUMBER TO WORDS MODULE ─────────────────────────────────── */}
                 {activeTab === "num2words" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div>
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2">
                         Enter Amount in Figures (e.g. 1874960)
@@ -1768,23 +1781,23 @@ export default function TaxSuitePage() {
                         type="number"
                         value={numInput}
                         onChange={(e) => setNumInput(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-slate-900 border rounded-2xl p-4 text-xl sm:text-2xl font-black outline-none focus:ring-2 focus:ring-[#0071e3]"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border rounded-2xl p-4 text-xl sm:text-2xl font-black outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div className="p-6 bg-blue-50 dark:bg-blue-950/40 rounded-2xl border border-blue-200 dark:border-blue-900/40 space-y-3">
-                      <span className="text-[11px] font-black text-[#0071e3] uppercase tracking-wider block">
+                      <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
                         Indian Currency Words Format (Cheques, Deeds &amp; Vouchers)
                       </span>
-                      <div className="text-xl font-black text-slate-900 dark:text-white leading-relaxed">
+                      <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white leading-relaxed">
                         {wordsOutput}
                       </div>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(wordsOutput)}
-                        className="px-4 py-2 bg-[#0071e3] text-white rounded-xl text-xs font-bold transition shadow active:scale-95"
+                        className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center gap-1.5"
                       >
-                        {copiedWords ? "✓ Copied to Clipboard!" : "📋 Copy in Words"}
+                        <span>{copiedWords ? "✓ Copied to Clipboard!" : "📋 Copy in Words"}</span>
                       </button>
                     </div>
                   </div>
@@ -1796,9 +1809,9 @@ export default function TaxSuitePage() {
                 SECTION B: 🌍 GLOBAL & INTERNATIONAL CPA TAX SUITE (6 MODULES)
                ════════════════════════════════════════════════════════════════ */}
             {suiteRegion === "global" && (
-              <div className="space-y-8">
+              <div className="space-y-6 sm:space-y-8">
                 {/* ── 6 GLOBAL MODULE TABS ───────────────────────────────────────── */}
-                <div className="no-print flex flex-wrap justify-center gap-2 mb-8">
+                <div className="no-print flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-6 sm:mb-8">
                   {[
                     { id: "usa", name: "🇺🇸 USA IRS 1040 Engine" },
                     { id: "uae", name: "🇦🇪 UAE Corporate Tax (9%) & VAT" },
@@ -1811,10 +1824,10 @@ export default function TaxSuitePage() {
                       key={t.id}
                       type="button"
                       onClick={() => setGlobalTab(t.id as any)}
-                      className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                         globalTab === t.id
-                          ? "bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/20 font-bold scale-[1.01]"
-                          : "bg-white dark:bg-[#0c1017] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                          ? "bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25 font-bold scale-[1.01]"
+                          : "bg-white dark:bg-[#0c1017] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
                       }`}
                     >
                       <span>{t.name}</span>
@@ -1825,7 +1838,7 @@ export default function TaxSuitePage() {
                 {/* ── GLOBAL 1: USA IRS 1040 TAX ENGINE ──────────────────────────── */}
                 {globalTab === "usa" && (
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className="lg:col-span-6 bg-white dark:bg-[#0c1017] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+                    <div className="lg:col-span-6 bg-white dark:bg-[#0c1017] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
                       <div className="flex justify-between items-center pb-2 border-b">
                         <span className="text-xs font-black uppercase text-amber-500">🇺🇸 US Federal &amp; State Inputs (Tax Year 2024-25)</span>
                         <select
@@ -1839,7 +1852,7 @@ export default function TaxSuitePage() {
                         </select>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="text-xs font-bold block mb-1">Gross Annual Income ($)</label>
                           <input
@@ -1864,7 +1877,7 @@ export default function TaxSuitePage() {
 
                       <div className="grid grid-cols-2 gap-3 text-xs pt-1">
                         <div>
-                          <label className="font-bold block mb-0.5">401(k) Pre-Tax Contribution ($)</label>
+                          <label className="font-bold block mb-0.5">401(k) Pre-Tax ($)</label>
                           <input
                             type="number"
                             value={us401k}
@@ -1882,7 +1895,7 @@ export default function TaxSuitePage() {
                           />
                         </div>
                         <div>
-                          <label className="font-bold block mb-0.5">Short-Term Capital Gains ($)</label>
+                          <label className="font-bold block mb-0.5">Short-Term Gains ($)</label>
                           <input
                             type="number"
                             value={usStcg}
@@ -1891,7 +1904,7 @@ export default function TaxSuitePage() {
                           />
                         </div>
                         <div>
-                          <label className="font-bold block mb-0.5">Long-Term Capital Gains ($)</label>
+                          <label className="font-bold block mb-0.5">Long-Term Gains ($)</label>
                           <input
                             type="number"
                             value={usLtcg}
@@ -1907,7 +1920,7 @@ export default function TaxSuitePage() {
                         <span className="text-[11px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">
                           US Federal &amp; FICA Tax Summary
                         </span>
-                        <div className="text-3xl font-black mt-3">
+                        <div className="text-2xl sm:text-3xl font-black mt-3">
                           Take-Home: ${usTaxCalc.netTakeHomePay.toLocaleString()}
                         </div>
                         <p className="text-xs text-white/80 mt-1">
@@ -1918,15 +1931,15 @@ export default function TaxSuitePage() {
                       <div className="grid grid-cols-3 gap-3 text-center text-xs">
                         <div className="p-3.5 bg-white dark:bg-[#0c1017] border rounded-2xl shadow-sm">
                           <span className="text-slate-400 font-bold">Federal Tax</span>
-                          <div className="text-lg font-black text-slate-900 dark:text-white mt-1">${usTaxCalc.totalFederalTax.toLocaleString()}</div>
+                          <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1">${usTaxCalc.totalFederalTax.toLocaleString()}</div>
                         </div>
                         <div className="p-3.5 bg-white dark:bg-[#0c1017] border rounded-2xl shadow-sm">
-                          <span className="text-slate-400 font-bold">FICA (SS + Med)</span>
-                          <div className="text-lg font-black text-slate-900 dark:text-white mt-1">${usTaxCalc.totalFica.toLocaleString()}</div>
+                          <span className="text-slate-400 font-bold">FICA (SS+Med)</span>
+                          <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1">${usTaxCalc.totalFica.toLocaleString()}</div>
                         </div>
                         <div className="p-3.5 bg-white dark:bg-[#0c1017] border rounded-2xl shadow-sm">
                           <span className="text-slate-400 font-bold">State Tax</span>
-                          <div className="text-lg font-black text-slate-900 dark:text-white mt-1">${usTaxCalc.stateTax.toLocaleString()}</div>
+                          <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1">${usTaxCalc.stateTax.toLocaleString()}</div>
                         </div>
                       </div>
                     </div>
@@ -1935,7 +1948,7 @@ export default function TaxSuitePage() {
 
                 {/* ── GLOBAL 2: UAE CORPORATE TAX & VAT ──────────────────────────── */}
                 {globalTab === "uae" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="border-b pb-2 flex justify-between items-center">
                       <span className="text-xs font-black uppercase text-amber-500">
                         🇦🇪 UAE Federal Tax Authority (FTA) Corporate Tax &amp; VAT Engine
@@ -1956,7 +1969,7 @@ export default function TaxSuitePage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold block mb-1">Deductible Operating Expenses (AED)</label>
+                        <label className="text-xs font-bold block mb-1">Deductible Expenses (AED)</label>
                         <input
                           type="number"
                           value={uaeExpenses}
@@ -1975,31 +1988,45 @@ export default function TaxSuitePage() {
                       </div>
                     </div>
 
-                    <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        id="fz-check"
-                        checked={uaeIsFreeZone}
-                        onChange={(e) => setUaeIsFreeZone(e.target.checked)}
-                        className="w-5 h-5 accent-amber-500"
-                      />
-                      <label htmlFor="fz-check" className="text-xs font-bold cursor-pointer">
-                        Qualifying Free Zone Person (QFZP) — 0% Corporate Tax on Qualifying Income
-                      </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-2xl flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="fz-check"
+                          checked={uaeIsFreeZone}
+                          onChange={(e) => setUaeIsFreeZone(e.target.checked)}
+                          className="w-5 h-5 accent-amber-500"
+                        />
+                        <label htmlFor="fz-check" className="text-xs font-bold cursor-pointer">
+                          Qualifying Free Zone Person (0% Tax)
+                        </label>
+                      </div>
+                      <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-2xl flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="sbr-check"
+                          checked={uaeHasSbr}
+                          onChange={(e) => setUaeHasSbr(e.target.checked)}
+                          className="w-5 h-5 accent-amber-500"
+                        />
+                        <label htmlFor="sbr-check" className="text-xs font-bold cursor-pointer">
+                          Small Business Relief (Revenue &lt; AED 3M = 0%)
+                        </label>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center text-xs">
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
                         <span className="text-slate-400 font-bold">Net Accounting Profit</span>
-                        <div className="text-xl font-black mt-1">AED {uaeTaxCalc.netAccountingProfit.toLocaleString()}</div>
+                        <div className="text-lg sm:text-xl font-black mt-1">AED {uaeTaxCalc.netAccountingProfit.toLocaleString()}</div>
                       </div>
                       <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 rounded-2xl">
                         <span className="text-rose-600 font-bold">Corporate Tax (9% &gt; 375k)</span>
-                        <div className="text-xl font-black text-rose-600 mt-1">AED {uaeTaxCalc.corporateTaxAed.toLocaleString()}</div>
+                        <div className="text-lg sm:text-xl font-black text-rose-600 mt-1">AED {uaeTaxCalc.corporateTaxAed.toLocaleString()}</div>
                       </div>
                       <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 rounded-2xl">
                         <span className="text-emerald-600 font-bold">Net Retained Profit</span>
-                        <div className="text-xl font-black text-emerald-600 mt-1">AED {uaeTaxCalc.netProfitAfterTax.toLocaleString()}</div>
+                        <div className="text-lg sm:text-xl font-black text-emerald-600 mt-1">AED {uaeTaxCalc.netProfitAfterTax.toLocaleString()}</div>
                       </div>
                     </div>
                   </div>
@@ -2007,7 +2034,7 @@ export default function TaxSuitePage() {
 
                 {/* ── GLOBAL 3: UK HMRC TAX & NATIONAL INSURANCE ─────────────────── */}
                 {globalTab === "uk" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="text-xs font-bold block mb-1">Gross UK Salary (£)</label>
@@ -2038,22 +2065,22 @@ export default function TaxSuitePage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
-                        <span className="text-slate-400 font-bold">Personal Allowance</span>
-                        <div className="text-lg font-black mt-1">£{ukTaxCalc.personalAllowance.toLocaleString()}</div>
+                        <span className="text-slate-400 font-bold">Allowance</span>
+                        <div className="text-base sm:text-lg font-black mt-1">£{ukTaxCalc.personalAllowance.toLocaleString()}</div>
                       </div>
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
-                        <span className="text-slate-400 font-bold">HMRC Income Tax</span>
-                        <div className="text-lg font-black text-rose-500 mt-1">£{ukTaxCalc.totalIncomeTax.toLocaleString()}</div>
+                        <span className="text-slate-400 font-bold">Income Tax</span>
+                        <div className="text-base sm:text-lg font-black text-rose-500 mt-1">£{ukTaxCalc.totalIncomeTax.toLocaleString()}</div>
                       </div>
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border">
-                        <span className="text-slate-400 font-bold">National Insurance (NIC)</span>
-                        <div className="text-lg font-black text-amber-500 mt-1">£{ukTaxCalc.nicEmployee.toLocaleString()}</div>
+                        <span className="text-slate-400 font-bold">NICs (8%/2%)</span>
+                        <div className="text-base sm:text-lg font-black text-amber-500 mt-1">£{ukTaxCalc.nicEmployee.toLocaleString()}</div>
                       </div>
                       <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 rounded-2xl">
                         <span className="text-emerald-600 font-bold">Annual Take-Home</span>
-                        <div className="text-lg font-black text-emerald-600 mt-1">£{ukTaxCalc.netTakeHomeGbp.toLocaleString()}</div>
+                        <div className="text-base sm:text-lg font-black text-emerald-600 mt-1">£{ukTaxCalc.netTakeHomeGbp.toLocaleString()}</div>
                       </div>
                     </div>
                   </div>
@@ -2061,7 +2088,7 @@ export default function TaxSuitePage() {
 
                 {/* ── GLOBAL 4: DTAA TREATY & FOREIGN TAX CREDIT ─────────────────── */}
                 {globalTab === "dtaa" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="text-xs font-bold block mb-1">Source Treaty Country</label>
@@ -2089,7 +2116,7 @@ export default function TaxSuitePage() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-bold block mb-1">Foreign Income Amount ({dtaaCalc.treaty.currencySymbol})</label>
+                        <label className="text-xs font-bold block mb-1">Foreign Amount ({dtaaCalc.treaty.currencySymbol})</label>
                         <input
                           type="number"
                           value={foreignIncomeAmount}
@@ -2100,9 +2127,9 @@ export default function TaxSuitePage() {
                     </div>
 
                     <div className="p-5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-2xl space-y-2 text-xs">
-                      <div className="flex justify-between items-center font-bold text-[#0071e3]">
-                        <span>DTAA Treaty Rate Applied: {dtaaCalc.treatyRate}%</span>
-                        <span>Form Required: {dtaaCalc.treaty.formRequired}</span>
+                      <div className="flex justify-between items-center font-bold text-blue-600 dark:text-blue-400">
+                        <span>DTAA Treaty Rate: {dtaaCalc.treatyRate}%</span>
+                        <span>Required: {dtaaCalc.treaty.formRequired}</span>
                       </div>
                       <p className="text-slate-600 dark:text-slate-300">
                         Foreign Tax Withheld ({dtaaCalc.treaty.currencySymbol}): <strong>{dtaaCalc.treaty.currencySymbol}{dtaaCalc.whtDeductedForeign.toLocaleString()}</strong> ➔ Eligible for Section 90 / 91 Foreign Tax Credit in India: <strong>₹{dtaaCalc.inrWhtCreditForm67.toLocaleString("en-IN")}</strong>.
@@ -2113,7 +2140,7 @@ export default function TaxSuitePage() {
 
                 {/* ── GLOBAL 5: NRI STATUTORY RESIDENCE TEST ─────────────────────── */}
                 {globalTab === "nri" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs font-bold block mb-1">Days Stayed in India in Current FY</label>
@@ -2145,7 +2172,7 @@ export default function TaxSuitePage() {
 
                 {/* ── GLOBAL 6: GLOBAL INVOICE GENERATOR ─────────────────────────── */}
                 {globalTab === "invoice" && (
-                  <div className="bg-white dark:bg-[#0c1017] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                  <div className="bg-white dark:bg-[#0c1017] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                       <div>
                         <label className="text-xs font-bold block mb-1">Billing Currency</label>
@@ -2171,7 +2198,7 @@ export default function TaxSuitePage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold block mb-1">Hours / Units</label>
+                        <label className="text-xs font-bold block mb-1">Hours / Quantity</label>
                         <input
                           type="number"
                           value={invQty}
@@ -2190,15 +2217,15 @@ export default function TaxSuitePage() {
                       </div>
                     </div>
 
-                    <div className="p-5 bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl flex justify-between items-center">
+                    <div className="p-5 bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
                         <span className="text-xs text-slate-400 font-bold">Total Commercial Invoice Value:</span>
-                        <div className="text-3xl font-black text-amber-400">{invCurrency} {invCalculation.total.toLocaleString()}</div>
+                        <div className="text-2xl sm:text-3xl font-black text-amber-400">{invCurrency} {invCalculation.total.toLocaleString()}</div>
                       </div>
                       <button
                         type="button"
                         onClick={() => window.print()}
-                        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow"
+                        className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow active:scale-95"
                       >
                         🖨️ Print Commercial Invoice
                       </button>
@@ -2211,10 +2238,10 @@ export default function TaxSuitePage() {
 
           {/* ── OFFICIAL CA CLIENT COMPUTATION MEMO MODAL ──────────────────── */}
           {showPrintModal && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
-              <div className="bg-white text-slate-900 w-full max-w-4xl rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto no-print">
+              <div className="bg-white text-slate-900 w-full max-w-4xl rounded-3xl p-5 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center pb-3 border-b">
-                  <h2 className="text-lg font-black">Official Client Computation Memo Preview</h2>
+                  <h2 className="text-base sm:text-lg font-black">Official Client Computation Memo Preview</h2>
                   <button
                     type="button"
                     onClick={() => setShowPrintModal(false)}
@@ -2226,7 +2253,7 @@ export default function TaxSuitePage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs bg-slate-50 p-4 rounded-2xl">
                   <div>
-                    <label className="font-bold text-slate-500 block mb-0.5">Client / Firm Name</label>
+                    <label className="font-bold text-slate-500 block mb-0.5">Client / Firm</label>
                     <input
                       type="text"
                       value={clientInfo.name}
@@ -2235,7 +2262,7 @@ export default function TaxSuitePage() {
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-500 block mb-0.5">PAN Number</label>
+                    <label className="font-bold text-slate-500 block mb-0.5">PAN / EIN</label>
                     <input
                       type="text"
                       value={clientInfo.pan}
@@ -2244,7 +2271,7 @@ export default function TaxSuitePage() {
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-500 block mb-0.5">CA Firm Name</label>
+                    <label className="font-bold text-slate-500 block mb-0.5">CA Firm</label>
                     <input
                       type="text"
                       value={clientInfo.caFirm}
@@ -2262,7 +2289,7 @@ export default function TaxSuitePage() {
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-500 block mb-0.5">Assessment Year</label>
+                    <label className="font-bold text-slate-500 block mb-0.5">AY</label>
                     <input
                       type="text"
                       value={clientInfo.assessmentYear}
@@ -2274,10 +2301,10 @@ export default function TaxSuitePage() {
 
                 <div
                   id="ca-official-print-memo"
-                  className="border-2 border-slate-900 p-8 rounded-2xl bg-white text-slate-900 font-sans space-y-6"
+                  className="border-2 border-slate-900 p-6 sm:p-8 rounded-2xl bg-white text-slate-900 font-sans space-y-6"
                 >
                   <div className="text-center pb-4 border-b-2 border-slate-900">
-                    <h2 className="text-xl font-black tracking-tight">{clientInfo.caFirm}</h2>
+                    <h2 className="text-lg sm:text-xl font-black tracking-tight">{clientInfo.caFirm}</h2>
                     <p className="text-xs font-semibold text-slate-600">{clientInfo.caMembership} • UDIN: {clientInfo.udin}</p>
                     <div className="mt-2 inline-block bg-slate-100 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider border">
                       STATEMENT OF TOTAL INCOME &amp; TAX COMPUTATION MEMO
@@ -2285,18 +2312,18 @@ export default function TaxSuitePage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs py-2 border-b">
-                    <div><strong>Assessee / Client:</strong> {clientInfo.name}</div>
-                    <div><strong>Assessment Year:</strong> {clientInfo.assessmentYear} (FY: {clientInfo.financialYear})</div>
-                    <div><strong>PAN Number:</strong> {clientInfo.pan}</div>
-                    <div><strong>Date of Computation:</strong> {clientInfo.date}</div>
+                    <div><strong>Assessee:</strong> {clientInfo.name}</div>
+                    <div><strong>AY:</strong> {clientInfo.assessmentYear} (FY: {clientInfo.financialYear})</div>
+                    <div><strong>PAN / Tax ID:</strong> {clientInfo.pan}</div>
+                    <div><strong>Date:</strong> {clientInfo.date}</div>
                   </div>
 
                   <table className="w-full text-xs border-collapse">
                     <thead>
                       <tr className="bg-slate-100 border-y border-slate-900">
                         <th className="p-2 text-left">Particulars</th>
-                        <th className="p-2 text-right">Old Tax Regime (₹)</th>
-                        <th className="p-2 text-right">New Tax Regime (₹)</th>
+                        <th className="p-2 text-right">Old Regime (₹)</th>
+                        <th className="p-2 text-right">New Regime (₹)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
@@ -2311,7 +2338,7 @@ export default function TaxSuitePage() {
                         <td className="p-2 text-right">₹75,000</td>
                       </tr>
                       <tr>
-                        <td className="p-2 pl-4 text-slate-600">Less: Chapter VI-A (80C, 80D, HRA, 24b)</td>
+                        <td className="p-2 pl-4 text-slate-600">Less: Chapter VI-A Deductions</td>
                         <td className="p-2 text-right">₹{(regimeCalculation.totalOldDeductions - 50000).toLocaleString("en-IN")}</td>
                         <td className="p-2 text-right text-slate-400">N/A</td>
                       </tr>
@@ -2333,7 +2360,7 @@ export default function TaxSuitePage() {
                       <tr className="bg-slate-100 font-black text-sm border-t border-slate-900">
                         <td className="p-2">TOTAL TAX PAYABLE</td>
                         <td className="p-2 text-right">₹{regimeCalculation.totalTaxOld.toLocaleString("en-IN")}</td>
-                        <td className="p-2 text-right text-[#0071e3]">₹{regimeCalculation.totalTaxNew.toLocaleString("en-IN")}</td>
+                        <td className="p-2 text-right text-blue-600">₹{regimeCalculation.totalTaxNew.toLocaleString("en-IN")}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -2345,32 +2372,32 @@ export default function TaxSuitePage() {
                       : `Old Tax Regime is recommended for Assessee resulting in net tax savings of ₹${regimeCalculation.savings.toLocaleString("en-IN")}.`}
                   </div>
 
-                  <div className="pt-8 flex justify-between items-end text-xs">
+                  <div className="pt-6 flex justify-between items-end text-xs">
                     <div>
                       <p className="text-[10px] text-slate-500">Certified as per Income Tax Act 1961 &amp; Finance Act 2024.</p>
                       <p className="text-[10px] text-slate-400">Generated via ToolBox CA Master Engine</p>
                     </div>
                     <div className="text-center space-y-1">
-                      <div className="w-40 border-b border-slate-900 mb-1" />
+                      <div className="w-36 border-b border-slate-900 mb-1" />
                       <p className="font-bold">Authorized Signatory</p>
                       <p className="text-[10px] text-slate-500">Chartered Accountant / Seal</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
                   <button
                     type="button"
                     onClick={handleExportExcel}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition flex items-center gap-2"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition flex items-center justify-center gap-2"
                   >
                     <span>📊</span>
-                    <span>Download Complete Excel (.XLS)</span>
+                    <span>Download Excel (.XLS)</span>
                   </button>
                   <button
                     type="button"
                     onClick={handlePrint}
-                    className="px-6 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-black shadow-lg shadow-blue-500/25 flex items-center gap-2"
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
                   >
                     <span>🖨️</span>
                     <span>Print Clean A4 Document</span>
