@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   try {
     const { email, code } = await req.json();
     if (!email || !code) {
-      return NextResponse.json({ error: "Email and code required" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
     const supabase = createClient(
@@ -19,22 +19,24 @@ export async function POST(req: NextRequest) {
       .select("*")
       .eq("email", email)
       .eq("code", code)
-      .gt("expiry", new Date().toISOString())
-      .order("created_at", { ascending: false })
+      .order("expiry", { ascending: false })
       .limit(1);
 
-    if (error) {
-      console.error("Verify code error:", error);
-      return NextResponse.json({ error: "Failed to verify" }, { status: 500 });
+    if (error || !data || data.length === 0) {
+      return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
 
-    if (data && data.length > 0) {
-      return NextResponse.json({ success: true });
-    } else {
-      return NextResponse.json({ error: "Invalid or expired code" }, { status: 400 });
+    const record = data[0];
+    if (new Date(record.expiry) < new Date()) {
+      return NextResponse.json({ error: "Code expired" }, { status: 400 });
     }
-  } catch (error) {
+
+    // Delete used code
+    await supabase.from("verification_codes").delete().eq("email", email);
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
     console.error("Verify code error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Verification failed" }, { status: 500 });
   }
 }
