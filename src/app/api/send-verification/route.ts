@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = String(email).trim().toLowerCase();
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -25,10 +25,10 @@ export async function POST(req: NextRequest) {
         const supabase = createClient(supabaseUrl, supabaseKey);
         
         try {
-          await supabase.from("verification_codes").delete().eq("email", cleanEmail);
+          await supabase.from("verification_codes").delete().ilike("email", cleanEmail);
         } catch (delErr) {}
 
-        const { error: insertError } = await supabase
+        let { error: insertError } = await supabase
           .from("verification_codes")
           .insert([{ email: cleanEmail, code, expiry }]);
 
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
           <div style="background: #f7fafc; border: 2px dashed #0071e3; border-radius: 12px; padding: 18px; text-align: center; margin: 16px 0;">
             <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a202c;">${code}</span>
           </div>
-          <p style="font-size: 13px; color: #718096;">This code expires in 10 minutes.</p>
+          <p style="font-size: 13px; color: #718096;">This code expires in 15 minutes.</p>
           <p style="font-size: 12px; color: #a0aec0;">If you didn't request this, you can safely ignore this email.</p>
           <hr style="border: none; border-top: 1px solid #edf2f7; margin: 20px 0;" />
           <p style="font-size: 11px; color: #a0aec0; margin: 0;">ToolBox Platform • Founder: Lakhan Kashyap</p>
@@ -82,6 +82,10 @@ export async function POST(req: NextRequest) {
 
       if (sendResult.error) {
         console.error("All Resend attempts failed:", sendResult.error);
+        return NextResponse.json(
+          { error: `Email delivery failed: ${sendResult.error.message || "Domain unverified"}` },
+          { status: 400 }
+        );
       }
     }
 
