@@ -12,10 +12,15 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.trim().toLowerCase();
     const finalExpiry = expiry_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase credentials in activate-subscription");
+      return NextResponse.json({ error: "Configuration error" }, { status: 500 });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { error } = await supabase.from("subscriptions").insert([
       {
