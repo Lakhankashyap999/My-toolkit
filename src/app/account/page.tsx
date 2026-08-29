@@ -29,14 +29,33 @@ export default function AccountPage() {
 
   const fetchSubscription = async (email: string) => {
     try {
+      // 1. Check local storage pro token fallback first
+      const localProData = localStorage.getItem("toolbox_pro");
+      if (localProData) {
+        try {
+          const parsed = JSON.parse(localProData);
+          if (parsed.active && parsed.expiry > Date.now()) {
+            setSubscription({
+              email,
+              expiry_date: new Date(parsed.expiry).toISOString(),
+            });
+            startCountdown(new Date(parsed.expiry).toISOString());
+          }
+        } catch {}
+      }
+
+      // 2. Fetch live from server
       const res = await fetch(`/api/check-subscription?email=${encodeURIComponent(email)}`);
       const data = await res.json();
-      setSubscription(data.subscription);
-      if (data.subscription?.expiry_date) {
-        startCountdown(data.subscription.expiry_date);
+      
+      if (data.active && data.subscription) {
+        setSubscription(data.subscription);
+        if (data.subscription?.expiry_date) {
+          startCountdown(data.subscription.expiry_date);
+        }
       }
     } catch {
-      setSubscription(null);
+      // Keep local subscription if API fails
     } finally {
       setLoading(false);
     }
@@ -167,7 +186,7 @@ export default function AccountPage() {
                 value={inputEmail}
                 onChange={(e) => setInputEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4 text-gray-900 dark:text-white"
               />
               <button
                 onClick={handleSendCode}
@@ -185,7 +204,7 @@ export default function AccountPage() {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="6-digit code"
                 maxLength={6}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4 text-center tracking-widest"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 mb-4 text-center tracking-widest text-gray-900 dark:text-white"
               />
               <button
                 onClick={handleVerifyCode}
@@ -202,7 +221,7 @@ export default function AccountPage() {
               </button>
             </>
           )}
-          {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center">{message}</p>}
+          {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center font-bold">{message}</p>}
         </div>
       </div>
     );
@@ -259,7 +278,7 @@ export default function AccountPage() {
                   href="/payment"
                   className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
                 >
-                  Get Pro for ₹29
+                  Get Pro for ₹99
                 </Link>
                 <button
                   onClick={handleLogout}
