@@ -9,10 +9,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://powtabfjjbvaigmvigdy.supabase.co";
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "sb_secret_WlvhfIQ39xAi5O-c7GO1xw_aqwu6muH";
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     const { error } = await supabase.from("subscriptions").insert([
       { email, payment_id, expiry_date },

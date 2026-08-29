@@ -2,7 +2,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { isLifetimeAdminEmail, createProToken } from "@/lib/proAuth";
 
 export default function ProGate({ children }: { children: React.ReactNode }) {
   const [isPro, setIsPro] = useState<boolean>(false);
@@ -13,12 +12,6 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
 
   const verifyEmail = async (emailToCheck: string) => {
     if (!emailToCheck) return false;
-    
-    // 👑 Founder Lifetime Admin Bypass
-    if (isLifetimeAdminEmail(emailToCheck)) {
-      return true;
-    }
-
     try {
       const res = await fetch(`/api/check-subscription?email=${encodeURIComponent(emailToCheck)}`);
       const data = await res.json();
@@ -30,15 +23,9 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkPro = async () => {
-      // 1. Check if email is stored
+      // 1. Pehle localStorage me saved email se check
       const storedEmail = localStorage.getItem("toolbox_email");
       if (storedEmail) {
-        if (isLifetimeAdminEmail(storedEmail)) {
-          setIsPro(true);
-          setLoading(false);
-          return;
-        }
-
         const active = await verifyEmail(storedEmail);
         if (active) {
           setIsPro(true);
@@ -52,7 +39,7 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
       if (data) {
         try {
           const parsed = JSON.parse(data);
-          if (parsed.token && (parsed.role === "FOUNDER_LIFETIME_VIP" || parsed.expiry > Date.now())) {
+          if (parsed.token && parsed.expiry > Date.now()) {
             setIsPro(true);
             setLoading(false);
             return;
@@ -73,22 +60,6 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
     }
     setChecking(true);
     setCheckMessage("Checking subscription...");
-
-    // 👑 Instant Founder Unlock
-    if (isLifetimeAdminEmail(trimmed)) {
-      const lifetimeToken = createProToken(trimmed);
-      localStorage.setItem("toolbox_email", trimmed);
-      localStorage.setItem("toolbox_pro", JSON.stringify({
-        active: true,
-        role: "FOUNDER_LIFETIME_VIP",
-        token: lifetimeToken,
-        expiry: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
-      }));
-      setIsPro(true);
-      setCheckMessage("👑 Founder Lakhan Sir! Lifetime Pro Unlocked!");
-      setTimeout(() => setLoading(false), 200);
-      return;
-    }
 
     const active = await verifyEmail(trimmed);
 
@@ -144,7 +115,7 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
                 {checking ? "Checking..." : "Check Subscription"}
               </button>
               {checkMessage && (
-                <p className={`mt-2 text-sm font-bold ${checkMessage.includes("found") || checkMessage.includes("Founder") ? "text-green-600" : "text-red-500"}`}>
+                <p className={`mt-2 text-sm ${checkMessage.includes("found") ? "text-green-600" : "text-red-500"}`}>
                   {checkMessage}
                 </p>
               )}
