@@ -22,11 +22,12 @@ const inter = Inter({
 });
 
 /* ========================================================================== */
-/*  DATA DEFINITIONS (CA & TAX SUITE AT #1 TOP PRIORITY)                      */
+/*  DATA DEFINITIONS (CA, LEGAL & CNC INDUSTRIAL SUITE AT #1 PRIORITY)        */
 /* ========================================================================== */
 
 const TOOL_CATEGORIES = [
   "All Tools",
+  "Industrial & CNC",
   "Legal & Court",
   "Govt & Exam",
   "PDF Suite",
@@ -39,6 +40,24 @@ const TOOL_CATEGORIES = [
 ];
 
 const tools = [
+  {
+    id: 101,
+    name: "CNC & VMC Machine Diagnostic Suite",
+    category: "Industrial & CNC",
+    icon: "⚙️",
+    gradient: "from-amber-500 via-orange-600 to-yellow-500",
+    glow: "rgba(245,158,11,0.45)",
+    badge: "🏭 NEW • INDUSTRIAL PRO",
+    price: "👑 Pro Pass",
+    desc: "1,000+ Alarm Codes (Fanuc, Siemens, Mitsubishi, Haas), Servo Drives, ATC Jam Recovery, Coolant/Lube Fault Trees & Part Defect Solver.",
+    features: [
+      "Fanuc, Siemens, Mitsubishi & Haas Alarms",
+      "ATC Tool Changer Jam Recovery",
+      "Coolant, Lube (15 Bar) & Pneumatics",
+      "Part Defect & Speeds/Feeds Calculator",
+    ],
+    path: "/cnc-diagnostics",
+  },
   {
     id: 1,
     name: "CA & Tax Master Suite",
@@ -76,7 +95,7 @@ const tools = [
     path: "/legal-suite",
   },
   {
-    id: 2,
+    id: 202,
     name: "Exam Photo & Sign Resizer",
     category: "Govt & Exam",
     icon: "📸",
@@ -436,7 +455,7 @@ const comingSoonTools = [
 
 const navLinks = [
   { href: "#office", label: "🏢 Virtual Office" },
-  { href: "#tools", label: "Tools (27+)" },
+  { href: "#tools", label: "Tools (28+)" },
   { href: "#showcase", label: "Live Demo" },
   { href: "#pricing", label: "Pricing" },
   { href: "/chatbot", label: "AI Assistant" },
@@ -677,7 +696,7 @@ export default function Home() {
             <span className="text-[#0071e3]">In one place.</span>
           </h1>
           <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            Calculate CA Taxes, IPC to BNS Legal Converter, resize exam photos, edit PDFs, convert formats, generate invoices, and get instant AI help —
+            CNC &amp; VMC Industrial Diagnostics, CA Taxes, IPC to BNS Legal Converter, resize exam photos, edit PDFs, convert formats, generate invoices, and get instant AI help —
             supervised live by our virtual office team. 100% private, no software install required.
           </p>
           <div ref={heroBtnsRef} className="flex flex-wrap justify-center gap-3 sm:gap-4">
@@ -772,7 +791,7 @@ export default function Home() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 27+ tools (e.g. CA Tax, GST, TDS, EMI, PDF, Word, QR, OCR...)"
+              placeholder="Search 28+ tools (e.g. CNC, Fanuc, CA Tax, GST, TDS, EMI, PDF, Word, QR, OCR...)"
               className="w-full px-5 py-3.5 pr-12 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-[#111113] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] shadow-sm"
             />
           </div>
@@ -864,9 +883,10 @@ export default function Home() {
               <p className="text-4xl font-black tracking-tight mb-1">₹99</p>
               <p className="text-[12px] text-white/70 mb-5">30-day all-inclusive pass</p>
               <ul className="space-y-2.5 text-[13px] text-white/90 mb-7">
+                <li className="flex items-center gap-2"><span>✓</span> ⚙️ CNC &amp; VMC Industrial Suite</li>
                 <li className="flex items-center gap-2"><span>✓</span> 💎 CA &amp; Tax Master Suite</li>
+                <li className="flex items-center gap-2"><span>✓</span> ⚖️ Advocate &amp; Legal Master Suite</li>
                 <li className="flex items-center gap-2"><span>✓</span> AI HD Background Remover</li>
-                <li className="flex items-center gap-2"><span>✓</span> Interactive Visual PDF Editor</li>
                 <li className="flex items-center gap-2"><span>✓</span> GST Invoice &amp; Bill Generator</li>
                 <li className="flex items-center gap-2"><span>✓</span> ATS Resume Builder (5 Themes)</li>
                 <li className="flex items-center gap-2"><span>✓</span> ULTRON 3.0 AI Assistant</li>
