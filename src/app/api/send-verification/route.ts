@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,12 +15,21 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = String(email).trim().toLowerCase();
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    const expiryTimestamp = Date.now() + 15 * 60 * 1000; // 15 mins
+    const expiryIso = new Date(expiryTimestamp).toISOString();
 
+    // 1. Generate Stateless Signed HMAC Token (Guarantees 100% verification even if Supabase keys fail)
+    const secret = process.env.JWT_SECRET || "toolbox_auth_hmac_secret_key_2026";
+    const signature = crypto
+      .createHmac("sha256", secret)
+      .update(`${cleanEmail}:${code}:${expiryTimestamp}`)
+      .digest("hex");
+    const otpToken = `${expiryTimestamp}.${signature}`;
+
+    // 2. Supabase Storage (Safe execution)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // 1. Supabase Storage (Safe execution)
     if (supabaseUrl && supabaseKey) {
       try {
         const supabase = createClient(supabaseUrl, supabaseKey);
@@ -30,12 +40,12 @@ export async function POST(req: NextRequest) {
 
         let { error: insertError } = await supabase
           .from("verification_codes")
-          .insert([{ email: cleanEmail, code, expiry }]);
+          .insert([{ email: cleanEmail, code, expiry: expiryIso }]);
 
         if (insertError) {
           console.error("Supabase insert code error:", insertError);
           if (insertError.message?.includes("expiry")) {
-            await supabase.from("verification_codes").insert([{ email: cleanEmail, code, expires_at: expiry }]);
+            await supabase.from("verification_codes").insert([{ email: cleanEmail, code, expires_at: expiryIso }]);
           }
         }
       } catch (sbErr) {
@@ -43,7 +53,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Resend Email Delivery (With Automatic Domain Failover)
+    // 3. Resend Email Delivery (With Automatic Domain Failover)
     const resendApiKey = process.env.RESEND_API_KEY;
 
     if (resendApiKey) {
@@ -89,7 +99,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, message: "Code sent successfully" });
+    return NextResponse.json({ success: true, otpToken, message: "Code sent successfully" });
   } catch (error: any) {
     console.error("Send verification error:", error);
     return NextResponse.json(
