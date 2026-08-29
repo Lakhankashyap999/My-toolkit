@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useEffect, useState } from "react";
+import { isLifetimeAdminEmail } from "@/lib/proAuth";
 
 const SESSION_VALID_MS = 8 * 60 * 60 * 1000; // 8 hours
 
@@ -18,8 +19,14 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     const storedEmail = localStorage.getItem("toolbox_email");
     let loginTime = localStorage.getItem("toolbox_login_time");
 
-    // Legacy fix: agar email saved hai but login_time missing hai,
-    // to aaj ka time set karke session valid maan lo
+    // 👑 Founder Lifetime Admin Bypass
+    if (isLifetimeAdminEmail(storedEmail)) {
+      setEmail(storedEmail);
+      setLoading(false);
+      setShowForm(false);
+      return;
+    }
+
     if (storedEmail && !loginTime) {
       loginTime = String(Date.now());
       localStorage.setItem("toolbox_login_time", loginTime);
@@ -33,7 +40,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         setLoading(false);
         return;
       } else {
-        // Session expired — clear
         localStorage.removeItem("toolbox_email");
         localStorage.removeItem("toolbox_login_time");
       }
@@ -49,6 +55,15 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       setMessage("Please enter a valid email.");
       return;
     }
+
+    // 👑 Founder Instant Pass Without OTP Code
+    if (isLifetimeAdminEmail(trimmed)) {
+      localStorage.setItem("toolbox_email", trimmed);
+      localStorage.setItem("toolbox_login_time", String(Date.now()));
+      setShowForm(false);
+      return;
+    }
+
     setSending(true);
     setMessage("Sending verification code...");
     try {
@@ -89,7 +104,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         localStorage.setItem("toolbox_email", trimmedEmail);
         localStorage.setItem("toolbox_login_time", String(Date.now()));
-        // Register email in users table (optional)
         try {
           await fetch("/api/register-email", {
             method: "POST",
@@ -166,7 +180,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               </button>
             </>
           )}
-          {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center">{message}</p>}
+          {message && <p className="mt-4 text-sm text-blue-600 dark:text-blue-400 text-center font-bold">{message}</p>}
         </div>
       </div>
     );

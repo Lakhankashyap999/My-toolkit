@@ -63,7 +63,7 @@ export default function PaymentPage() {
       const response = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 29 }),
+        body: JSON.stringify({ amount: 99 }), // ₹99 Amount
       });
 
       if (!response.ok) {
@@ -187,7 +187,7 @@ export default function PaymentPage() {
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">We'll link your subscription to this email.</p>
           </div>
 
-          <div className="text-4xl font-extrabold text-blue-600 mb-2">₹29</div>
+          <div className="text-4xl font-extrabold text-blue-600 mb-2">₹99</div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">One-time payment · 30 days access</p>
 
           {proActive ? (
@@ -200,7 +200,7 @@ export default function PaymentPage() {
               disabled={isProcessing}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition"
             >
-              {isProcessing ? "Processing..." : "Pay ₹29 & Get Pro"}
+              {isProcessing ? "Processing..." : "Pay ₹99 & Get Pro"}
             </button>
           )}
           {message && <div className="mt-4 text-sm text-blue-600 dark:text-blue-400">{message}</div>}
