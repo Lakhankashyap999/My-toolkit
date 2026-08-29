@@ -1,7 +1,8 @@
 // @ts-nocheck
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { isLifetimeAdminEmail, createProToken } from "@/lib/proAuth";
 
 declare global {
   interface Window {
@@ -20,16 +21,35 @@ export default function PaymentPage() {
   const [message, setMessage] = useState("");
   const [proActive, setProActive] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
+      const storedEmail = localStorage.getItem("toolbox_email");
+      if (isLifetimeAdminEmail(storedEmail)) return true;
+
       const data = localStorage.getItem("toolbox_pro");
       if (data) {
         try {
           const parsed = JSON.parse(data);
-          return parsed.token && parsed.expiry > Date.now();
+          return parsed.token && (parsed.role === "FOUNDER_LIFETIME_VIP" || parsed.expiry > Date.now());
         } catch {}
       }
     }
     return false;
   });
+
+  useEffect(() => {
+    if (isLifetimeAdminEmail(email)) {
+      const lifetimeToken = createProToken(email);
+      const proData = {
+        active: true,
+        role: "FOUNDER_LIFETIME_VIP",
+        token: lifetimeToken,
+        expiry: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
+      };
+      localStorage.setItem("toolbox_email", email.trim());
+      localStorage.setItem("toolbox_pro", JSON.stringify(proData));
+      setProActive(true);
+      setMessage("👑 Welcome Founder Lakhan Sir! Lifetime Unlimited VIP Pro Access Activated!");
+    }
+  }, [email]);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -42,10 +62,24 @@ export default function PaymentPage() {
   };
 
   const handlePayment = async () => {
-    // Email validation
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       setMessage("Please enter a valid email address to activate Pro.");
+      return;
+    }
+
+    if (isLifetimeAdminEmail(trimmedEmail)) {
+      const lifetimeToken = createProToken(trimmedEmail);
+      const proData = {
+        active: true,
+        role: "FOUNDER_LIFETIME_VIP",
+        token: lifetimeToken,
+        expiry: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
+      };
+      localStorage.setItem("toolbox_email", trimmedEmail);
+      localStorage.setItem("toolbox_pro", JSON.stringify(proData));
+      setProActive(true);
+      setMessage("👑 Founder Lakhan Sir! Lifetime Pro is 100% Free & Active.");
       return;
     }
 
@@ -94,10 +128,8 @@ export default function PaymentPage() {
 
             const verifyData = await verifyResponse.json();
             if (verifyData.success) {
-              // Save email to localStorage
               localStorage.setItem("toolbox_email", trimmedEmail);
 
-              // Save subscription to server (Supabase)
               try {
                 await fetch("/api/activate-subscription", {
                   method: "POST",
@@ -109,13 +141,9 @@ export default function PaymentPage() {
                   }),
                 });
               } catch (err) {
-                console.error("Failed to activate subscription:", err);
-                setMessage("Payment received but activation failed. Contact support.");
-                setIsProcessing(false);
-                return;
+                console.error("Failed to activate subscription in Supabase:", err);
               }
 
-              // Store local Pro token for fallback
               const proData = {
                 active: true,
                 token: verifyData.token,
@@ -192,7 +220,7 @@ export default function PaymentPage() {
 
           {proActive ? (
             <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-lg py-3 font-semibold">
-              Pro Active ✅
+              {isLifetimeAdminEmail(email) ? "👑 Founder Lifetime VIP Active ✅" : "Pro Active ✅"}
             </div>
           ) : (
             <button
@@ -203,7 +231,7 @@ export default function PaymentPage() {
               {isProcessing ? "Processing..." : "Pay ₹99 & Get Pro"}
             </button>
           )}
-          {message && <div className="mt-4 text-sm text-blue-600 dark:text-blue-400">{message}</div>}
+          {message && <div className="mt-4 text-sm text-blue-600 dark:text-blue-400 font-bold">{message}</div>}
         </div>
         <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">Secured by Razorpay · UPI, Cards, Net Banking</p>
       </div>
