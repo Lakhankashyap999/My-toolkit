@@ -917,61 +917,73 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Founder Footer */}
-      <footer className="border-t border-black/5 dark:border-white/10 pt-12 pb-8 overflow-hidden relative bg-white dark:bg-[#07090e]">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex flex-col items-center gap-3 pb-8 mb-8 border-b border-black/5 dark:border-white/10">
-            <div className="text-[11px] uppercase tracking-widest text-[#0071e3] dark:text-blue-400 font-extrabold">
-              Crafted with Excellence by
-            </div>
-
-            <div className="relative group cursor-pointer">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#0071e3] via-indigo-500 to-emerald-400 blur-md opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse" />
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-[#0071e3] to-indigo-600 p-[2.5px]">
-                <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white font-black text-2xl shadow-inner border-2 border-white dark:border-slate-900">
+      {/* Ultra-Clean Founder & Signature Footer */}
+      <footer className="border-t border-black/[0.06] dark:border-white/[0.08] py-16 bg-[#fafafa] dark:bg-[#06070a] relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          {/* Main Founder Signature Card */}
+          <div className="relative rounded-3xl bg-white dark:bg-[#0c0e14] border border-black/[0.06] dark:border-white/[0.08] p-7 sm:p-9 shadow-sm dark:shadow-2xl">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+              {/* Sleek Minimalist Monogram */}
+              <div className="relative shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-blue-600 dark:to-indigo-700 flex items-center justify-center text-white font-black text-lg shadow-md border border-white/20">
                   LK
+                </div>
+                <span
+                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0c0e14] flex items-center justify-center text-[10px] text-white font-bold"
+                  title="Verified Creator"
+                >
+                  ✓
+                </span>
+              </div>
+
+              {/* Founder Details & Mission */}
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#0071e3] dark:text-blue-400">
+                    Designed &amp; Engineered by
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Lakhan Kashyap
+                  </h3>
+                  <span className="text-[11px] bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 font-semibold px-2.5 py-0.5 rounded-full border border-black/5 dark:border-white/10">
+                    Founder &amp; Chief Architect
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl">
+                  Built with a clear vision: eliminating bloated software installs and shady websites by providing instant, private, client-side tools for engineers, accountants &amp; legal minds worldwide.
+                </p>
+
+                {/* 3 Clean Trust Badges */}
+                <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    100% Client-Side Sandbox
+                  </span>
+                  <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    Zero Cloud Logging
+                  </span>
+                  <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
+                    🇮🇳 Made with Passion
+                  </span>
                 </div>
               </div>
             </div>
-
-            <div className="mt-1 space-y-1">
-              <h3 className="font-extrabold text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#0071e3] to-indigo-600 dark:from-white dark:via-blue-400 dark:to-indigo-300">
-                Lakhan Kashyap
-              </h3>
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                <span className="text-xs bg-[#0071e3]/10 text-[#0071e3] dark:bg-blue-950/60 dark:text-blue-300 font-bold px-3 py-1 rounded-full border border-[#0071e3]/20">
-                  Founder &amp; Chief Architect
-                </span>
-                <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1 rounded-full border border-emerald-500/20">
-                  ToolBox Suite
-                </span>
-              </div>
-            </div>
           </div>
 
-          <div className="w-full overflow-hidden bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl py-3.5 mb-8">
-            <div className="animate-marquee-slow whitespace-nowrap text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 opacity-70">
-              <span className="inline-flex items-center gap-4 px-4">
-                <span>🚀 <strong>Our Mission:</strong> Eliminating heavy app installs &amp; shady sites — providing instant, privacy-first browser utilities for everyone worldwide.</span>
-                <span>•</span>
-                <span>⚡ <strong>100% Client-Side:</strong> Your files never leave your device. Zero server logging.</span>
-                <span>•</span>
-                <span>💡 Built for extreme speed, simplicity, and efficiency.</span>
-                <span>•</span>
-              </span>
-              <span className="inline-flex items-center gap-4 px-4">
-                <span>🚀 <strong>Our Mission:</strong> Eliminating heavy app installs &amp; shady sites — providing instant, privacy-first browser utilities for everyone worldwide.</span>
-                <span>•</span>
-                <span>⚡ <strong>100% Client-Side:</strong> Your files never leave your device. Zero server logging.</span>
-                <span>•</span>
-                <span>💡 Built for extreme speed, simplicity, and efficiency.</span>
-                <span>•</span>
-              </span>
+          {/* Minimalist Bottom Bar */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 dark:text-slate-500">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>All 29+ Tools Live &amp; Operational</span>
             </div>
-          </div>
-
-          <div className="text-xs text-[#6e6e73] dark:text-white/50 font-medium">
-            © {new Date().getFullYear()} ToolBox Platform • All rights reserved. Made with ❤️ by Lakhan Kashyap.
+            <p className="font-medium text-center sm:text-right">
+              © {new Date().getFullYear()} ToolBox Platform • All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
