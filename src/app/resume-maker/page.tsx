@@ -7,875 +7,696 @@ import jsPDF from "jspdf";
 import ProGate from "../../components/ProGate";
 import AuthGate from "../../components/AuthGate";
 
-interface Experience {
-  id: string;
-  company: string;
-  role: string;
-  start: string;
-  end: string;
-  description: string;
-}
+/* ─────────────────────────── TYPES ─────────────────────────── */
+interface Experience   { id:string; company:string; role:string; start:string; end:string; description:string }
+interface Education    { id:string; degree:string; institution:string; year:string; gpa:string }
+interface Project      { id:string; name:string; link:string; tech:string; description:string }
+interface Certification{ id:string; name:string; issuer:string; year:string }
+interface Achievement  { id:string; title:string; year:string }
+interface Language     { id:string; name:string; proficiency:string }
 
-interface Education {
-  id: string;
-  degree: string;
-  institution: string;
-  year: string;
-}
+const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-interface Project {
-  id: string;
-  name: string;
-  link: string;
-  description: string;
-}
+/* ─────────────────────────── TEMPLATES ─────────────────────── */
+const TEMPLATES = [
+  { id:"ats-clean",       name:"Classic ATS",          badge:"99% ATS Pass",    badgeColor:"bg-emerald-500/10 text-emerald-600 border-emerald-500/20", accent:"#1e293b" },
+  { id:"modern-tech",     name:"Modern Tech & Dev",    badge:"Most Popular",    badgeColor:"bg-blue-500/10 text-blue-600 border-blue-500/20",          accent:"#0071e3" },
+  { id:"executive",       name:"Executive Leadership", badge:"Corporate",       badgeColor:"bg-purple-500/10 text-purple-600 border-purple-500/20",    accent:"#0f172a" },
+  { id:"minimalist",      name:"Apple Minimalist",     badge:"Ultra Clean",     badgeColor:"bg-slate-500/10 text-slate-600 border-slate-500/20",       accent:"#334155" },
+  { id:"creative-accent", name:"Creative Accent",      badge:"Design & Product",badgeColor:"bg-rose-500/10 text-rose-600 border-rose-500/20",          accent:"#e11d48" },
+];
 
-interface Certification {
-  id: string;
-  name: string;
-  issuer: string;
-  year: string;
-}
-
-interface Achievement {
-  id: string;
-  title: string;
-  year: string;
-}
-
-interface Language {
-  id: string;
-  name: string;
-  proficiency: string;
-}
-
-const generateId = () => {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+/* ─────────────────────────── SAMPLE ────────────────────────── */
+const S_FORM = {
+  fullName:"Lakhan Kashyap", title:"Senior Full Stack Engineer",
+  email:"lakhan@example.com", phone:"+91 98765 43210", location:"Mumbai, India",
+  linkedin:"linkedin.com/in/lakhankashyap", website:"lakhankashyap.dev",
+  summary:"Results-driven Full Stack Engineer with 5+ years building high-scale web applications using React, Next.js, Node.js, and Cloud Infrastructure. Proven track record improving system performance by 65% and leading cross-functional teams.",
+  skills:"React.js, Next.js, TypeScript, Node.js, PostgreSQL, Tailwind CSS, AWS, Docker, REST APIs, GraphQL",
 };
+const S_EXP:Experience[]    = [{ id:uid(), company:"TechCorp Solutions", role:"Senior Full Stack Engineer", start:"Jan 2023", end:"Present", description:"Architected Next.js frontend serving 500k+ monthly active users.\nReduced API latency by 45% via Redis caching and query optimization.\nMentored 4 junior engineers; implemented CI/CD with GitHub Actions." }];
+const S_EDU:Education[]     = [{ id:uid(), degree:"B.Tech Computer Science & Engineering", institution:"Indian Institute of Technology (IIT)", year:"2017 – 2021", gpa:"8.9 / 10" }];
+const S_PROJ:Project[]      = [{ id:uid(), name:"ToolBox – Web Utility Suite", link:"mytoolboxs.online", tech:"Next.js, TypeScript, Supabase", description:"All-in-one browser utility platform with PDF editing, ATS resume generation, and image tools." }];
+const S_CERT:Certification[]= [{ id:uid(), name:"AWS Certified Solutions Architect", issuer:"Amazon Web Services", year:"2024" }];
+const S_ACH:Achievement[]   = [{ id:uid(), title:"1st Place – National Hackathon 2023", year:"2023" }];
+const S_LANG:Language[]     = [{ id:uid(), name:"English", proficiency:"Fluent" },{ id:uid(), name:"Hindi", proficiency:"Native" }];
 
-const RESUME_TEMPLATES = [
-  {
-    id: "ats-clean",
-    name: "Classic ATS Standard",
-    badge: "99% ATS Pass",
-    badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-    desc: "Single-column monochrome layout optimized for high-volume ATS scanners.",
-    primaryColor: "#1e293b",
-  },
-  {
-    id: "modern-tech",
-    name: "Modern Tech & Dev",
-    badge: "Most Popular",
-    badgeColor: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-    desc: "Clean tech layout with blue accent banners and bold section dividers.",
-    primaryColor: "#0071e3",
-  },
-  {
-    id: "executive",
-    name: "Executive Leadership",
-    badge: "Corporate",
-    badgeColor: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-    desc: "Dark top banner with gold/teal accent hierarchy for senior roles.",
-    primaryColor: "#0f172a",
-  },
-  {
-    id: "minimalist",
-    name: "Apple Minimalist",
-    badge: "Ultra Clean",
-    badgeColor: "bg-slate-500/10 text-slate-600 border-slate-500/20",
-    desc: "Spacious layout with generous margins and subtle gray metadata.",
-    primaryColor: "#334155",
-  },
-  {
-    id: "creative-accent",
-    name: "Creative Accent",
-    badge: "Design & Product",
-    badgeColor: "bg-rose-500/10 text-rose-600 border-rose-500/20",
-    desc: "Vibrant accent colors with pill-style skill tags.",
-    primaryColor: "#e11d48",
-  },
-];
-
-const SAMPLE_DATA = {
-  fullName: "Lakhan Kashyap",
-  title: "Senior Full Stack Engineer",
-  email: "lakhan.kashyap@example.com",
-  phone: "+91 98765 43210",
-  location: "Mumbai, India",
-  linkedin: "linkedin.com/in/lakhankashyap",
-  website: "lakhankashyap.dev",
-  summary: "Results-driven Full Stack Engineer with 5+ years of experience building high-scale web applications using React, Next.js, Node.js, and Cloud Infrastructure. Proven track record of improving system performance by 65% and leading cross-functional developer teams.",
-  skills: "React.js, Next.js, TypeScript, Node.js, PostgreSQL, Tailwind CSS, AWS, Docker, REST APIs, GraphQL",
-  interests: "Open Source Development, Tech Blogging, Machine Learning, UI Architecture",
-};
-
-const SAMPLE_EXP: Experience[] = [
-  {
-    id: generateId(),
-    company: "TechCorp Solutions",
-    role: "Senior Full Stack Engineer",
-    start: "Jan 2023",
-    end: "Present",
-    description: "Architected high-throughput Next.js frontend serving 500k+ monthly active users.\nReduced API response latency by 45% through Redis caching and PostgreSQL query optimization.\nMentored 4 junior engineers and implemented CI/CD pipelines using GitHub Actions.",
-  },
-  {
-    id: generateId(),
-    company: "Innovate Web Systems",
-    role: "Frontend Developer",
-    start: "Jul 2021",
-    end: "Dec 2022",
-    description: "Built responsive React dashboards with real-time WebSocket data updates.\nCollaborated with product designers to implement an accessible Tailwind CSS design system.",
-  },
-];
-
-const SAMPLE_EDU: Education[] = [
-  {
-    id: generateId(),
-    degree: "B.Tech in Computer Science & Engineering",
-    institution: "Indian Institute of Technology (IIT)",
-    year: "2017 - 2021",
-  },
-];
-
-const SAMPLE_PROJECTS: Project[] = [
-  {
-    id: generateId(),
-    name: "ToolBox - Web Utility Suite",
-    link: "toolbox.app",
-    description: "Built an all-in-one browser utility platform featuring PDF editing, ATS resume generation, and image compression.",
-  },
-];
-
-const SAMPLE_CERTS: Certification[] = [
-  {
-    id: generateId(),
-    name: "AWS Certified Solutions Architect",
-    issuer: "Amazon Web Services",
-    year: "2024",
-  },
-];
-
-const SAMPLE_ACHIEVEMENTS: Achievement[] = [
-  {
-    id: generateId(),
-    title: "1st Place Winner - National Hackathon 2023",
-    year: "2023",
-  },
-];
-
-const SAMPLE_LANGUAGES: Language[] = [
-  { id: generateId(), name: "English", proficiency: "Fluent" },
-  { id: generateId(), name: "Hindi", proficiency: "Native" },
-];
-
+/* ═══════════════════════ COMPONENT ═════════════════════════════ */
 export default function ResumeMakerPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState("modern-tech");
-  const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
+  const [tmpl, setTmpl]   = useState("modern-tech");
+  const [tab, setTab]     = useState<"edit"|"preview">("edit");
+  const [form, setForm]   = useState(S_FORM);
+  const [exp,  setExp]    = useState<Experience[]>(S_EXP);
+  const [edu,  setEdu]    = useState<Education[]>(S_EDU);
+  const [proj, setProj]   = useState<Project[]>(S_PROJ);
+  const [cert, setCert]   = useState<Certification[]>(S_CERT);
+  const [ach,  setAch]    = useState<Achievement[]>(S_ACH);
+  const [lang, setLang]   = useState<Language[]>(S_LANG);
+  const [busy, setBusy]   = useState(false);
+  const [err,  setErr]    = useState("");
 
-  const [form, setForm] = useState(SAMPLE_DATA);
-  const [experience, setExperience] = useState<Experience[]>(SAMPLE_EXP);
-  const [education, setEducation] = useState<Education[]>(SAMPLE_EDU);
-  const [projects, setProjects] = useState<Project[]>(SAMPLE_PROJECTS);
-  const [certifications, setCertifications] = useState<Certification[]>(SAMPLE_CERTS);
-  const [achievements, setAchievements] = useState<Achievement[]>(SAMPLE_ACHIEVEMENTS);
-  const [languages, setLanguages] = useState<Language[]>(SAMPLE_LANGUAGES);
+  const hc = (e:any) => setForm({...form,[e.target.name]:e.target.value});
 
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const loadSample = () => { setForm(S_FORM); setExp(S_EXP); setEdu(S_EDU); setProj(S_PROJ); setCert(S_CERT); setAch(S_ACH); setLang(S_LANG); };
+  const clearAll   = () => {
+    setForm({fullName:"",title:"",email:"",phone:"",location:"",linkedin:"",website:"",summary:"",skills:""});
+    setExp([{id:uid(),company:"",role:"",start:"",end:"",description:""}]);
+    setEdu([{id:uid(),degree:"",institution:"",year:"",gpa:""}]);
+    setProj([{id:uid(),name:"",link:"",tech:"",description:""}]);
+    setCert([{id:uid(),name:"",issuer:"",year:""}]);
+    setAch([{id:uid(),title:"",year:""}]);
+    setLang([{id:uid(),name:"",proficiency:""}]);
   };
 
-  const handleLoadSampleData = () => {
-    setForm(SAMPLE_DATA);
-    setExperience(SAMPLE_EXP);
-    setEducation(SAMPLE_EDU);
-    setProjects(SAMPLE_PROJECTS);
-    setCertifications(SAMPLE_CERTS);
-    setAchievements(SAMPLE_ACHIEVEMENTS);
-    setLanguages(SAMPLE_LANGUAGES);
-  };
+  /* ── updaters ── */
+  const upd = <T extends {id:string}>(arr:T[], id:string, f:keyof T, v:string) =>
+    arr.map(x => x.id===id ? {...x,[f]:v} : x);
 
-  const handleClearForm = () => {
-    setForm({
-      fullName: "", title: "", email: "", phone: "", location: "",
-      linkedin: "", website: "", summary: "", skills: "", interests: ""
-    });
-    setExperience([{ id: generateId(), company: "", role: "", start: "", end: "", description: "" }]);
-    setEducation([{ id: generateId(), degree: "", institution: "", year: "" }]);
-    setProjects([{ id: generateId(), name: "", link: "", description: "" }]);
-    setCertifications([{ id: generateId(), name: "", issuer: "", year: "" }]);
-    setAchievements([{ id: generateId(), title: "", year: "" }]);
-    setLanguages([{ id: generateId(), name: "", proficiency: "" }]);
-  };
-
-  const addExperience = () => {
-    setExperience([...experience, { id: generateId(), company: "", role: "", start: "", end: "", description: "" }]);
-  };
-  const removeExperience = (id: string) => setExperience(experience.filter((exp) => exp.id !== id));
-  const updateExperience = (id: string, field: keyof Experience, value: string) => {
-    setExperience(experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)));
-  };
-
-  const addEducation = () => setEducation([...education, { id: generateId(), degree: "", institution: "", year: "" }]);
-  const removeEducation = (id: string) => setEducation(education.filter((edu) => edu.id !== id));
-  const updateEducation = (id: string, field: keyof Education, value: string) => {
-    setEducation(education.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)));
-  };
-
-  const addProject = () => setProjects([...projects, { id: generateId(), name: "", link: "", description: "" }]);
-  const removeProject = (id: string) => setProjects(projects.filter((proj) => proj.id !== id));
-  const updateProject = (id: string, field: keyof Project, value: string) => {
-    setProjects(projects.map((proj) => (proj.id === id ? { ...proj, [field]: value } : proj)));
-  };
-
+  /* ════════════════════ PDF GENERATION ═══════════════════════ */
   const generatePDF = async () => {
     if (!form.fullName || !form.email || !form.title) {
-      setError("Please fill at least Full Name, Email, and Job Title.");
-      return;
+      setErr("Please fill Name, Email and Job Title."); return;
     }
-
-    setIsGenerating(true);
-    setError("");
-
+    setBusy(true); setErr("");
     try {
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 16;
-      const contentWidth = pageWidth - 2 * margin;
-      const bottomLimit = pageHeight - margin;
-      let y = margin;
+      const doc  = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
+      const PW   = doc.internal.pageSize.getWidth();   // 210
+      const PH   = doc.internal.pageSize.getHeight();  // 297
+      const M    = 18;                                  // margin
+      const CW   = PW - 2*M;
+      const BOT  = PH - M;
+      let   y    = M;
 
-      const COLOR_PALETTES: Record<string, any> = {
-        "ats-clean": {
-          name: [30, 41, 59],
-          title: [71, 85, 105],
-          section: [30, 41, 59],
-          body: [51, 65, 85],
-          meta: [100, 116, 139],
-          rule: [203, 213, 225],
-        },
-        "modern-tech": {
-          name: [0, 113, 227],
-          title: [51, 65, 85],
-          section: [0, 113, 227],
-          body: [30, 41, 59],
-          meta: [100, 116, 139],
-          rule: [0, 113, 227],
-        },
-        executive: {
-          name: [255, 255, 255],
-          title: [203, 213, 225],
-          section: [15, 23, 42],
-          body: [30, 41, 59],
-          meta: [100, 116, 139],
-          rule: [15, 23, 42],
-        },
-        minimalist: {
-          name: [15, 23, 42],
-          title: [100, 116, 139],
-          section: [51, 65, 85],
-          body: [51, 65, 85],
-          meta: [148, 163, 184],
-          rule: [226, 232, 240],
-        },
-        "creative-accent": {
-          name: [225, 29, 72],
-          title: [71, 85, 105],
-          section: [225, 29, 72],
-          body: [30, 41, 59],
-          meta: [100, 116, 139],
-          rule: [225, 29, 72],
-        },
+      /* palette */
+      const PAL:Record<string,any> = {
+        "ats-clean":      { name:[15,23,42],  title:[71,85,105], sec:[15,23,42],  body:[51,65,85],   meta:[100,116,139], rule:[200,210,220], lw:0.25 },
+        "modern-tech":    { name:[0,113,227],  title:[51,65,85],  sec:[0,113,227], body:[30,41,59],   meta:[100,116,139], rule:[0,113,227],   lw:0.7  },
+        executive:        { name:[255,255,255],title:[203,213,225],sec:[15,23,42], body:[30,41,59],   meta:[100,116,139], rule:[15,23,42],    lw:0.3  },
+        minimalist:       { name:[15,23,42],  title:[100,116,139],sec:[51,65,85], body:[71,85,105],  meta:[148,163,184], rule:[226,232,240], lw:0.2  },
+        "creative-accent":{ name:[225,29,72], title:[71,85,105], sec:[225,29,72], body:[30,41,59],   meta:[100,116,139], rule:[225,29,72],   lw:0.6  },
+      };
+      const P = PAL[tmpl] || PAL["ats-clean"];
+
+      const newPage = () => { doc.addPage(); y = M; };
+      const room    = (n:number) => { if (y+n > BOT) newPage(); };
+
+      /* section heading */
+      const heading = (label:string) => {
+        room(14);
+        y += 4;
+        doc.setFont("Helvetica","bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...P.sec);
+        doc.text(label.toUpperCase(), M, y);
+        y += 2;
+        doc.setDrawColor(...P.rule);
+        doc.setLineWidth(P.lw);
+        doc.line(M, y, PW-M, y);
+        y += 5;
       };
 
-      const theme = COLOR_PALETTES[selectedTemplate] || COLOR_PALETTES["ats-clean"];
-
-      const ensureSpace = (needed: number) => {
-        if (y + needed > bottomLimit) {
-          doc.addPage();
-          y = margin;
-        }
+      /* body text with auto wrap */
+      const bodyTxt = (text:string, x:number, w:number, sz=9.5, color=P.body) => {
+        doc.setFont("Helvetica","normal");
+        doc.setFontSize(sz);
+        doc.setTextColor(...color);
+        const lines = doc.splitTextToSize(text, w);
+        for (const l of lines) { room(5); doc.text(l,x,y); y+=4.5; }
       };
 
-      const sectionHeading = (label: string) => {
-        ensureSpace(12);
-        y += 3;
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(...theme.section);
-        doc.text(label.toUpperCase(), margin, y);
-        y += 1.8;
-
-        doc.setDrawColor(...theme.rule);
-        doc.setLineWidth(selectedTemplate === "modern-tech" ? 0.6 : 0.3);
-        doc.line(margin, y, pageWidth - margin, y);
-        y += 4.5;
-      };
-
-      const labeledLine = (label: string, value: string, size = 9.5) => {
-        if (!value || !value.trim()) return;
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(size);
-        const labelText = label + " ";
-        const labelWidth = doc.getTextWidth(labelText);
-        const availWidth = contentWidth - labelWidth;
-
-        doc.setFont("Helvetica", "normal");
-        const lines = doc.splitTextToSize(value, availWidth);
-        lines.forEach((line: string, idx: number) => {
-          ensureSpace(5);
-          if (idx === 0) {
-            doc.setFont("Helvetica", "bold");
-            doc.setFontSize(size);
-            doc.setTextColor(...theme.section);
-            doc.text(labelText, margin, y);
-            doc.setFont("Helvetica", "normal");
-            doc.setTextColor(...theme.body);
-            doc.text(line, margin + labelWidth, y);
-          } else {
-            doc.setFont("Helvetica", "normal");
-            doc.setTextColor(...theme.body);
-            doc.text(line, margin, y);
-          }
-          y += 4.5;
-        });
-      };
-
-      const bodyText = (text: string, x: number, width: number, size = 9.5) => {
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(size);
-        doc.setTextColor(...theme.body);
-        const lines = doc.splitTextToSize(text, width);
-        lines.forEach((line: string) => {
-          ensureSpace(5);
-          doc.text(line, x, y);
-          y += 4.5;
-        });
-      };
-
-      const bulletLines = (text: string, x: number, width: number) => {
-        doc.setFont("Helvetica", "normal");
+      /* bullet point */
+      const bullet = (text:string, indent=M+3) => {
+        doc.setFont("Helvetica","normal");
         doc.setFontSize(9.5);
-        doc.setTextColor(...theme.body);
-        const lines = doc.splitTextToSize(text, width);
-        lines.forEach((line: string, idx: number) => {
-          ensureSpace(5);
-          doc.text((idx === 0 ? "• " : "  ") + line, x, y);
-          y += 4.5;
-        });
+        doc.setTextColor(...P.body);
+        const lines = doc.splitTextToSize(text, CW - 5);
+        for (let i=0;i<lines.length;i++) {
+          room(5);
+          doc.text((i===0?"• ":"  ")+lines[i], indent, y);
+          y+=4.5;
+        }
       };
 
-      if (selectedTemplate === "executive") {
-        doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, pageWidth, 38, "F");
-
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(22);
-        doc.setTextColor(255, 255, 255);
-        doc.text(form.fullName, pageWidth / 2, 14, { align: "center" });
-
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(11);
-        doc.setTextColor(203, 213, 225);
-        doc.text(form.title, pageWidth / 2, 22, { align: "center" });
-
-        const contactParts: string[] = [];
-        if (form.email) contactParts.push(form.email);
-        if (form.phone) contactParts.push(form.phone);
-        if (form.location) contactParts.push(form.location);
-        const contactLine = contactParts.join("   |   ");
-
-        doc.setFontSize(9);
-        doc.setTextColor(148, 163, 184);
-        doc.text(contactLine, pageWidth / 2, 30, { align: "center" });
-
-        y = 44;
+      /* ─── HEADER ─── */
+      if (tmpl==="executive") {
+        doc.setFillColor(15,23,42);
+        doc.rect(0,0,PW,42,"F");
+        doc.setFont("Helvetica","bold"); doc.setFontSize(22); doc.setTextColor(255,255,255);
+        doc.text(form.fullName, PW/2, 14, {align:"center"});
+        doc.setFont("Helvetica","normal"); doc.setFontSize(11); doc.setTextColor(203,213,225);
+        doc.text(form.title, PW/2, 22, {align:"center"});
+        const cParts=[form.email,form.phone,form.location].filter(Boolean);
+        doc.setFontSize(9); doc.setTextColor(148,163,184);
+        doc.text(cParts.join("   |   "), PW/2, 30, {align:"center"});
+        if (form.linkedin||form.website) {
+          const lParts=[form.linkedin,form.website].filter(Boolean);
+          doc.setFontSize(8); doc.setTextColor(100,116,139);
+          doc.text(lParts.join("   |   "), PW/2, 37, {align:"center"});
+        }
+        y = 50;
       } else {
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(22);
-        doc.setTextColor(...theme.name);
-        doc.text(form.fullName, pageWidth / 2, y, { align: "center" });
-        y += 7;
-
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(11);
-        doc.setTextColor(...theme.title);
-        doc.text(form.title, pageWidth / 2, y, { align: "center" });
-        y += 5.5;
-
-        const contactParts: string[] = [];
-        if (form.email) contactParts.push(form.email);
-        if (form.phone) contactParts.push(form.phone);
-        if (form.location) contactParts.push(form.location);
-        if (form.linkedin) contactParts.push(form.linkedin);
-        if (form.website) contactParts.push(form.website);
-
-        const contactLine = contactParts.join("   |   ");
-        if (contactLine) {
-          doc.setFont("Helvetica", "normal");
-          doc.setFontSize(9);
-          doc.setTextColor(...theme.meta);
-          const contactLines = doc.splitTextToSize(contactLine, contentWidth);
-          contactLines.forEach((line: string) => {
-            doc.text(line, pageWidth / 2, y, { align: "center" });
-            y += 4.3;
-          });
+        /* name */
+        doc.setFont("Helvetica","bold"); doc.setFontSize(22); doc.setTextColor(...P.name);
+        doc.text(form.fullName, PW/2, y, {align:"center"}); y+=7;
+        /* title */
+        doc.setFont("Helvetica","normal"); doc.setFontSize(11); doc.setTextColor(...P.title);
+        doc.text(form.title, PW/2, y, {align:"center"}); y+=6;
+        /* contact row */
+        const cParts=[form.email,form.phone,form.location,form.linkedin,form.website].filter(Boolean);
+        if (cParts.length) {
+          const cLine = cParts.join("  |  ");
+          doc.setFontSize(8.5); doc.setTextColor(...P.meta);
+          const cLines = doc.splitTextToSize(cLine, CW);
+          for (const l of cLines) { doc.text(l, PW/2, y, {align:"center"}); y+=4.2; }
         }
-
-        y += 2;
-        doc.setDrawColor(...theme.rule);
-        doc.setLineWidth(0.4);
-        doc.line(margin, y, pageWidth - margin, y);
-        y += 7;
+        y+=2;
+        doc.setDrawColor(...P.rule); doc.setLineWidth(P.lw);
+        doc.line(M, y, PW-M, y); y+=6;
       }
 
+      /* ─── SUMMARY ─── */
       if (form.summary.trim()) {
-        sectionHeading("Professional Summary");
-        bodyText(form.summary.trim(), margin, contentWidth, 9.5);
-        y += 2;
+        heading("Professional Summary");
+        bodyTxt(form.summary.trim(), M, CW);
+        y+=2;
       }
 
+      /* ─── SKILLS ─── */
       if (form.skills.trim()) {
-        sectionHeading("Technical Skills");
-        const skillsArray = form.skills.split(",").map((s) => s.trim()).filter((s) => s);
-        labeledLine("Skills:", skillsArray.join(" • "), 9.5);
-        y += 2;
+        heading("Technical Skills");
+        const skills = form.skills.split(",").map(s=>s.trim()).filter(Boolean);
+        if (tmpl==="creative-accent") {
+          // pill-style: comma + bullets
+          bodyTxt(skills.join("  •  "), M, CW, 9.5, P.body);
+        } else {
+          // every ~5 skills per line
+          const chunkSize = 5;
+          for (let i=0;i<skills.length;i+=chunkSize) {
+            const chunk = skills.slice(i,i+chunkSize).join("  |  ");
+            bodyTxt(chunk, M, CW, 9.5, P.body);
+          }
+        }
+        y+=2;
       }
 
-      const validExperience = experience.filter((exp) => exp.company || exp.role);
-      if (validExperience.length > 0) {
-        sectionHeading("Work Experience");
-
-        for (const exp of validExperience) {
-          ensureSpace(10);
-
-          doc.setFont("Helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(...theme.section);
-          doc.text(exp.company || "", margin, y);
-
-          if (exp.start || exp.end) {
-            doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...theme.meta);
-            const dates = `${exp.start || "N/A"} - ${exp.end || "Present"}`;
-            doc.text(dates, pageWidth - margin, y, { align: "right" });
+      /* ─── EXPERIENCE ─── */
+      const validExp = exp.filter(e=>e.company||e.role);
+      if (validExp.length) {
+        heading("Work Experience");
+        for (const e of validExp) {
+          room(12);
+          doc.setFont("Helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...P.sec);
+          doc.text(e.company||"", M, y);
+          if (e.start||e.end) {
+            doc.setFont("Helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...P.meta);
+            doc.text(`${e.start||""}${e.end?" – "+e.end:""}`, PW-M, y, {align:"right"});
           }
-          y += 4.8;
-
-          if (exp.role) {
-            doc.setFont("Helvetica", "bolditalic");
-            doc.setFontSize(9.5);
-            doc.setTextColor(...theme.body);
-            doc.text(exp.role, margin, y);
-            y += 4.8;
+          y+=5;
+          if (e.role) {
+            doc.setFont("Helvetica","bolditalic"); doc.setFontSize(9.5); doc.setTextColor(...P.body);
+            doc.text(e.role, M, y); y+=5;
           }
-
-          if (exp.description.trim()) {
-            const descBullets = exp.description
-              .split("\n")
-              .map((l) => l.replace(/^[-•\s]+/, "").trim())
-              .filter((l) => l);
-            descBullets.forEach((line) => bulletLines(line, margin + 2, contentWidth - 4));
+          if (e.description.trim()) {
+            const bullets = e.description.split("\n").map(l=>l.replace(/^[-•\s]+/,"").trim()).filter(Boolean);
+            for (const b of bullets) bullet(b);
           }
-          y += 2.5;
+          y+=3;
         }
       }
 
-      const validEducation = education.filter((edu) => edu.degree || edu.institution);
-      if (validEducation.length > 0) {
-        sectionHeading("Education");
-
-        for (const edu of validEducation) {
-          ensureSpace(9);
-
-          doc.setFont("Helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(...theme.section);
-          doc.text(edu.degree, margin, y);
-
-          if (edu.year) {
-            doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...theme.meta);
-            doc.text(edu.year, pageWidth - margin, y, { align: "right" });
+      /* ─── EDUCATION ─── */
+      const validEdu = edu.filter(e=>e.degree||e.institution);
+      if (validEdu.length) {
+        heading("Education");
+        for (const e of validEdu) {
+          room(10);
+          doc.setFont("Helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...P.sec);
+          doc.text(e.degree||"", M, y);
+          if (e.year) {
+            doc.setFont("Helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...P.meta);
+            doc.text(e.year, PW-M, y, {align:"right"});
           }
-          y += 4.8;
-
-          if (edu.institution) {
-            doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9.5);
-            doc.setTextColor(...theme.body);
-            doc.text(edu.institution, margin, y);
-            y += 4.8;
+          y+=5;
+          if (e.institution) { bodyTxt(e.institution, M, CW, 9.5); }
+          if (e.gpa) {
+            doc.setFont("Helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...P.meta);
+            room(5); doc.text(`GPA: ${e.gpa}`, M, y); y+=4.5;
           }
-          y += 2;
+          y+=2;
         }
       }
 
-      const validProjects = projects.filter((proj) => proj.name);
-      if (validProjects.length > 0) {
-        sectionHeading("Key Projects");
-
-        for (const proj of validProjects) {
-          ensureSpace(9);
-
-          doc.setFont("Helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(...theme.section);
-          doc.text(proj.name, margin, y);
-
-          if (proj.link) {
-            doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...theme.meta);
-            doc.text(proj.link, pageWidth - margin, y, { align: "right" });
+      /* ─── PROJECTS ─── */
+      const validProj = proj.filter(p=>p.name);
+      if (validProj.length) {
+        heading("Key Projects");
+        for (const p of validProj) {
+          room(10);
+          doc.setFont("Helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...P.sec);
+          doc.text(p.name||"", M, y);
+          if (p.link) {
+            doc.setFont("Helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...P.meta);
+            doc.text(p.link, PW-M, y, {align:"right"});
           }
-          y += 4.8;
-
-          if (proj.description.trim()) {
-            const projBullets = proj.description
-              .split("\n")
-              .map((l) => l.replace(/^[-•\s]+/, "").trim())
-              .filter((l) => l);
-            projBullets.forEach((line) => bulletLines(line, margin + 2, contentWidth - 4));
+          y+=5;
+          if (p.tech) { bodyTxt(`Tech: ${p.tech}`, M, CW, 9, P.meta); }
+          if (p.description.trim()) {
+            const bullets = p.description.split("\n").map(l=>l.replace(/^[-•\s]+/,"").trim()).filter(Boolean);
+            for (const b of bullets) bullet(b);
           }
-          y += 2.5;
+          y+=2;
         }
       }
 
-      doc.save(`${form.fullName.replace(/\s+/g, "_")}_${selectedTemplate.toUpperCase()}_Resume.pdf`);
-    } catch (err: any) {
-      setError("Failed to generate PDF. Please check form fields.");
+      /* ─── CERTIFICATIONS ─── */
+      const validCert = cert.filter(c=>c.name);
+      if (validCert.length) {
+        heading("Certifications");
+        for (const c of validCert) {
+          room(8);
+          doc.setFont("Helvetica","bold"); doc.setFontSize(9.5); doc.setTextColor(...P.body);
+          doc.text(c.name||"", M, y);
+          if (c.year) {
+            doc.setFont("Helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...P.meta);
+            doc.text(c.year, PW-M, y, {align:"right"});
+          }
+          y+=4.5;
+          if (c.issuer) { bodyTxt(c.issuer, M, CW, 9, P.meta); }
+          y+=1;
+        }
+      }
+
+      /* ─── ACHIEVEMENTS ─── */
+      const validAch = ach.filter(a=>a.title);
+      if (validAch.length) {
+        heading("Achievements & Awards");
+        for (const a of validAch) {
+          room(6);
+          doc.setFont("Helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(...P.body);
+          const yr = a.year ? ` (${a.year})` : "";
+          bullet(`${a.title}${yr}`);
+        }
+        y+=1;
+      }
+
+      /* ─── LANGUAGES ─── */
+      const validLang = lang.filter(l=>l.name);
+      if (validLang.length) {
+        heading("Languages");
+        const langStr = validLang.map(l=>`${l.name}${l.proficiency?" ("+l.proficiency+")":""}`).join("   |   ");
+        bodyTxt(langStr, M, CW, 9.5);
+      }
+
+      doc.save(`${(form.fullName||"Resume").replace(/\s+/g,"_")}_${tmpl}_Resume.pdf`);
+    } catch(e:any) {
+      setErr("PDF generation failed. Please check your inputs.");
     } finally {
-      setIsGenerating(false);
+      setBusy(false);
     }
   };
 
+  /* ════════════════════ INPUT HELPERS ════════════════════════ */
+  const InputField = ({label,name,value,placeholder,type="text",full=false}:any) => (
+    <div className={full?"sm:col-span-2":""}>
+      <label className="block text-[11px] font-bold mb-1 text-slate-600 dark:text-slate-400">{label}</label>
+      <input type={type} name={name} value={value} onChange={hc}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3] transition"
+      />
+    </div>
+  );
+
+  const SectionCard = ({title,children}:any) => (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+      {children}
+    </div>
+  );
+
+  const accentColor = TEMPLATES.find(t=>t.id===tmpl)?.accent || "#0071e3";
+
+  /* ════════════════════ RENDER ═══════════════════════════════ */
   return (
     <AuthGate>
       <ProGate>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white overflow-x-hidden antialiased pb-16">
-          
-          {/* ── 100% FLUID RESPONSIVE NAVBAR (NO OVERFLOW) ──────────────────── */}
-          <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
-            <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
-              
-              {/* Left Logo */}
-              <Link href="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <span className="text-xl sm:text-2xl">🛠️</span>
-                <span className="text-base sm:text-lg font-bold tracking-tight">ToolBox</span>
-                <span className="text-[10px] sm:text-xs bg-[#0071e3]/10 text-[#0071e3] font-bold px-2 py-0.5 rounded-full border border-[#0071e3]/20">
-                  Pro
-                </span>
+        <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#040404] text-[#1d1d1f] dark:text-white antialiased pb-20">
+
+          {/* ── NAVBAR ── */}
+          <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-[#111113]/80 border-b border-black/5 dark:border-white/10">
+            <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+              <Link href="/" className="flex items-center gap-1.5 shrink-0">
+                <span className="text-xl">🛠️</span>
+                <span className="font-bold text-[15px] tracking-tight">ToolBox</span>
+                <span className="text-[10px] bg-[#0071e3]/10 text-[#0071e3] font-bold px-2 py-0.5 rounded-full border border-[#0071e3]/20">Pro</span>
               </Link>
-
-              {/* Right Action Buttons */}
-              <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={handleLoadSampleData}
-                  className="px-2.5 sm:px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition shadow-sm active:scale-95 whitespace-nowrap"
-                >
-                  <span className="hidden sm:inline">✨ Load Sample Data</span>
-                  <span className="sm:hidden">✨ Sample</span>
+              <div className="flex items-center gap-2">
+                <button onClick={loadSample} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition">
+                  ✨ <span className="hidden sm:inline">Load Sample</span>
                 </button>
-
-                <button
-                  type="button"
-                  onClick={handleClearForm}
-                  className="px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition whitespace-nowrap"
-                >
+                <button onClick={clearAll} className="px-3 py-1.5 text-[11px] font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition">
                   Clear
                 </button>
-
-                <Link
-                  href="/"
-                  className="text-[11px] sm:text-xs font-bold text-slate-500 hover:text-[#0071e3] transition whitespace-nowrap pl-1"
-                >
-                  ← <span className="hidden sm:inline">Home</span>
-                </Link>
+                <Link href="/" className="text-[11px] font-bold text-slate-500 hover:text-[#0071e3] transition">← Home</Link>
               </div>
             </div>
           </nav>
 
-          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-            <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">
-                📝 Advanced ATS Resume Builder
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm px-2">
-                Select from 5 ATS-compliant professional templates. Fill details or load sample data to generate instant PDFs.
-              </p>
+          <div className="max-w-6xl mx-auto px-4 py-6">
+
+            {/* TITLE */}
+            <div className="text-center mb-6">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1">📝 ATS Resume Builder</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">5 professional templates · All sections · 100% browser-side · Instant PDF</p>
             </div>
 
-            {/* ── STEP 1: TEMPLATE SELECTOR PICKER ──────────────────────────── */}
-            <div className="mb-6 sm:mb-8">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">
-                Step 1: Choose Your Preferred Resume Template
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
-                {RESUME_TEMPLATES.map((tmpl) => {
-                  const isSelected = selectedTemplate === tmpl.id;
-                  return (
-                    <div
-                      key={tmpl.id}
-                      onClick={() => setSelectedTemplate(tmpl.id)}
-                      className={`cursor-pointer rounded-2xl p-3 sm:p-4 border transition-all duration-200 flex flex-col justify-between ${
-                        isSelected
-                          ? "bg-white dark:bg-slate-900 border-[#0071e3] shadow-md shadow-blue-500/15 ring-2 ring-[#0071e3]/30 scale-[1.01]"
-                          : "bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5 gap-1">
-                          <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full border truncate ${tmpl.badgeColor}`}>
-                            {tmpl.badge}
-                          </span>
-                          {isSelected && <span className="text-[#0071e3] text-[11px] font-bold shrink-0">✓</span>}
-                        </div>
-                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mb-1 leading-tight">{tmpl.name}</h3>
-                        <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 leading-snug hidden sm:block">{tmpl.desc}</p>
-                      </div>
-
-                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1">
-                        <div className="w-full h-1.5 rounded-full" style={{ background: tmpl.primaryColor }} />
-                      </div>
+            {/* ── STEP 1: TEMPLATE PICKER ── */}
+            <div className="mb-6">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 text-center">Step 1 · Choose Template</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                {TEMPLATES.map(t => (
+                  <div key={t.id} onClick={()=>setTmpl(t.id)}
+                    className={`cursor-pointer rounded-2xl p-3 border transition-all ${tmpl===t.id
+                      ? "bg-white dark:bg-slate-900 border-[#0071e3] ring-2 ring-[#0071e3]/30 shadow-md"
+                      : "bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300"}`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5 gap-1">
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${t.badgeColor}`}>{t.badge}</span>
+                      {tmpl===t.id && <span className="text-[#0071e3] text-xs font-bold">✓</span>}
                     </div>
-                  );
-                })}
+                    <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight mb-1">{t.name}</p>
+                    <div className="h-1.5 w-full rounded-full mt-2" style={{background:t.accent}}/>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* ── EDIT / PREVIEW TABS & GENERATE BUTTON ──────────────────────── */}
-            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-6">
-              <div className="flex items-center gap-1 bg-slate-200/80 dark:bg-slate-900 p-1 rounded-xl w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("edit")}
-                  className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition text-center ${
-                    activeTab === "edit" ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-500"
-                  }`}
-                >
-                  📝 Edit Form
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("preview")}
-                  className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition text-center ${
-                    activeTab === "preview" ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-500"
-                  }`}
-                >
-                  👁️ Sheet Preview
-                </button>
+            {/* ── STEP 2: TABS + GENERATE ── */}
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-5">
+              <div className="flex gap-1 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl">
+                {(["edit","preview"] as const).map(t=>(
+                  <button key={t} onClick={()=>setTab(t)}
+                    className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition ${tab===t?"bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm":"text-slate-500"}`}
+                  >
+                    {t==="edit"?"📝 Edit Form":"👁️ Preview"}
+                  </button>
+                ))}
               </div>
-
-              <button
-                type="button"
-                onClick={generatePDF}
-                disabled={isGenerating}
-                className="w-full sm:w-auto bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-slate-400 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition flex items-center justify-center gap-2"
-              >
-                <span>⚡</span> {isGenerating ? "Building PDF..." : "Download Resume PDF"}
+              <button onClick={generatePDF} disabled={busy}
+                className="w-full sm:w-auto bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-slate-400 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2">
+                {busy ? "⏳ Building..." : "⚡ Download Resume PDF"}
               </button>
             </div>
 
-            {/* ── FORM OR PREVIEW TAB ────────────────────────────────────────── */}
-            {activeTab === "edit" ? (
-              <div className="space-y-4 sm:space-y-6">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-                  <h2 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2 text-slate-900 dark:text-white">
-                    👤 Personal Information
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Full Name *</label>
-                      <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Lakhan Kashyap" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Job Title *</label>
-                      <input type="text" name="title" value={form.title} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Senior Full Stack Engineer" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Email *</label>
-                      <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="lakhan@example.com" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Phone</label>
-                      <input type="text" name="phone" value={form.phone} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="+91 98765 43210" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Location</label>
-                      <input type="text" name="location" value={form.location} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Mumbai, India" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">LinkedIn Profile</label>
-                      <input type="text" name="linkedin" value={form.linkedin} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="linkedin.com/in/lakhankashyap" />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Portfolio / Website</label>
-                      <input type="text" name="website" value={form.website} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="lakhankashyap.dev" />
-                    </div>
+            {err && <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl p-3 text-xs font-semibold">⚠️ {err}</div>}
+
+            {/* ══════════════ EDIT TAB ══════════════ */}
+            {tab==="edit" && (
+              <div className="space-y-4">
+
+                {/* Personal Info */}
+                <SectionCard title="">
+                  <h2 className="font-bold text-base mb-4 flex items-center gap-2">👤 Personal Information</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <InputField label="Full Name *" name="fullName" value={form.fullName} placeholder="Lakhan Kashyap"/>
+                    <InputField label="Job Title *" name="title" value={form.title} placeholder="Senior Full Stack Engineer"/>
+                    <InputField label="Email *" name="email" value={form.email} placeholder="you@example.com" type="email"/>
+                    <InputField label="Phone" name="phone" value={form.phone} placeholder="+91 98765 43210"/>
+                    <InputField label="Location" name="location" value={form.location} placeholder="Mumbai, India"/>
+                    <InputField label="LinkedIn" name="linkedin" value={form.linkedin} placeholder="linkedin.com/in/you"/>
+                    <InputField label="Portfolio / Website" name="website" value={form.website} placeholder="yoursite.dev" full/>
                   </div>
-                </div>
+                </SectionCard>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-                  <h2 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2 text-slate-900 dark:text-white">
-                    📋 Professional Summary
-                  </h2>
-                  <textarea name="summary" value={form.summary} onChange={handleChange} rows={4} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium leading-relaxed outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Experienced engineer with 5+ years building full-stack web applications..." />
-                </div>
+                {/* Summary */}
+                <SectionCard title="">
+                  <h2 className="font-bold text-base mb-3 flex items-center gap-2">📋 Professional Summary</h2>
+                  <textarea name="summary" value={form.summary} onChange={hc} rows={4}
+                    placeholder="Results-driven engineer with X years of experience..."
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-[#0071e3] transition"/>
+                  <p className="text-[10px] text-slate-400 mt-1.5">💡 ATS tip: include keywords from the job description here.</p>
+                </SectionCard>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-                  <h2 className="text-base sm:text-lg font-bold mb-2 flex items-center gap-2 text-slate-900 dark:text-white">
-                    🛠️ Technical Skills
-                  </h2>
-                  <input type="text" name="skills" value={form.skills} onChange={handleChange} className="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="React, Next.js, Node.js, TypeScript, Tailwind CSS, SQL" />
-                  <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">Separate skills with commas. They render cleanly formatted on the resume.</p>
-                </div>
+                {/* Skills */}
+                <SectionCard title="">
+                  <h2 className="font-bold text-base mb-3 flex items-center gap-2">🛠️ Technical Skills</h2>
+                  <input type="text" name="skills" value={form.skills} onChange={hc}
+                    placeholder="React, Next.js, TypeScript, Node.js, AWS, Docker"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3] transition"/>
+                  <p className="text-[10px] text-slate-400 mt-1.5">Separate each skill with a comma.</p>
+                </SectionCard>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-center mb-3 sm:mb-4">
-                    <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-                      💼 Work Experience
-                    </h2>
-                    <button type="button" onClick={addExperience} className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add Position</button>
+                {/* Experience */}
+                <SectionCard title="">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-base flex items-center gap-2">💼 Work Experience</h2>
+                    <button onClick={()=>setExp([...exp,{id:uid(),company:"",role:"",start:"",end:"",description:""}])}
+                      className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add</button>
                   </div>
-                  {experience.map((exp, index) => (
-                    <div key={exp.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 bg-slate-50/50 dark:bg-slate-800/40">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Position {index + 1}</h3>
-                        {experience.length > 1 && <button type="button" onClick={() => removeExperience(exp.id)} className="text-rose-500 hover:text-rose-700 text-xs font-semibold">Remove</button>}
+                  {exp.map((e,i)=>(
+                    <div key={e.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 mb-3 bg-slate-50/50 dark:bg-slate-800/40">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-bold text-slate-500">Position {i+1}</span>
+                        {exp.length>1 && <button onClick={()=>setExp(exp.filter(x=>x.id!==e.id))} className="text-red-400 hover:text-red-600 text-xs font-bold">Remove</button>}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label className="block text-[11px] font-bold mb-1">Company</label><input type="text" value={exp.company} onChange={(e) => updateExperience(exp.id, "company", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="TechCorp" /></div>
-                        <div><label className="block text-[11px] font-bold mb-1">Role Title</label><input type="text" value={exp.role} onChange={(e) => updateExperience(exp.id, "role", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="Software Engineer" /></div>
-                        <div><label className="block text-[11px] font-bold mb-1">Start Date</label><input type="text" value={exp.start} onChange={(e) => updateExperience(exp.id, "start", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="Jan 2022" /></div>
-                        <div><label className="block text-[11px] font-bold mb-1">End Date</label><input type="text" value={exp.end} onChange={(e) => updateExperience(exp.id, "end", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="Present" /></div>
-                        <div className="sm:col-span-2"><label className="block text-[11px] font-bold mb-1">Bullet Point Accomplishments (One per line)</label><textarea value={exp.description} onChange={(e) => updateExperience(exp.id, "description", e.target.value)} rows={3} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs leading-relaxed outline-none" placeholder={"Architected high-throughput frontend serving 500k users\nReduced API latency by 45% using Redis caching"} /></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div><label className="block text-[11px] font-bold mb-1">Company</label><input value={e.company} onChange={ev=>setExp(upd(exp,e.id,"company",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="TechCorp"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">Job Title</label><input value={e.role} onChange={ev=>setExp(upd(exp,e.id,"role",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Software Engineer"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">Start Date</label><input value={e.start} onChange={ev=>setExp(upd(exp,e.id,"start",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Jan 2022"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">End Date</label><input value={e.end} onChange={ev=>setExp(upd(exp,e.id,"end",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Present"/></div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-[11px] font-bold mb-1">Bullet Accomplishments <span className="font-normal text-slate-400">(one per line, start with action verb)</span></label>
+                          <textarea value={e.description} onChange={ev=>setExp(upd(exp,e.id,"description",ev.target.value))} rows={3} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder={"Architected frontend serving 500k users\nReduced API latency by 45% via Redis caching"}/>
+                        </div>
                       </div>
                     </div>
                   ))}
-                </div>
+                </SectionCard>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-center mb-3 sm:mb-4">
-                    <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">🎓 Education</h2>
-                    <button type="button" onClick={addEducation} className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add Education</button>
+                {/* Education */}
+                <SectionCard title="">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-base flex items-center gap-2">🎓 Education</h2>
+                    <button onClick={()=>setEdu([...edu,{id:uid(),degree:"",institution:"",year:"",gpa:""}])}
+                      className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add</button>
                   </div>
-                  {education.map((edu, index) => (
-                    <div key={edu.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 bg-slate-50/50 dark:bg-slate-800/40">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Degree {index + 1}</h3>
-                        {education.length > 1 && <button type="button" onClick={() => removeEducation(edu.id)} className="text-rose-500 hover:text-rose-700 text-xs font-semibold">Remove</button>}
+                  {edu.map((e,i)=>(
+                    <div key={e.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 mb-3 bg-slate-50/50 dark:bg-slate-800/40">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-bold text-slate-500">Degree {i+1}</span>
+                        {edu.length>1 && <button onClick={()=>setEdu(edu.filter(x=>x.id!==e.id))} className="text-red-400 hover:text-red-600 text-xs font-bold">Remove</button>}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div><label className="block text-[11px] font-bold mb-1">Degree</label><input type="text" value={edu.degree} onChange={(e) => updateEducation(edu.id, "degree", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="B.Tech CSE" /></div>
-                        <div><label className="block text-[11px] font-bold mb-1">Institution</label><input type="text" value={edu.institution} onChange={(e) => updateEducation(edu.id, "institution", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="IIT Delhi" /></div>
-                        <div><label className="block text-[11px] font-bold mb-1">Year</label><input type="text" value={edu.year} onChange={(e) => updateEducation(edu.id, "year", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="2017 - 2021" /></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="sm:col-span-2"><label className="block text-[11px] font-bold mb-1">Degree / Course</label><input value={e.degree} onChange={ev=>setEdu(upd(edu,e.id,"degree",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="B.Tech Computer Science"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">Institution</label><input value={e.institution} onChange={ev=>setEdu(upd(edu,e.id,"institution",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="IIT Delhi"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">Year</label><input value={e.year} onChange={ev=>setEdu(upd(edu,e.id,"year",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="2017 – 2021"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">GPA / Percentage <span className="font-normal text-slate-400">(optional)</span></label><input value={e.gpa} onChange={ev=>setEdu(upd(edu,e.id,"gpa",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="8.9 / 10"/></div>
                       </div>
                     </div>
                   ))}
-                </div>
+                </SectionCard>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-center mb-3 sm:mb-4">
-                    <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">🚀 Key Projects</h2>
-                    <button type="button" onClick={addProject} className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add Project</button>
+                {/* Projects */}
+                <SectionCard title="">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-base flex items-center gap-2">🚀 Key Projects</h2>
+                    <button onClick={()=>setProj([...proj,{id:uid(),name:"",link:"",tech:"",description:""}])}
+                      className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add</button>
                   </div>
-                  {projects.map((proj, index) => (
-                    <div key={proj.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 bg-slate-50/50 dark:bg-slate-800/40">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Project {index + 1}</h3>
-                        {projects.length > 1 && <button type="button" onClick={() => removeProject(proj.id)} className="text-rose-500 hover:text-rose-700 text-xs font-semibold">Remove</button>}
+                  {proj.map((p,i)=>(
+                    <div key={p.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 mb-3 bg-slate-50/50 dark:bg-slate-800/40">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-bold text-slate-500">Project {i+1}</span>
+                        {proj.length>1 && <button onClick={()=>setProj(proj.filter(x=>x.id!==p.id))} className="text-red-400 hover:text-red-600 text-xs font-bold">Remove</button>}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label className="block text-[11px] font-bold mb-1">Project Name</label><input type="text" value={proj.name} onChange={(e) => updateProject(proj.id, "name", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="ToolBox Utility Platform" /></div>
-                        <div><label className="block text-[11px] font-bold mb-1">Link</label><input type="text" value={proj.link} onChange={(e) => updateProject(proj.id, "link", e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none" placeholder="toolbox.app" /></div>
-                        <div className="sm:col-span-2"><label className="block text-[11px] font-bold mb-1">Description</label><textarea value={proj.description} onChange={(e) => updateProject(proj.id, "description", e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs leading-relaxed outline-none" placeholder="All-in-one browser utility platform built using React and Next.js" /></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div><label className="block text-[11px] font-bold mb-1">Project Name</label><input value={p.name} onChange={ev=>setProj(upd(proj,p.id,"name",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="ToolBox Platform"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">Live Link</label><input value={p.link} onChange={ev=>setProj(upd(proj,p.id,"link",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="yourproject.com"/></div>
+                        <div className="sm:col-span-2"><label className="block text-[11px] font-bold mb-1">Tech Stack</label><input value={p.tech} onChange={ev=>setProj(upd(proj,p.id,"tech",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Next.js, TypeScript, Supabase"/></div>
+                        <div className="sm:col-span-2"><label className="block text-[11px] font-bold mb-1">Description</label><textarea value={p.description} onChange={ev=>setProj(upd(proj,p.id,"description",ev.target.value))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Brief description of what it does and the impact"/></div>
                       </div>
                     </div>
                   ))}
-                </div>
+                </SectionCard>
 
-                {error && (
-                  <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-xl p-3 text-xs font-semibold">
-                    ⚠️ {error}
+                {/* Certifications */}
+                <SectionCard title="">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-base flex items-center gap-2">🏆 Certifications</h2>
+                    <button onClick={()=>setCert([...cert,{id:uid(),name:"",issuer:"",year:""}])}
+                      className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add</button>
                   </div>
-                )}
+                  {cert.map((c,i)=>(
+                    <div key={c.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 mb-3 bg-slate-50/50 dark:bg-slate-800/40">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-bold text-slate-500">Cert {i+1}</span>
+                        {cert.length>1 && <button onClick={()=>setCert(cert.filter(x=>x.id!==c.id))} className="text-red-400 hover:text-red-600 text-xs font-bold">Remove</button>}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div className="sm:col-span-2"><label className="block text-[11px] font-bold mb-1">Certification Name</label><input value={c.name} onChange={ev=>setCert(upd(cert,c.id,"name",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="AWS Certified Solutions Architect"/></div>
+                        <div><label className="block text-[11px] font-bold mb-1">Year</label><input value={c.year} onChange={ev=>setCert(upd(cert,c.id,"year",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="2024"/></div>
+                        <div className="sm:col-span-3"><label className="block text-[11px] font-bold mb-1">Issuer</label><input value={c.issuer} onChange={ev=>setCert(upd(cert,c.id,"issuer",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Amazon Web Services"/></div>
+                      </div>
+                    </div>
+                  ))}
+                </SectionCard>
 
-                <button
-                  type="button"
-                  onClick={generatePDF}
-                  disabled={isGenerating}
-                  className="w-full bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-slate-400 text-white py-3.5 rounded-xl font-bold transition text-xs sm:text-sm shadow-xl shadow-blue-500/25 active:scale-98"
-                >
-                  {isGenerating ? "Building PDF Document..." : "Generate & Download Professional Resume PDF"}
+                {/* Achievements */}
+                <SectionCard title="">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-base flex items-center gap-2">🥇 Achievements & Awards</h2>
+                    <button onClick={()=>setAch([...ach,{id:uid(),title:"",year:""}])}
+                      className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add</button>
+                  </div>
+                  {ach.map((a,i)=>(
+                    <div key={a.id} className="flex gap-2.5 items-end mb-2">
+                      <div className="flex-1"><label className="block text-[11px] font-bold mb-1">Achievement</label><input value={a.title} onChange={ev=>setAch(upd(ach,a.id,"title",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="1st Place – National Hackathon"/></div>
+                      <div className="w-20"><label className="block text-[11px] font-bold mb-1">Year</label><input value={a.year} onChange={ev=>setAch(upd(ach,a.id,"year",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="2023"/></div>
+                      {ach.length>1 && <button onClick={()=>setAch(ach.filter(x=>x.id!==a.id))} className="text-red-400 hover:text-red-600 text-xs font-bold mb-2">✕</button>}
+                    </div>
+                  ))}
+                </SectionCard>
+
+                {/* Languages */}
+                <SectionCard title="">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-base flex items-center gap-2">🌐 Languages</h2>
+                    <button onClick={()=>setLang([...lang,{id:uid(),name:"",proficiency:""}])}
+                      className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">+ Add</button>
+                  </div>
+                  {lang.map((l,i)=>(
+                    <div key={l.id} className="flex gap-2.5 items-end mb-2">
+                      <div className="flex-1"><label className="block text-[11px] font-bold mb-1">Language</label><input value={l.name} onChange={ev=>setLang(upd(lang,l.id,"name",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="English"/></div>
+                      <div className="w-32"><label className="block text-[11px] font-bold mb-1">Proficiency</label><input value={l.proficiency} onChange={ev=>setLang(upd(lang,l.id,"proficiency",ev.target.value))} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs outline-none focus:ring-2 focus:ring-[#0071e3]" placeholder="Fluent"/></div>
+                      {lang.length>1 && <button onClick={()=>setLang(lang.filter(x=>x.id!==l.id))} className="text-red-400 hover:text-red-600 text-xs font-bold mb-2">✕</button>}
+                    </div>
+                  ))}
+                </SectionCard>
+
+                {/* Bottom Generate Button */}
+                <button onClick={generatePDF} disabled={busy}
+                  className="w-full bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-slate-400 text-white py-3.5 rounded-2xl font-bold text-sm shadow-xl shadow-blue-500/20 transition">
+                  {busy ? "⏳ Building Resume PDF..." : "⚡ Generate & Download Resume PDF"}
                 </button>
               </div>
-            ) : (
-              /* ── LIVE SHEET PREVIEW TAB (100% RESPONSIVE) ──────────────────── */
-              <div className="bg-white text-slate-900 rounded-2xl p-4 sm:p-8 shadow-2xl border border-slate-200 max-w-3xl mx-auto min-h-[500px] sm:min-h-[700px] font-sans overflow-x-auto">
-                {selectedTemplate === "executive" && (
-                  <div className="bg-slate-900 text-white -mx-4 sm:-mx-8 -mt-4 sm:-mt-8 p-4 sm:p-6 mb-4 sm:mb-6 text-center">
-                    <h1 className="text-xl sm:text-2xl font-black">{form.fullName || "Your Full Name"}</h1>
-                    <div className="text-xs font-semibold text-slate-300 mt-1">{form.title || "Your Target Job Title"}</div>
-                    <div className="text-[10px] text-slate-400 mt-2">
-                      {[form.email, form.phone, form.location].filter(Boolean).join("   |   ")}
-                    </div>
+            )}
+
+            {/* ══════════════ PREVIEW TAB ══════════════ */}
+            {tab==="preview" && (
+              <div className="bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 max-w-3xl mx-auto overflow-hidden font-sans">
+
+                {/* Header */}
+                {tmpl==="executive" ? (
+                  <div className="bg-slate-900 text-white p-6 text-center">
+                    <h1 className="text-2xl font-black">{form.fullName||"Your Name"}</h1>
+                    <p className="text-sm text-slate-300 mt-1">{form.title||"Job Title"}</p>
+                    <p className="text-xs text-slate-400 mt-2">{[form.email,form.phone,form.location].filter(Boolean).join("   |   ")}</p>
+                    {(form.linkedin||form.website) && <p className="text-xs text-slate-500 mt-1">{[form.linkedin,form.website].filter(Boolean).join("   |   ")}</p>}
+                  </div>
+                ):(
+                  <div className="p-6 text-center border-b border-slate-100">
+                    <h1 className="text-2xl font-black" style={{color:accentColor}}>{form.fullName||"Your Name"}</h1>
+                    <p className="text-sm font-semibold text-slate-600 mt-1">{form.title||"Job Title"}</p>
+                    <p className="text-xs text-slate-400 mt-2">{[form.email,form.phone,form.location,form.linkedin,form.website].filter(Boolean).join("   |   ")}</p>
                   </div>
                 )}
 
-                {selectedTemplate !== "executive" && (
-                  <div className="text-center pb-3 sm:pb-4 border-b mb-4 sm:mb-6">
-                    <h1 className="text-xl sm:text-2xl font-black" style={{ color: RESUME_TEMPLATES.find((t) => t.id === selectedTemplate)?.primaryColor }}>
-                      {form.fullName || "Your Full Name"}
-                    </h1>
-                    <div className="text-xs font-bold text-slate-600 mt-1">{form.title || "Your Target Job Title"}</div>
-                    <div className="text-[10px] text-slate-400 mt-2">
-                      {[form.email, form.phone, form.location, form.linkedin].filter(Boolean).join("   |   ")}
-                    </div>
-                  </div>
-                )}
-
-                {form.summary && (
-                  <div className="mb-4 sm:mb-6">
-                    <div className="text-xs font-extrabold uppercase tracking-wider mb-1.5" style={{ color: RESUME_TEMPLATES.find((t) => t.id === selectedTemplate)?.primaryColor }}>
-                      Professional Summary
-                    </div>
-                    <p className="text-xs text-slate-700 leading-relaxed">{form.summary}</p>
-                  </div>
-                )}
-
-                {experience.some((e) => e.company) && (
-                  <div className="mb-4 sm:mb-6">
-                    <div className="text-xs font-extrabold uppercase tracking-wider mb-2 sm:mb-3" style={{ color: RESUME_TEMPLATES.find((t) => t.id === selectedTemplate)?.primaryColor }}>
-                      Work Experience
-                    </div>
-                    {experience.map((exp, idx) => (
-                      <div key={idx} className="mb-3 sm:mb-4 text-xs">
-                        <div className="flex justify-between font-bold text-slate-900">
-                          <span>{exp.company}</span>
-                          <span className="text-slate-400 font-normal text-[10px]">{exp.start} - {exp.end}</span>
-                        </div>
-                        <div className="italic text-slate-600 font-semibold mb-1">{exp.role}</div>
-                        <p className="text-slate-700 whitespace-pre-line leading-relaxed">{exp.description}</p>
+                <div className="p-6 space-y-5 text-xs">
+                  {/* Preview Section Helper */}
+                  {(() => {
+                    const PrevSection = ({label,children}:any) => (
+                      <div>
+                        <div className="text-[10px] font-extrabold uppercase tracking-widest mb-2 pb-1 border-b" style={{color:accentColor, borderColor:accentColor+"33"}}>{label}</div>
+                        {children}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    );
+                    return (
+                      <>
+                        {form.summary && (
+                          <PrevSection label="Professional Summary">
+                            <p className="text-slate-700 leading-relaxed">{form.summary}</p>
+                          </PrevSection>
+                        )}
 
-                {form.skills && (
-                  <div className="mb-4 sm:mb-6">
-                    <div className="text-xs font-extrabold uppercase tracking-wider mb-1.5" style={{ color: RESUME_TEMPLATES.find((t) => t.id === selectedTemplate)?.primaryColor }}>
-                      Technical Skills
-                    </div>
-                    <p className="text-xs text-slate-700 font-medium">{form.skills}</p>
-                  </div>
-                )}
+                        {form.skills && (
+                          <PrevSection label="Technical Skills">
+                            <p className="text-slate-700 font-medium">{form.skills.split(",").map(s=>s.trim()).filter(Boolean).join("  •  ")}</p>
+                          </PrevSection>
+                        )}
+
+                        {exp.some(e=>e.company) && (
+                          <PrevSection label="Work Experience">
+                            {exp.filter(e=>e.company||e.role).map((e,i)=>(
+                              <div key={i} className="mb-3">
+                                <div className="flex justify-between font-bold text-slate-900">
+                                  <span>{e.company}</span>
+                                  <span className="text-slate-400 font-normal text-[10px]">{e.start}{e.end?" – "+e.end:""}</span>
+                                </div>
+                                <div className="italic text-slate-600 font-semibold mb-1">{e.role}</div>
+                                {e.description && e.description.split("\n").filter(Boolean).map((b,j)=>(
+                                  <p key={j} className="text-slate-700 before:content-['•'] before:mr-1.5">{b.replace(/^[-•\s]+/,"")}</p>
+                                ))}
+                              </div>
+                            ))}
+                          </PrevSection>
+                        )}
+
+                        {edu.some(e=>e.degree||e.institution) && (
+                          <PrevSection label="Education">
+                            {edu.filter(e=>e.degree||e.institution).map((e,i)=>(
+                              <div key={i} className="mb-2">
+                                <div className="flex justify-between font-bold text-slate-900"><span>{e.degree}</span><span className="text-slate-400 font-normal">{e.year}</span></div>
+                                <div className="text-slate-600">{e.institution}{e.gpa && <span className="ml-2 text-slate-400">GPA: {e.gpa}</span>}</div>
+                              </div>
+                            ))}
+                          </PrevSection>
+                        )}
+
+                        {proj.some(p=>p.name) && (
+                          <PrevSection label="Key Projects">
+                            {proj.filter(p=>p.name).map((p,i)=>(
+                              <div key={i} className="mb-2">
+                                <div className="flex justify-between font-bold text-slate-900"><span>{p.name}</span><span className="text-slate-400 font-normal text-[10px]">{p.link}</span></div>
+                                {p.tech && <div className="text-slate-500 text-[10px]">Tech: {p.tech}</div>}
+                                <p className="text-slate-700 mt-0.5">{p.description}</p>
+                              </div>
+                            ))}
+                          </PrevSection>
+                        )}
+
+                        {cert.some(c=>c.name) && (
+                          <PrevSection label="Certifications">
+                            {cert.filter(c=>c.name).map((c,i)=>(
+                              <div key={i} className="flex justify-between mb-1">
+                                <span className="font-semibold text-slate-800">{c.name} <span className="font-normal text-slate-500">– {c.issuer}</span></span>
+                                <span className="text-slate-400">{c.year}</span>
+                              </div>
+                            ))}
+                          </PrevSection>
+                        )}
+
+                        {ach.some(a=>a.title) && (
+                          <PrevSection label="Achievements & Awards">
+                            {ach.filter(a=>a.title).map((a,i)=>(
+                              <p key={i} className="text-slate-700 before:content-['•'] before:mr-1.5">{a.title}{a.year && <span className="text-slate-400 ml-1">({a.year})</span>}</p>
+                            ))}
+                          </PrevSection>
+                        )}
+
+                        {lang.some(l=>l.name) && (
+                          <PrevSection label="Languages">
+                            <p className="text-slate-700">{lang.filter(l=>l.name).map(l=>`${l.name}${l.proficiency?" ("+l.proficiency+")":""}`).join("   |   ")}</p>
+                          </PrevSection>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* ATS tips footer */}
+                <div className="border-t border-slate-100 p-4 bg-slate-50">
+                  <p className="text-[10px] text-slate-400 text-center">
+                    ✅ ATS-Compliant: Single column · No images/tables · Standard headings · Machine-readable fonts
+                  </p>
+                </div>
               </div>
             )}
           </div>
