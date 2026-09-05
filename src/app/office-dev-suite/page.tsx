@@ -184,6 +184,7 @@ export default function OfficeDevSuitePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeToolId, setActiveToolId] = useState<string>("envdiff");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [showVsAiModal, setShowVsAiModal] = useState<boolean>(false);
 
   const copyToClipboard = (text: string, keyName: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -653,6 +654,111 @@ export default function OfficeDevSuitePage() {
             </div>
           </div>
 
+          {/* Trust & Speed Banner: Why Use This Over ChatGPT? */}
+          <div className="border-b border-blue-900/30 bg-gradient-to-r from-blue-950/40 via-indigo-950/20 to-purple-950/40 py-2.5 px-4">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5 text-xs">
+              <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
+                <span className="bg-blue-600 text-white font-black text-[10px] uppercase px-2 py-0.5 rounded-full tracking-wider">
+                  ⚡ 10x vs AI
+                </span>
+                <span className="font-extrabold text-white">Why Developers Prefer This Over ChatGPT:</span>
+                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <span>✓</span> 100% Client-Side (0 Data Leak)
+                </span>
+                <span className="text-slate-600 hidden sm:inline">•</span>
+                <span className="text-blue-300 font-bold flex items-center gap-1">
+                  <span>✓</span> 0.01s Instant (No Prompting)
+                </span>
+                <span className="text-slate-600 hidden sm:inline">•</span>
+                <span className="text-purple-300 font-bold flex items-center gap-1">
+                  <span>✓</span> Interactive Sliders &amp; Previews
+                </span>
+                <span className="text-slate-600 hidden sm:inline">•</span>
+                <span className="text-amber-300 font-bold flex items-center gap-1">
+                  <span>✓</span> Zero AI Hallucinations
+                </span>
+              </div>
+
+              <button
+                onClick={() => setShowVsAiModal(true)}
+                className="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 underline underline-offset-4 cursor-pointer"
+              >
+                <span>Compare vs ChatGPT / Claude →</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Modal: Full Comparison with ChatGPT / Claude */}
+          {showVsAiModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">⚡</span>
+                    <h3 className="text-base font-black text-white">
+                      Why Developers Pick ToolBox Over Plain AI Chat
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setShowVsAiModal(false)}
+                    className="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-sans">
+                    <thead className="bg-slate-950/80 text-slate-400 border-b border-slate-800 font-mono">
+                      <tr>
+                        <th className="p-3">Feature</th>
+                        <th className="p-3 text-rose-400">🤖 ChatGPT / Claude</th>
+                        <th className="p-3 text-emerald-400">💻 ToolBox Dev Suite</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800 text-slate-300">
+                      <tr>
+                        <td className="p-3 font-bold text-white">Company Data Privacy</td>
+                        <td className="p-3 text-rose-300">❌ Sent to cloud servers (Risk of NDA breach)</td>
+                        <td className="p-3 text-emerald-300 font-bold">✅ 100% In-Browser (V8 Sandbox, Zero network calls)</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-white">Execution Speed</td>
+                        <td className="p-3 text-slate-400">⏳ 10-15s (Write prompt + wait for streaming)</td>
+                        <td className="p-3 text-emerald-300 font-bold">⚡ 0.01s Instant (Paste &amp; ready)</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-white">Interactive UI</td>
+                        <td className="p-3 text-slate-400">❌ Static markdown text only</td>
+                        <td className="p-3 text-emerald-300 font-bold">✅ Sliders, live SVG canvas, WCAG meters</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-white">Code Accuracy</td>
+                        <td className="p-3 text-slate-400">⚠️ LLMs occasionally hallucinate syntax</td>
+                        <td className="p-3 text-emerald-300 font-bold">🎯 Deterministic mathematical parsers</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-white">Export Workflows</td>
+                        <td className="p-3 text-slate-400">❌ Manual copy-paste text blocks</td>
+                        <td className="p-3 text-emerald-300 font-bold">📥 1-Click .env, .tsx, .json downloads</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="p-3 rounded-xl bg-blue-950/40 border border-blue-800/50 flex items-center justify-between text-xs text-blue-200">
+                  <span>🔒 Safe to use with real production secrets, API keys, and corporate schemas.</span>
+                  <button
+                    onClick={() => setShowVsAiModal(false)}
+                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg ml-3 text-xs"
+                  >
+                    Got It!
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Main Layout: Left Sidebar List + Right Active Tool Studio Canvas */}
           <div className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Sidebar Tools List */}
@@ -725,7 +831,10 @@ export default function OfficeDevSuitePage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] bg-slate-900 text-slate-300 border border-slate-800 px-2.5 py-1 rounded-xl font-mono hidden sm:inline-flex items-center gap-1.5">
+                    <span className="text-emerald-400">🔒</span> 100% Local V8 Sandbox
+                  </span>
                   <span className="text-[11px] bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-2.5 py-1 rounded-xl font-bold flex items-center gap-1.5">
                     <span>⚡</span> Saves: {currentToolMeta.problemSolved}
                   </span>
