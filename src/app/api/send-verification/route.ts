@@ -3,13 +3,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { isValidEmail, safeParseBody, sanitizeInput, logSecurityEvent } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => ({}));
+    const body = await safeParseBody<{ email?: string }>(req);
+
+    if (!body) {
+      logSecurityEvent("INVALID_BODY", { route: "send-verification" });
+      return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    }
+
     const { email } = body;
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
+    if (!email || !isValidEmail(String(email).trim())) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
 
@@ -103,7 +110,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Send verification error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
