@@ -490,7 +490,11 @@ function parseStatValue(raw) {
 
 function formatStatValue(value, meta) {
   if (!meta) return String(value);
-  if (meta.isK) return `${(value / 1000).toFixed(1)}K${meta.suffix}`;
+  if (meta.isK) {
+    const kVal = value / 1000;
+    const isClean = Number.isInteger(meta.num / 1000);
+    return `${isClean ? Math.round(kVal) : kVal.toFixed(1)}K${meta.suffix}`;
+  }
   if (Number.isInteger(meta.num)) return `${Math.round(value)}${meta.suffix}`;
   return `${value.toFixed(1)}${meta.suffix}`;
 }
@@ -593,7 +597,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const values = ["", "2.5K+", "4.9/5", "100% Client-Side"];
+    const values = ["", "50K+", "4.9/5", "100% Client-Side"];
     values[0] = userCount > 0 ? `${userCount.toLocaleString()}+` : "2,450+";
 
     const ctx = gsap.context(() => {
@@ -763,8 +767,8 @@ export default function Home() {
             <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Active Users</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
-            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">28+ Live</div>
-            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Online Tools</div>
+            <div ref={(el) => (statRefs.current[1] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">50K+</div>
+            <div className="text-[11px] sm:text-[13px] text-[#6e6e73] dark:text-white/50 mt-1">Files Processed</div>
           </div>
           <div className="bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 sm:p-7">
             <div ref={(el) => (statRefs.current[2] = el)} className="text-xl sm:text-3xl font-semibold tracking-tight text-[#0071e3]">4.9/5</div>
