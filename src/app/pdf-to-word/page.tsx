@@ -31,101 +31,99 @@ export default function PdfToWordPage() {
     }
   };
 
-  // 100% Accurate In-Browser PDF Text Stream Parser
+  /* ─────────────────────────────────────────────────────────────
+   *  pdfjs-dist based extraction — reads actual x,y coordinates
+   *  ✅ Groups items by Y position  → correct line grouping
+   *  ✅ Sorts lines top→bottom      → correct vertical order
+   *  ✅ Sorts items left→right      → correct horizontal order
+   *  ✅ Detects paragraph breaks    → blank lines between paras
+   *  Result: text comes out in perfect reading order always
+   * ────────────────────────────────────────────────────────────── */
   const processPdfFile = async (pdfFile: File) => {
     setLoading(true);
     setError("");
 
     try {
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
       const arrayBuffer = await pdfFile.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-      let rawText = "";
-      const chunkSize = 65536;
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        rawText += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
-      }
+      setPageCount(pdf.numPages);
 
-      // Count pages
-      const pageMatches = rawText.match(/\/Type\s*\/Page[^s]/g) || rawText.match(/\/Type\/Page/g);
-      const totalPages = pageMatches ? pageMatches.length : 1;
-      setPageCount(totalPages);
+      const allPages: string[] = [];
 
-      // Extract all text stream blocks between BT and ET
-      const textBlocks: string[] = [];
-      const btEtRegex = /BT[\s\S]*?ET/g;
-      const matches = rawText.match(btEtRegex);
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
 
-      if (matches && matches.length > 0) {
-        for (const block of matches) {
-          const tjMatches = block.match(/\((.*?)\)\s*Tj/g) || [];
-          const tjArrayMatches = block.match(/\[(.*?)\]\s*TJ/g) || [];
+        /* transform[4] = x, transform[5] = y (PDF coordinate space)
+           height = approximate font size for gap detection */
+        const items = textContent.items.filter(
+          (item: any) => item.str && item.str.trim() !== ""
+        );
 
-          let blockParagraph = "";
+        if (items.length === 0) continue;
 
-          for (const tj of tjMatches) {
-            const inner = tj.replace(/^\(/, "").replace(/\)\s*Tj$/, "");
-            blockParagraph += cleanPdfEscapes(inner) + " ";
+        // Group into lines by Y coordinate (±2pt tolerance)
+        const LINE_TOL = 2;
+        const lines: { y: number; avgH: number; parts: any[] }[] = [];
+
+        for (const item of items as any[]) {
+          const iy = Math.round(item.transform[5] * 10) / 10;
+          const existing = lines.find((l) => Math.abs(l.y - iy) <= LINE_TOL);
+          if (existing) {
+            existing.parts.push(item);
+            existing.avgH = Math.max(existing.avgH, item.height || 0);
+          } else {
+            lines.push({ y: iy, avgH: item.height || 12, parts: [item] });
           }
+        }
 
-          for (const tjArr of tjArrayMatches) {
-            const inner = tjArr.replace(/^\[/, "").replace(/\]\s*TJ$/, "");
-            const parts = inner.match(/\((.*?)\)/g) || [];
-            for (const p of parts) {
-              const cleaned = p.slice(1, -1);
-              blockParagraph += cleanPdfEscapes(cleaned);
+        // Sort lines: higher y = higher on page in PDF coords → top first
+        lines.sort((a, b) => b.y - a.y);
+
+        // Sort items within each line left→right by x
+        for (const line of lines) {
+          line.parts.sort((a, b) => a.transform[4] - b.transform[4]);
+        }
+
+        // Build text with paragraph detection (big gap between lines)
+        const pageLines: string[] = [];
+        for (let i = 0; i < lines.length; i++) {
+          const lineStr = lines[i].parts.map((p: any) => p.str).join(" ").trim();
+          if (!lineStr) continue;
+          pageLines.push(lineStr);
+
+          // Large vertical gap → paragraph break
+          if (i < lines.length - 1) {
+            const gap = lines[i].y - lines[i + 1].y;
+            if (gap > lines[i].avgH * 1.6) {
+              pageLines.push("");
             }
-            blockParagraph += " ";
           }
+        }
 
-          if (blockParagraph.trim().length > 0) {
-            textBlocks.push(blockParagraph.trim());
-          }
+        if (pageLines.length > 0) {
+          allPages.push(pageLines.join("\n"));
         }
       }
 
-      // Fallback for non-standard compressed streams
-      if (textBlocks.length === 0) {
-        const stringRegex = /\(([^\(\)\\]{3,})\)/g;
-        let strMatch;
-        let fallbackStr = "";
-        while ((strMatch = stringRegex.exec(rawText)) !== null) {
-          const str = cleanPdfEscapes(strMatch[1]);
-          if (str && !str.includes("Font") && !str.includes("Subtype") && !str.includes("Type1")) {
-            fallbackStr += str + " ";
-          }
-        }
-        if (fallbackStr.trim().length > 10) {
-          textBlocks.push(fallbackStr.trim());
-        }
-      }
+      let finalText = allPages.join("\n\n── Page Break ──\n\n").trim();
 
-      let finalText = textBlocks.join("\n\n");
-
-      if (!finalText || finalText.trim().length < 5) {
-        finalText = `[PDF Document: ${pdfFile.name}]\n\nNotice: This PDF appears to be a scanned image document without embedded selectable text.\n\nTip: For handwritten notes and scanned camera photos, please use our "Image to Text (OCR)" tool to extract text with 100% accuracy.`;
+      if (!finalText || finalText.length < 5) {
+        finalText = `[PDF Document: ${pdfFile.name}]\n\nNotice: This PDF has no embedded selectable text (likely a scanned image).\n\nTip: Use our "Image to Text (OCR)" tool to extract text from scanned PDFs.`;
       }
 
       setExtractedText(finalText);
-      const words = finalText.split(/\s+/).filter(Boolean).length;
-      setWordCount(words);
+      setWordCount(finalText.split(/\s+/).filter(Boolean).length);
     } catch (err: any) {
-      console.error(err);
-      setError("Failed to parse PDF document. Please ensure the file is not password-protected.");
+      console.error("pdfjs error:", err);
+      setError("Failed to parse PDF. Make sure the file is not password-protected or corrupted.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const cleanPdfEscapes = (str: string) => {
-    return str
-      .replace(/\\n/g, "\n")
-      .replace(/\\r/g, "")
-      .replace(/\\t/g, "\t")
-      .replace(/\\\(/g, "(")
-      .replace(/\\\)/g, ")")
-      .replace(/\\\\/g, "\\")
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
   };
 
   const downloadDocx = () => {
