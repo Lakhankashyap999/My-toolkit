@@ -27,6 +27,7 @@ const inter = Inter({
 
 const TOOL_CATEGORIES = [
   "All Tools",
+  "Daily Office & Dev",
   "Industrial & CNC",
   "Legal & Court",
   "Govt & Exam",
@@ -40,6 +41,24 @@ const TOOL_CATEGORIES = [
 ];
 
 const tools = [
+  {
+    id: 102,
+    name: "IT & Developer Daily Office Suite",
+    category: "Daily Office & Dev",
+    icon: "💻",
+    gradient: "from-blue-600 via-indigo-600 to-purple-600",
+    glow: "rgba(59,130,246,0.45)",
+    badge: "💻 NEW • 14 DEV TOOLS",
+    price: "👑 Pro Pass",
+    desc: "14 Everyday IT & Developer Power Tools: .env Diff, Figma SVG to JSX, cURL to Fetch, JWT Inspector, JSON to C#/TS, Tailwind WCAG, Indian Mock Data, Git PR & Cron.",
+    features: [
+      ".env Diff & Missing Key Validator",
+      "Figma SVG to React & cURL to Fetch",
+      "JWT Inspector & JSON to TS/C# Entity",
+      "Indian Mock Data & Git PR Writer",
+    ],
+    path: "/office-dev-suite",
+  },
   {
     id: 101,
     name: "CNC & VMC Machine Diagnostic Suite",
@@ -883,6 +902,7 @@ export default function Home() {
               <p className="text-4xl font-black tracking-tight mb-1">₹99</p>
               <p className="text-[12px] text-white/70 mb-5">30-day all-inclusive pass</p>
               <ul className="space-y-2.5 text-[13px] text-white/90 mb-7">
+                <li className="flex items-center gap-2"><span>✓</span> 💻 IT &amp; Developer Daily Office Suite (14-in-1)</li>
                 <li className="flex items-center gap-2"><span>✓</span> ⚙️ CNC &amp; VMC Industrial Suite</li>
                 <li className="flex items-center gap-2"><span>✓</span> 💎 CA &amp; Tax Master Suite</li>
                 <li className="flex items-center gap-2"><span>✓</span> ⚖️ Advocate &amp; Legal Master Suite</li>
