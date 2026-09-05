@@ -22,7 +22,7 @@ const inter = Inter({
 });
 
 /* ========================================================================== */
-/*  DATA DEFINITIONS (CA, LEGAL & CNC INDUSTRIAL SUITE AT #1 PRIORITY)        */
+/*  DATA DEFINITIONS (CA, LEGAL, CNC & DEV SUITE AT #1 PRIORITY)             */
 /* ========================================================================== */
 
 const TOOL_CATEGORIES = [
