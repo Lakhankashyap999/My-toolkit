@@ -726,6 +726,25 @@ export default function Home() {
               Explore 28+ Tools ↓
             </a>
           </div>
+
+          {/* Live Edge Firewall & Security Shield Pill */}
+          <div className="mt-8 sm:mt-10 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full border border-black/5 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm">
+            <span className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Active Edge Firewall
+            </span>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1">
+              🛡️ Anti-DDoS &amp; Bot Guard
+            </span>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1">
+              🔒 100% In-Browser Privacy
+            </span>
+          </div>
         </div>
       </section>
 
@@ -912,6 +931,10 @@ export default function Home() {
                 <li className="flex items-center gap-2"><span>✓</span> ULTRON 3.0 AI Assistant</li>
               </ul>
               <Link href="/payment" className="block w-full bg-white text-[#0071e3] py-3 rounded-full font-black hover:bg-white/90 transition-colors text-center text-xs">Unlock Pro for ₹99</Link>
+              <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-white/85 font-semibold">
+                <span>🛡️</span>
+                <span>Bank-Grade 256-Bit SSL • Active Firewall Protected</span>
+              </div>
             </div>
           </div>
         </div>
@@ -957,7 +980,7 @@ export default function Home() {
                   Built with a clear vision: eliminating bloated software installs and shady websites by providing instant, private, client-side tools for engineers, accountants &amp; legal minds worldwide.
                 </p>
 
-                {/* 3 Clean Trust Badges */}
+                {/* 4 Clean Trust Badges */}
                 <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-400">
                   <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -966,6 +989,10 @@ export default function Home() {
                   <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                     Zero Cloud Logging
+                  </span>
+                  <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    Edge WAF &amp; Anti-DDoS
                   </span>
                   <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
                     🇮🇳 Made with Passion
