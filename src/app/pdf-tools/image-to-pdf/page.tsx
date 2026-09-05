@@ -1,25 +1,12 @@
 // @ts-nocheck
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { PDFDocument } from "pdf-lib";
 import AuthGate from "../../../components/AuthGate";
-
-const FEATURES = [
-  { icon: "🔒", label: "100% Private", note: "Processed in browser" },
-  { icon: "⚡", label: "Instant", note: "Instant convert" },
-  { icon: "🗂️", label: "Multi-page", note: "Multiple images at once" },
-  { icon: "🖼️", label: "JPG & PNG", note: "Both formats supported" },
-];
 
 function sleep(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
 }
-
-// Page size constants (points)
-const A4_PORTRAIT = [595.28, 841.89];
-const A4_LANDSCAPE = [841.89, 595.28];
-const LETTER_PORTRAIT = [612, 792];
-const LETTER_LANDSCAPE = [792, 612];
 
 export default function ImageToPdfPage() {
   const [images, setImages] = useState<File[]>([]);
@@ -31,15 +18,28 @@ export default function ImageToPdfPage() {
   const [showPopup, setShowPopup] = useState(false);
   const [elapsedLabel, setElapsedLabel] = useState("");
   const [pageSize, setPageSize] = useState<"fit" | "a4p" | "a4l" | "letter">("fit");
+  const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [dragActive, setDragActive] = useState(false);
+
+  const PAGE_SIZES = {
+    a4p: [595.28, 841.89],
+    a4l: [841.89, 595.28],
+    letter: [612, 792],
+  };
+
+  const PAGE_SIZE_LABELS = {
+    fit: "Fit to image",
+    a4p: "A4 Portrait",
+    a4l: "A4 Landscape",
+    letter: "Letter",
+  };
 
   const addFiles = (fileList: FileList | File[]) => {
-    const selectedFiles = Array.from(fileList);
-    const validImages = selectedFiles.filter((file) => file.type.startsWith("image/"));
-    if (validImages.length !== selectedFiles.length) setError("Only image files are allowed (JPG, PNG).");
+    const arr = Array.from(fileList);
+    const valid = arr.filter((f) => f.type.startsWith("image/"));
+    if (valid.length !== arr.length) setError("Only image files (JPG, PNG) are allowed.");
     else setError("");
-    setImages((prev) => [...prev, ...validImages]);
+    setImages((prev) => [...prev, ...valid]);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +48,7 @@ export default function ImageToPdfPage() {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    setDragActive(false);
+    setIsDragActive(false);
     if (e.dataTransfer.files) addFiles(e.dataTransfer.files);
   };
 
@@ -56,120 +56,100 @@ export default function ImageToPdfPage() {
 
   const moveImage = (index: number, direction: "up" | "down") => {
     setImages((prev) => {
-      const newImages = [...prev];
+      const next = [...prev];
       const target = direction === "up" ? index - 1 : index + 1;
-      if (target < 0 || target >= newImages.length) return newImages;
-      [newImages[index], newImages[target]] = [newImages[target], newImages[index]];
-      return newImages;
+      if (target < 0 || target >= next.length) return next;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
     });
   };
-const handleConvert = async () => {
-  if (images.length === 0) {
-    setError("Please upload at least one image.");
-    return;
-  }
-  setIsConverting(true);
-  setError("");
-  setProgress(2);
-  setStage("Preparing...");
-  const start = performance.now();
 
-  try {
-    const pdfDoc = await PDFDocument.create();
-
-    // Define standard page sizes (in points)
-    const pageSizes = {
-      a4p: [595.28, 841.89],
-      a4l: [841.89, 595.28],
-      letter: [612, 792],
-    };
-
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
-      const arrayBuffer = await image.arrayBuffer();
-      const mimeType = image.type;
-      let embeddedImage;
-
-      setStage(`Processing page ${i + 1} of ${images.length}`);
-
-      if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
-        embeddedImage = await pdfDoc.embedJpg(arrayBuffer);
-      } else if (mimeType === "image/png") {
-        embeddedImage = await pdfDoc.embedPng(arrayBuffer);
-      } else {
-        continue;
-      }
-
-      let pageWidth: number, pageHeight: number;
-      let drawWidth: number, drawHeight: number;
-      let x: number, y: number;
-
-      if (pageSize === "fit") {
-        // Page size = image size (no white space at all)
-        pageWidth = embeddedImage.width;
-        pageHeight = embeddedImage.height;
-        drawWidth = pageWidth;
-        drawHeight = pageHeight;
-        x = 0;
-        y = 0;
-      } else {
-        // Standard page size
-        [pageWidth, pageHeight] = pageSizes[pageSize];
-
-        // Fit image fully INSIDE the page (contain) - never crop, never overflow
-        const scaleX = pageWidth / embeddedImage.width;
-        const scaleY = pageHeight / embeddedImage.height;
-        // Use MIN so the entire image always stays within page bounds
-        const scale = Math.min(scaleX, scaleY);
-        drawWidth = embeddedImage.width * scale;
-        drawHeight = embeddedImage.height * scale;
-
-        // Center the image on the page (equal white margin on shorter side)
-        x = (pageWidth - drawWidth) / 2;
-        y = (pageHeight - drawHeight) / 2;
-      }
-
-      const page = pdfDoc.addPage([pageWidth, pageHeight]);
-      page.drawImage(embeddedImage, {
-        x,
-        y,
-        width: drawWidth,
-        height: drawHeight,
-      });
-
-      setProgress(8 + Math.round(((i + 1) / images.length) * 72));
-      await sleep(50);
+  const handleConvert = async () => {
+    if (images.length === 0) {
+      setError("Please upload at least one image.");
+      return;
     }
+    setIsConverting(true);
+    setError("");
+    setProgress(2);
+    setStage("Preparing…");
+    const start = performance.now();
 
-    setStage("Creating PDF...");
-    setProgress(92);
-    const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: "application/pdf" });
-    const url = window.URL.createObjectURL(blob);
+    try {
+      const pdfDoc = await PDFDocument.create();
 
-    const elapsed = performance.now() - start;
-    if (elapsed < 650) await sleep(650 - elapsed);
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+        const arrayBuffer = await image.arrayBuffer();
+        const mimeType = image.type;
+        let embeddedImage;
 
-    setProgress(100);
-    setStage("Done!");
-    setElapsedLabel(((performance.now() - start) / 1000).toFixed(1));
+        setStage(`Processing image ${i + 1} of ${images.length}…`);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "converted.pdf";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+        if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
+          embeddedImage = await pdfDoc.embedJpg(arrayBuffer);
+        } else if (mimeType === "image/png") {
+          embeddedImage = await pdfDoc.embedPng(arrayBuffer);
+        } else {
+          // Try JPG fallback for other image types via canvas
+          continue;
+        }
 
-    setSuccessUrl(url);
-    setShowPopup(true);
-  } catch (err: any) {
-    setError(err.message || "Something went wrong, please try again.");
-  } finally {
-    setIsConverting(false);
-  }
-};
-  
+        let pageWidth: number, pageHeight: number;
+        let drawWidth: number, drawHeight: number;
+        let x: number, y: number;
+
+        if (pageSize === "fit") {
+          pageWidth = embeddedImage.width;
+          pageHeight = embeddedImage.height;
+          drawWidth = pageWidth;
+          drawHeight = pageHeight;
+          x = 0;
+          y = 0;
+        } else {
+          [pageWidth, pageHeight] = PAGE_SIZES[pageSize];
+          const scale = Math.min(pageWidth / embeddedImage.width, pageHeight / embeddedImage.height);
+          drawWidth = embeddedImage.width * scale;
+          drawHeight = embeddedImage.height * scale;
+          x = (pageWidth - drawWidth) / 2;
+          y = (pageHeight - drawHeight) / 2;
+        }
+
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+        page.drawImage(embeddedImage, { x, y, width: drawWidth, height: drawHeight });
+        setProgress(8 + Math.round(((i + 1) / images.length) * 72));
+        await sleep(40);
+      }
+
+      setStage("Creating PDF…");
+      setProgress(92);
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      const elapsed = performance.now() - start;
+      if (elapsed < 600) await sleep(600 - elapsed);
+
+      setProgress(100);
+      setStage("Done!");
+      setElapsedLabel(((performance.now() - start) / 1000).toFixed(1));
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "converted.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setSuccessUrl(url);
+      setTimeout(() => setShowPopup(true), 200);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong, please try again.");
+      setProgress(0);
+    } finally {
+      setTimeout(() => setIsConverting(false), 300);
+    }
+  };
 
   const closePopup = () => {
     setShowPopup(false);
@@ -183,619 +163,251 @@ const handleConvert = async () => {
 
   return (
     <AuthGate>
-      <div className="itp-root">
-        <nav className="itp-nav">
-          <div className="itp-nav-inner">
-            <a href="/" className="itp-brand">
-              <span className="itp-brand-icon">🛠️</span>
-              <span className="itp-brand-text">ToolBox</span>
+      <div className="min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white">
+        {/* Navbar */}
+        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#fbfbfd]/75 dark:bg-[#040404]/75 border-b border-black/5 dark:border-white/10">
+          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" className="flex items-center gap-2">
+              <span className="text-2xl">🛠️</span>
+              <span className="text-[17px] font-semibold tracking-tight">ToolBox</span>
             </a>
-            <div className="itp-nav-links">
-              <a href="/">← Home</a>
-              <a href="/pdf-tools">PDF Tools</a>
+            <div className="flex items-center gap-4 text-[13px] font-medium text-[#1d1d1f]/70 dark:text-white/70">
+              <a href="/" className="hover:text-[#0071e3] transition-colors">← Back to Home</a>
+              <a href="/pdf-tools" className="hover:text-[#0071e3] transition-colors">PDF Tools</a>
             </div>
           </div>
         </nav>
 
-        <div className="itp-wrap">
-          <div className="itp-hero">
-            <h1>Image to PDF</h1>
-            <p>Convert JPG or PNG images into a professional PDF — privately, instantly.</p>
+        {/* Ambient glow */}
+        <div className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-400/20 via-pink-400/10 to-fuchsia-400/15 dark:from-purple-500/10 dark:via-pink-500/5 dark:to-fuchsia-500/10 blur-3xl" />
           </div>
 
-          <div className="itp-features">
-            {FEATURES.map((f) => (
-              <div className="itp-feature" key={f.label}>
-                <span className="itp-feature-icon">{f.icon}</span>
-                <div>
-                  <strong>{f.label}</strong>
-                  <span>{f.note}</span>
+          <div className="max-w-3xl mx-auto px-4 py-12 sm:py-16">
+            {/* Header */}
+            <div className="text-center mb-8 sm:mb-10">
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 text-2xl mb-4"
+                style={{ boxShadow: "0 10px 24px -6px rgba(217,70,239,0.4)" }}
+              >
+                🖼️
+              </div>
+              <h1 className="text-[28px] sm:text-4xl font-semibold tracking-tight mb-3">Image to PDF</h1>
+              <p className="text-[#6e6e73] dark:text-white/60 text-[15px] sm:text-lg">
+                Convert JPG or PNG images into a professional PDF — privately, instantly.
+              </p>
+            </div>
+
+            {/* Features row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+              {[
+                { icon: "🔒", label: "100% Private", note: "Processed in browser" },
+                { icon: "⚡", label: "Instant", note: "No upload needed" },
+                { icon: "🗂️", label: "Multi-page", note: "Multiple images at once" },
+                { icon: "🖼️", label: "JPG & PNG", note: "Both formats supported" },
+              ].map((f) => (
+                <div key={f.label} className="bg-white dark:bg-[#111113] border border-black/5 dark:border-white/10 rounded-2xl p-3 flex items-center gap-2.5">
+                  <span className="text-xl shrink-0">{f.icon}</span>
+                  <div>
+                    <strong className="text-[13px] block font-semibold">{f.label}</strong>
+                    <span className="text-[11px] text-[#6e6e73] dark:text-white/50">{f.note}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Drop zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
+              onDragLeave={() => setIsDragActive(false)}
+              onDrop={handleDrop}
+              className={`rounded-3xl border-2 border-dashed p-8 sm:p-10 text-center transition-all cursor-pointer ${
+                isDragActive
+                  ? "border-purple-500 bg-purple-50/50 dark:bg-purple-500/5 scale-[1.01]"
+                  : "border-black/10 dark:border-white/15 bg-white dark:bg-[#111113] hover:border-purple-400/50 hover:bg-purple-50/30 dark:hover:bg-purple-500/[0.03]"
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+                id="image-upload"
+                ref={fileInputRef}
+              />
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-16 h-16 rounded-2xl bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-3xl">📁</div>
+                <span className="text-[17px] sm:text-xl font-semibold tracking-tight">
+                  {isDragActive ? "Drop images here" : "Click or drag images here"}
+                </span>
+                <span className="text-[13px] text-[#6e6e73] dark:text-white/50">JPG, PNG · Multiple files supported</span>
+              </div>
+            </div>
+
+            {/* Image grid */}
+            {images.length > 0 && (
+              <div className="mt-5 bg-white dark:bg-[#111113] border border-black/5 dark:border-white/10 rounded-3xl overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-black/5 dark:border-white/10">
+                  <span className="font-semibold text-[15px]">{images.length} image{images.length > 1 ? "s" : ""} selected</span>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-[13px] text-[#0071e3] font-medium hover:opacity-80 transition-opacity"
+                  >
+                    + Add more
+                  </button>
+                </div>
+
+                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {images.map((image, index) => (
+                    <div key={index} className="relative rounded-2xl overflow-hidden border border-black/5 dark:border-white/10 bg-[#f5f5f7] dark:bg-white/5 aspect-[4/3]">
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={image.name}
+                        className="w-full h-full object-contain"
+                      />
+                      {/* Index badge */}
+                      <span className="absolute top-1.5 left-1.5 bg-black/60 text-white text-[11px] font-semibold px-1.5 py-0.5 rounded-md">
+                        {index + 1}
+                      </span>
+                      {/* Controls */}
+                      <div className="absolute bottom-1.5 right-1.5 flex gap-1">
+                        <button
+                          onClick={() => moveImage(index, "up")}
+                          disabled={index === 0}
+                          className="w-6 h-6 rounded-md bg-white/90 dark:bg-black/60 text-[11px] flex items-center justify-center disabled:opacity-30 hover:bg-white transition-colors shadow-sm"
+                        >↑</button>
+                        <button
+                          onClick={() => moveImage(index, "down")}
+                          disabled={index === images.length - 1}
+                          className="w-6 h-6 rounded-md bg-white/90 dark:bg-black/60 text-[11px] flex items-center justify-center disabled:opacity-30 hover:bg-white transition-colors shadow-sm"
+                        >↓</button>
+                        <button
+                          onClick={() => removeImage(index)}
+                          className="w-6 h-6 rounded-md bg-white/90 dark:bg-black/60 text-[11px] flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors shadow-sm"
+                        >✕</button>
+                      </div>
+                      {/* Name tooltip */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-black/60 px-2 py-1 text-[10px] truncate text-center">
+                        {image.name}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
+            )}
 
-          {/* Upload area */}
-          <div
-            className={`itp-dropzone ${dragActive ? "itp-drop-active" : ""}`}
-            onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-            onDragLeave={() => setDragActive(false)}
-            onDrop={handleDrop}
-          >
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileChange}
-              className="itp-hidden-input"
-              id="image-upload"
-              ref={fileInputRef}
-            />
-            <label htmlFor="image-upload" className="itp-drop-label">
-              <div className="itp-drop-icon">📁</div>
-              <div className="itp-drop-title">Drop images here or click to upload</div>
-              <div className="itp-drop-sub">JPG, PNG · multiple files supported</div>
-            </label>
-          </div>
+            {/* Page size selector */}
+            {images.length > 0 && (
+              <div className="mt-4 bg-white dark:bg-[#111113] border border-black/5 dark:border-white/10 rounded-2xl px-5 py-4 flex flex-wrap items-center gap-3">
+                <span className="text-[14px] font-semibold shrink-0">Page size:</span>
+                <div className="flex flex-wrap gap-2">
+                  {(["fit", "a4p", "a4l", "letter"] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setPageSize(s)}
+                      className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all border ${
+                        pageSize === s
+                          ? "bg-[#0071e3] text-white border-[#0071e3]"
+                          : "bg-[#f5f5f7] dark:bg-white/5 text-[#6e6e73] dark:text-white/60 border-transparent hover:border-[#0071e3]/30"
+                      }`}
+                    >
+                      {PAGE_SIZE_LABELS[s]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          {/* Image grid */}
-          {images.length > 0 && (
-            <div className="itp-card">
-              <div className="itp-card-header">
-                <span>Selected Images</span>
-                <span className="itp-badge">{images.length}</span>
+            {error && (
+              <div className="mt-5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-2xl p-4 text-sm">
+                {error}
               </div>
-              <div className="itp-grid">
-                {images.map((image, index) => (
-                  <div className="itp-grid-item" key={index}>
-                    <img src={URL.createObjectURL(image)} alt={image.name} className="itp-grid-img" />
-                    <div className="itp-grid-overlay">
-                      <span className="itp-grid-index">{index + 1}</span>
-                    </div>
-                    <div className="itp-grid-actions">
-                      <button
-                        onClick={() => moveImage(index, "up")}
-                        disabled={index === 0}
-                        className="itp-grid-btn"
-                        title="Move up"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        onClick={() => moveImage(index, "down")}
-                        disabled={index === images.length - 1}
-                        className="itp-grid-btn"
-                        title="Move down"
-                      >
-                        ↓
-                      </button>
-                      <button
-                        onClick={() => removeImage(index)}
-                        className="itp-grid-btn itp-grid-remove"
-                        title="Remove"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="itp-grid-name">{image.name}</div>
-                  </div>
-                ))}
-              </div>
-              <button className="itp-add-more" onClick={() => fileInputRef.current?.click()}>
-                + Add More Images
+            )}
+
+            <div className="flex justify-center mt-7">
+              <button
+                onClick={handleConvert}
+                disabled={isConverting || images.length === 0}
+                className="bg-[#0071e3] hover:bg-[#0077ED] disabled:bg-gray-300 dark:disabled:bg-white/10 disabled:cursor-not-allowed text-white px-8 py-3 rounded-full font-semibold text-[15px] transition-colors shadow-lg shadow-purple-500/20 disabled:shadow-none"
+              >
+                {isConverting ? "Converting…" : "Convert to PDF"}
               </button>
             </div>
-          )}
 
-          {/* Page size */}
-          {images.length > 0 && (
-            <div className="itp-card itp-options-card">
-              <span className="itp-options-label">Page size</span>
-              <div className="itp-options">
-                <button className={`itp-option ${pageSize === "fit" ? "itp-option-active" : ""}`} onClick={() => setPageSize("fit")}>
-                  Fit to image
-                </button>
-                <button className={`itp-option ${pageSize === "a4p" ? "itp-option-active" : ""}`} onClick={() => setPageSize("a4p")}>
-                  A4 Portrait
-                </button>
-                <button className={`itp-option ${pageSize === "a4l" ? "itp-option-active" : ""}`} onClick={() => setPageSize("a4l")}>
-                  A4 Landscape
-                </button>
-                <button className={`itp-option ${pageSize === "letter" ? "itp-option-active" : ""}`} onClick={() => setPageSize("letter")}>
-                  Letter
-                </button>
+            {/* Progress */}
+            {isConverting && (
+              <div className="mt-5 bg-white dark:bg-[#111113] border border-black/5 dark:border-white/10 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2 text-[13px]">
+                  <span className="text-lg">🖨️</span>
+                  <span className="text-[#6e6e73] dark:text-white/50 flex-1">{stage}</span>
+                  <span className="font-semibold text-[#0071e3]">{progress}%</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-[#f0f0f2] dark:bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-400 transition-[width] duration-200 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
               </div>
+            )}
+
+            <div className="mt-8 bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-4 text-[13px] text-[#6e6e73] dark:text-white/60">
+              💡 <strong className="text-[#1d1d1f] dark:text-white">Note:</strong> Your images stay on your device and are never uploaded to any server. Everything is processed locally in your browser.
             </div>
-          )}
-
-          {error && <div className="itp-error">{error}</div>}
-
-          <div className="itp-convert-row">
-            <button
-              onClick={handleConvert}
-              disabled={isConverting || images.length === 0}
-              className="itp-convert-btn"
-            >
-              {isConverting ? "Converting..." : "Convert to PDF"}
-            </button>
           </div>
-
-          {isConverting && (
-            <div className="itp-card itp-progress-card">
-              <div className="itp-progress-head">
-                <span className="itp-printer-icon">🖨️</span>
-                <span className="itp-stage-text">{stage}</span>
-                <span className="itp-progress-pct">{progress}%</span>
-              </div>
-              <div className="itp-gauge">
-                <div className="itp-gauge-fill" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-          )}
-
-          <div className="itp-privacy-note">💡 Your images stay on your device — never uploaded.</div>
         </div>
 
+        {/* Success Popup */}
         {showPopup && (
-          <div className="itp-overlay">
-            <div className="itp-popup">
-              <div className="itp-popup-check">✅</div>
-              <h2>PDF Ready!</h2>
-              <p>Created in {elapsedLabel}s</p>
-              <div className="itp-popup-actions">
-                <a href={successUrl} target="_blank" rel="noopener noreferrer" className="itp-btn-primary">Open PDF</a>
-                <a href={successUrl} download="converted.pdf" className="itp-btn-secondary">Download Again</a>
-                <button onClick={closePopup} className="itp-btn-ghost">Close</button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="relative bg-white dark:bg-[#111113] rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center overflow-hidden">
+              <span className="absolute top-6 left-8 w-2 h-2 rounded-full bg-purple-400 animate-bounce" />
+              <span className="absolute top-10 right-10 w-2 h-2 rounded-full bg-pink-400 animate-bounce" style={{ animationDelay: "0.2s" }} />
+              <span className="absolute top-4 right-20 w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-bounce" style={{ animationDelay: "0.35s" }} />
+
+              <div className="relative mx-auto mb-5 w-20 h-20">
+                <div
+                  className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-4xl"
+                  style={{ boxShadow: "0 12px 28px -6px rgba(217,70,239,0.45)" }}
+                >
+                  🖼️
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#0071e3] text-white flex items-center justify-center text-base shadow-md">✓</span>
+              </div>
+
+              <h2 className="text-2xl font-semibold tracking-tight mb-1">PDF Ready! 🎉</h2>
+              <p className="text-[#6e6e73] dark:text-white/60 mb-1 text-[14px]">Your PDF has been downloaded.</p>
+              {elapsedLabel && <p className="text-[13px] text-[#0071e3] font-medium mb-5">⚡ Created in {elapsedLabel}s</p>}
+
+              <div className="flex flex-col gap-2.5">
+                <a
+                  href={successUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full bg-[#0071e3] hover:bg-[#0077ED] text-white py-3 rounded-full font-semibold transition-colors text-[14px]"
+                >
+                  Open PDF
+                </a>
+                <a
+                  href={successUrl}
+                  download="converted.pdf"
+                  className="block w-full bg-[#f5f5f7] dark:bg-white/10 hover:bg-[#e8e8ed] dark:hover:bg-white/20 text-[#1d1d1f] dark:text-white py-3 rounded-full font-semibold transition-colors text-[14px]"
+                >
+                  Download Again
+                </a>
+                <button
+                  onClick={() => { closePopup(); setImages([]); }}
+                  className="w-full text-[#6e6e73] dark:text-white/50 hover:text-[#1d1d1f] dark:hover:text-white py-2 text-[13px] transition-colors"
+                >
+                  Convert more images
+                </button>
               </div>
             </div>
           </div>
         )}
-
-        <style jsx global>{`
-          @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-        `}</style>
-
-        <style jsx>{`
-          .itp-root {
-            --bg: #f9fafb;
-            --card-bg: #ffffff;
-            --text: #111827;
-            --muted: #6b7280;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --border: #e5e7eb;
-            --error-bg: #fee2e2;
-            --error-border: #fecaca;
-            --error-text: #b91c1c;
-            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            min-height: 100vh;
-            background: var(--bg);
-            color: var(--text);
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-          }
-
-          .itp-nav {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border);
-          }
-          .itp-nav-inner {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 16px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          }
-          .itp-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 600;
-            font-size: 18px;
-          }
-          .itp-nav-links {
-            display: flex;
-            gap: 16px;
-            font-size: 14px;
-          }
-          .itp-nav-links a {
-            color: var(--muted);
-            text-decoration: none;
-          }
-          .itp-nav-links a:hover {
-            color: var(--primary);
-          }
-
-          .itp-wrap {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 32px 16px 64px;
-          }
-
-          .itp-hero {
-            text-align: center;
-            margin-bottom: 24px;
-          }
-          .itp-hero h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin: 0 0 8px;
-          }
-          .itp-hero p {
-            color: var(--muted);
-            font-size: 16px;
-          }
-
-          .itp-features {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-          }
-          .itp-feature {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: var(--shadow-sm);
-          }
-          .itp-feature-icon {
-            font-size: 22px;
-          }
-          .itp-feature strong {
-            font-size: 13px;
-            display: block;
-          }
-          .itp-feature span:last-child {
-            font-size: 11px;
-            color: var(--muted);
-          }
-
-          .itp-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-            padding: 16px;
-            margin-bottom: 16px;
-          }
-          .itp-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            font-weight: 600;
-          }
-          .itp-badge {
-            background: #e0e7ff;
-            color: var(--primary);
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 12px;
-          }
-
-          .itp-dropzone {
-            border: 2px dashed #d1d5db;
-            border-radius: 12px;
-            padding: 32px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
-            margin-bottom: 16px;
-            background: var(--card-bg);
-          }
-          .itp-drop-active {
-            border-color: var(--primary);
-            background: #f0f4ff;
-          }
-          .itp-hidden-input {
-            display: none;
-          }
-          .itp-drop-icon {
-            font-size: 40px;
-            margin-bottom: 8px;
-          }
-          .itp-drop-title {
-            font-weight: 600;
-            font-size: 16px;
-          }
-          .itp-drop-sub {
-            font-size: 13px;
-            color: var(--muted);
-          }
-
-          .itp-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 12px;
-          }
-          .itp-grid-item {
-            position: relative;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            background: #f3f4f6;
-            aspect-ratio: 4/3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          .itp-grid-img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-          }
-          .itp-grid-overlay {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-          }
-          .itp-grid-index {
-            background: rgba(0,0,0,0.6);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-          }
-          .itp-grid-actions {
-            position: absolute;
-            bottom: 6px;
-            right: 6px;
-            display: flex;
-            gap: 4px;
-          }
-          .itp-grid-btn {
-            background: rgba(255,255,255,0.9);
-            border: none;
-            border-radius: 4px;
-            padding: 2px 6px;
-            cursor: pointer;
-            font-size: 12px;
-            color: #374151;
-            transition: background 0.2s;
-          }
-          .itp-grid-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-          }
-          .itp-grid-btn:not(:disabled):hover {
-            background: white;
-          }
-          .itp-grid-remove {
-            color: #dc2626;
-          }
-          .itp-grid-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.95);
-            padding: 4px 6px;
-            font-size: 11px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-
-          .itp-add-more {
-            width: 100%;
-            background: #f9fafb;
-            border: 1px dashed #d1d5db;
-            border-radius: 8px;
-            padding: 8px;
-            font-size: 13px;
-            color: var(--primary);
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.2s;
-          }
-          .itp-add-more:hover {
-            background: #f3f4f6;
-          }
-
-          .itp-options-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-          }
-          .itp-options-label {
-            font-weight: 600;
-            font-size: 14px;
-          }
-          .itp-options {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-          }
-          .itp-option {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 6px 14px;
-            font-size: 13px;
-            cursor: pointer;
-            color: var(--muted);
-            transition: all 0.2s;
-          }
-          .itp-option-active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-          }
-
-          .itp-error {
-            background: var(--error-bg);
-            border: 1px solid var(--error-border);
-            color: var(--error-text);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 13px;
-            margin-bottom: 16px;
-          }
-
-          .itp-convert-row {
-            display: flex;
-            justify-content: center;
-            margin-top: 16px;
-          }
-          .itp-convert-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            font-weight: 600;
-            font-size: 16px;
-            padding: 12px 32px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-          }
-          .itp-convert-btn:not(:disabled):hover {
-            background: var(--primary-hover);
-          }
-          .itp-convert-btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-          }
-
-          .itp-progress-card {
-            margin-top: 16px;
-          }
-          .itp-progress-head {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 14px;
-          }
-          .itp-printer-icon {
-            font-size: 18px;
-          }
-          .itp-stage-text {
-            flex: 1;
-            color: var(--muted);
-          }
-          .itp-progress-pct {
-            font-weight: 600;
-            color: var(--primary);
-          }
-          .itp-gauge {
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 999px;
-            overflow: hidden;
-          }
-          .itp-gauge-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #2563eb, #7c3aed);
-            border-radius: 999px;
-            transition: width 0.3s;
-          }
-
-          .itp-privacy-note {
-            text-align: center;
-            font-size: 13px;
-            color: var(--muted);
-            margin-top: 16px;
-          }
-
-          .itp-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-          }
-          .itp-popup {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            text-align: center;
-            max-width: 320px;
-            width: 100%;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-          }
-          .itp-popup-check {
-            font-size: 48px;
-            margin-bottom: 12px;
-          }
-          .itp-popup h2 {
-            margin: 0 0 8px;
-            font-size: 20px;
-          }
-          .itp-popup p {
-            color: var(--muted);
-            margin-bottom: 20px;
-          }
-          .itp-popup-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-          }
-          .itp-btn-primary,
-          .itp-btn-secondary,
-          .itp-btn-ghost {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-          }
-          .itp-btn-primary {
-            background: var(--primary);
-            color: white;
-          }
-          .itp-btn-primary:hover {
-            background: var(--primary-hover);
-          }
-          .itp-btn-secondary {
-            background: #f3f4f6;
-            color: var(--text);
-          }
-          .itp-btn-secondary:hover {
-            background: #e5e7eb;
-          }
-          .itp-btn-ghost {
-            background: transparent;
-            color: var(--muted);
-          }
-          .itp-btn-ghost:hover {
-            background: #f9fafb;
-          }
-
-          @media (max-width: 640px) {
-            .itp-features {
-              grid-template-columns: repeat(2, 1fr);
-            }
-            .itp-grid {
-              grid-template-columns: repeat(2, 1fr);
-            }
-            .itp-hero h1 {
-              font-size: 26px;
-            }
-          }
-        `}</style>
       </div>
     </AuthGate>
   );

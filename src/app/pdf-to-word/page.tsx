@@ -3,6 +3,7 @@
 
 import { useState, useRef } from "react";
 import Link from "next/link";
+import AuthGate from "@/components/AuthGate";
 
 export default function PdfToWordPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -217,15 +218,18 @@ export default function PdfToWordPage() {
   };
 
   return (
+    <AuthGate>
     <div className="min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white pb-16 antialiased">
       {/* Navbar */}
-      <nav className="border-b border-black/5 dark:border-white/10 bg-white/70 dark:bg-black/70 backdrop-blur-md sticky top-0 z-40">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#fbfbfd]/75 dark:bg-[#040404]/75 border-b border-black/5 dark:border-white/10">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-sm text-[#0071e3]">
-            ← Back to ToolBox
-          </Link>
-          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            ⚡ Ultra-Fast 0.2s Client-Side Engine
+          <a href="/" className="flex items-center gap-2">
+            <span className="text-2xl">🛠️</span>
+            <span className="text-[17px] font-semibold tracking-tight">ToolBox</span>
+          </a>
+          <div className="flex items-center gap-4 text-[13px] font-medium text-[#1d1d1f]/70 dark:text-white/70">
+            <a href="/" className="hover:text-[#0071e3] transition-colors">← Back to Home</a>
+            <a href="/pdf-tools" className="hover:text-[#0071e3] transition-colors">PDF Tools</a>
           </div>
         </div>
       </nav>
@@ -369,5 +373,6 @@ export default function PdfToWordPage() {
         </div>
       </div>
     </div>
+    </AuthGate>
   );
 }
