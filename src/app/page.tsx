@@ -704,22 +704,22 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden pt-16 sm:pt-28 pb-10 sm:pb-16 px-4">
+      <section className="relative overflow-hidden pt-6 sm:pt-10 pb-8 sm:pb-12 px-4">
         <div ref={blobsRef} className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-blue-400/20 via-indigo-400/10 to-purple-400/15 blur-3xl" />
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center">
-          <div ref={heroBadgeRef} className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-7 sm:mb-8 text-[#1d1d1f]/70 dark:text-white/70 border border-black/[0.04]">
+          <div ref={heroBadgeRef} className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-4 sm:mb-5 text-[#1d1d1f]/70 dark:text-white/70 border border-black/[0.04]">
             <span className="w-1.5 h-1.5 bg-[#30d158] rounded-full" />
             Trusted by {userCount > 0 ? `${userCount.toLocaleString()}+` : "2,450+"} users worldwide
           </div>
-          <h1 ref={heroH1Ref} className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-5 sm:mb-6">
+          <h1 ref={heroH1Ref} className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-4 sm:mb-5">
             All your daily tools.
             <br />
             <span className="text-[#0071e3]">In one place.</span>
           </h1>
-          <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
+          <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2">
             CNC &amp; VMC Industrial Diagnostics, CA Taxes, IPC to BNS Legal Converter, resize exam photos, edit PDFs, convert formats, generate invoices, and get instant AI help —
             supervised live by our virtual office team. 100% private, no software install required.
           </p>
@@ -733,7 +733,7 @@ export default function Home() {
           </div>
 
           {/* Live Edge Firewall & Security Shield Pill */}
-          <div className="mt-8 sm:mt-10 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full border border-black/5 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm">
+          <div className="mt-6 sm:mt-8 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full border border-black/5 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm">
             <span className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
