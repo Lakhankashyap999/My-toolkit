@@ -110,29 +110,60 @@ function isValidOrigin(request: NextRequest): boolean {
   // No origin = same-origin request or server-to-server (allowed)
   if (!origin) return true;
 
-  const allowedHosts: string[] = [
-    "localhost",
-    "127.0.0.1",
-  ];
-
-  // Production domain
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (siteUrl) {
-    try {
-      allowedHosts.push(new URL(siteUrl).host);
-    } catch {}
-  }
-
-  // Vercel preview deployments
-  const vercelUrl = process.env.VERCEL_URL;
-  if (vercelUrl) allowedHosts.push(vercelUrl);
-
-  // Also allow any *.vercel.app preview
   try {
-    const originHost = new URL(origin).host;
-    if (originHost.endsWith(".vercel.app")) return true;
+    const originUrl = new URL(origin);
+    const originHost = originUrl.host.toLowerCase();
+    const originHostNoPort = originHost.split(":")[0];
+
+    // Current request hosts (host header, forwarded host, or nextUrl host)
+    const hostHeader = (request.headers.get("host") || "").toLowerCase().split(":")[0];
+    const forwardedHost = (request.headers.get("x-forwarded-host") || "").toLowerCase().split(":")[0];
+    const nextHost = (request.nextUrl.host || "").toLowerCase().split(":")[0];
+
+    // 1. Same-origin match: if origin host matches current request host, it's 100% valid
+    if (
+      (hostHeader && originHostNoPort === hostHeader) ||
+      (forwardedHost && originHostNoPort === forwardedHost) ||
+      (nextHost && originHostNoPort === nextHost)
+    ) {
+      return true;
+    }
+
+    const allowedHosts: string[] = [
+      "localhost",
+      "127.0.0.1",
+      "mytoolboxs.online",
+      "www.mytoolboxs.online",
+      "toolify.app",
+      "www.toolify.app",
+    ];
+
+    // Production domain from env (if configured)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (siteUrl) {
+      try {
+        allowedHosts.push(new URL(siteUrl).host.toLowerCase().split(":")[0]);
+      } catch {}
+    }
+
+    // Vercel preview/deployment URLs
+    const vercelUrl = process.env.VERCEL_URL;
+    if (vercelUrl) {
+      allowedHosts.push(vercelUrl.toLowerCase().split(":")[0]);
+    }
+
+    // Allow *.vercel.app preview deployments
+    if (originHostNoPort.endsWith(".vercel.app")) {
+      return true;
+    }
+
+    // Allow any subdomain of mytoolboxs.online
+    if (originHostNoPort.endsWith(".mytoolboxs.online") || originHostNoPort === "mytoolboxs.online") {
+      return true;
+    }
+
     return allowedHosts.some(
-      (h) => originHost === h || originHost.endsWith(`.${h}`)
+      (h) => originHostNoPort === h || originHostNoPort.endsWith(`.${h}`)
     );
   } catch {
     return false;
