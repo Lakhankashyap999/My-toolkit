@@ -315,6 +315,17 @@ export default function VirtualOffice() {
   const [stageStart, setStageStart] = useState(0);
   const [launchedTool, setLaunched] = useState(null);
 
+  /* Ambient Speech Bubble Ticker & Interaction State */
+  const [ambientBubble, setAmbientBubble] = useState(0);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  useEffect(() => {
+    const bTimer = setInterval(() => {
+      setAmbientBubble((prev) => (prev + 1) % 5);
+    }, 3800);
+    return () => clearInterval(bTimer);
+  }, []);
+
   /* Paper Throw */
   const pc = tick % 19; const showPaper = pc < 17;
   const pt = pc < 3 ? 0 : pc < 13 ? (pc-3)/10 : 1;
@@ -384,6 +395,7 @@ export default function VirtualOffice() {
   })();
 
   const dispatch = (id) => {
+    setHasInteracted(true);
     if (stage!==0) return;
     const emp = EMPLOYEES.find(e=>e.id===id);
     if (!emp) return;
@@ -453,14 +465,57 @@ export default function VirtualOffice() {
       `}</style>
 
       {/* ── Header ── */}
-      <div className="text-center mb-4">
-        <div className="inline-flex items-center gap-2 bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-2 border border-[#0071e3]/20">
-          🏢 Busy Office
+      <div className="text-center mb-5">
+        <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3.5 py-1 rounded-full text-xs font-bold mb-2.5 border border-emerald-500/20 shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          Live Interactive Simulation • 8 AI Specialists on Duty
         </div>
-        <h2 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Meet Your Tool Team</h2>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xl mx-auto">
-          Click any cubicle to assign tasks. Watch the team brief with HR and launch your tools!
+        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          Meet Your Virtual Tool Team
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 max-w-xl mx-auto leading-relaxed">
+          Click any employee desk or use the quick dispatch buttons below to watch tasks execute in real time!
         </p>
+
+        {/* Quick Dispatch Action Pills */}
+        <div className="flex items-center justify-center flex-wrap gap-2 mt-4">
+          <button
+            type="button"
+            onClick={() => dispatch("no18")}
+            disabled={stage !== 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-blue-500/10 hover:bg-blue-500/20 text-[#0071e3] dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
+          >
+            <span>📄</span>
+            <span>Dispatch NO18 (PDF Merge)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => dispatch("aura")}
+            disabled={stage !== 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 border border-pink-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
+          >
+            <span>📝</span>
+            <span>Dispatch AURA (ATS Resume)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => dispatch("relax")}
+            disabled={stage !== 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
+          >
+            <span>🖼️</span>
+            <span>Dispatch RELAX (Compressor)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => dispatch("tony")}
+            disabled={stage !== 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
+          >
+            <span>🤖</span>
+            <span>Wake Up TONY (ULTRON AI)</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-[#0b0f17] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
@@ -818,6 +873,41 @@ export default function VirtualOffice() {
               <text x="20"  y="425" fontSize="22">🪴</text>
               <text x="784" y="425" fontSize="22">🪴</text>
               <text x="784" y="148" fontSize="18">🌴</text>
+
+              {/* AMBIENT ROTATING SPEECH BUBBLES */}
+              {stage === 0 && (
+                (() => {
+                  const bubbles = [
+                    { x: 225, y: 110, text: "PDF 0.2s mein merge! 📄", bg: "#dbeafe", border: "#3b82f6", color: "#1d4ed8" },
+                    { x: 340, y: 110, text: "Resume ATS 99% pass! 📝", bg: "#fce7f3", border: "#ec4899", color: "#be185d" },
+                    { x: 455, y: 110, text: "Image 82% compressed! 🖼️", bg: "#d1fae5", border: "#10b981", color: "#047857" },
+                    { x: 110, y: 148, text: "👈 Desk tap karke task do!", bg: "#fef3c7", border: "#f59e0b", color: "#b45309" },
+                    { x: 490, y: 280, text: "ULTRON Neural Engine ready! 🤖", bg: "#ede9fe", border: "#8b5cf6", color: "#6d28d9" },
+                  ];
+                  const b = bubbles[ambientBubble % bubbles.length];
+                  return (
+                    <g transform={`translate(${b.x}, ${b.y})`} style={{ pointerEvents: "none", transition: "all 0.3s ease" }}>
+                      <rect x="-74" y="-26" width="148" height="24" rx="7" fill={b.bg} stroke={b.border} strokeWidth="1.5" />
+                      <polygon points="-5,-2 5,-2 0,4" fill={b.border} />
+                      <text x="0" y="-10" fill={b.color} fontSize="8.5" fontWeight="bold" textAnchor="middle">
+                        {b.text}
+                      </text>
+                    </g>
+                  );
+                })()
+              )}
+
+              {/* FIRST-TIME BOUNCING CLICK POINTER OVER NO18 */}
+              {!hasInteracted && stage === 0 && (
+                <g transform="translate(225, 76)" style={{ pointerEvents: "none" }}>
+                  <animateTransform attributeName="transform" type="translate" values="225,76; 225,68; 225,76" dur="1.2s" repeatCount="indefinite" />
+                  <rect x="-44" y="-20" width="88" height="20" rx="6" fill="#0071e3" stroke="#ffffff" strokeWidth="1" />
+                  <polygon points="-5,0 5,0 0,6" fill="#0071e3" />
+                  <text x="0" y="-6.5" fill="#ffffff" fontSize="8.5" fontWeight="bold" textAnchor="middle">
+                    👆 Click to test
+                  </text>
+                </g>
+              )}
 
             </svg>
           </div>
