@@ -782,17 +782,81 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3D Laptop Showcase */}
-      <section id="showcase" className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-        <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-3 sm:mb-4">
-          See ToolBox at work
-        </h2>
-        <p className="reveal-up text-center text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 mb-8 sm:mb-12 max-w-xl mx-auto px-2">
-          A live look at our smart tools running end to end — right inside your browser.
-        </p>
+      {/* 3D Laptop Showcase - Apple Split Layout */}
+      <section id="showcase" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          
+          {/* Left Column: Typography, Highlights & Action */}
+          <div className="lg:col-span-5 text-center lg:text-left flex flex-col items-center lg:items-start space-y-4 sm:space-y-5">
+            <span className="inline-flex items-center gap-2 bg-blue-500/10 text-[#0071e3] text-xs font-bold px-3.5 py-1.5 rounded-full border border-blue-500/20">
+              <span className="w-2 h-2 rounded-full bg-[#0071e3] animate-pulse" />
+              Interactive Live Simulation
+            </span>
 
-        <div className="w-full max-w-4xl mx-auto">
-          <LaptopScene className="w-full" />
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white leading-[1.12]">
+              See ToolBox at work.
+              <br />
+              <span className="text-[#86868b] font-semibold text-2xl sm:text-3xl lg:text-4xl block mt-1">
+                Fast. Private. Autonomous.
+              </span>
+            </h2>
+
+            <p className="text-sm sm:text-base text-[#6e6e73] dark:text-white/60 leading-relaxed max-w-lg">
+              Watch our in-browser engine execute heavy everyday workflows in real time — from merging multi-page PDFs to generating 99% ATS resumes. Zero uploads, zero queueing.
+            </p>
+
+            {/* 3 Value Pillars */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5 pt-2 w-full max-w-md">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-sm text-left">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                  ⚡
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#1d1d1f] dark:text-white">0.01s Execution</div>
+                  <div className="text-[11px] text-[#86868b]">Zero server queuing or waiting</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-sm text-left">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-lg shrink-0">
+                  🔒
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#1d1d1f] dark:text-white">100% In-Browser Sandbox</div>
+                  <div className="text-[11px] text-[#86868b]">Files never leave your device</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-sm text-left">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center text-lg shrink-0">
+                  🎯
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#1d1d1f] dark:text-white">Auto Scene Rotation</div>
+                  <div className="text-[11px] text-[#86868b]">Simulating 5 core everyday tools</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Action Link */}
+            <div className="pt-2">
+              <a
+                href="#tools"
+                className="inline-flex items-center gap-2 bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 py-3 rounded-full text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-98"
+              >
+                <span>Explore All Tools</span>
+                <span>↓</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Right Column: Interactive 3D Laptop Simulation */}
+          <div className="lg:col-span-7 w-full flex items-center justify-center">
+            <div className="w-full max-w-[640px] lg:max-w-none">
+              <LaptopScene className="w-full" />
+            </div>
+          </div>
+
         </div>
       </section>
 
