@@ -10,6 +10,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const LaptopScene = dynamic(() => import("../components/LaptopScene"), { ssr: false });
 const VirtualOffice = dynamic(() => import("../components/VirtualOffice"), { ssr: false });
+const AppleStoryCarousel = dynamic(() => import("../components/AppleStoryCarousel"), { ssr: false });
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -875,6 +876,9 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Apple-Style Flagship Suites Story Carousel */}
+      <AppleStoryCarousel />
 
       {/* Upcoming Tools */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
