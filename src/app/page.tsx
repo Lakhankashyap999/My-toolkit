@@ -500,6 +500,25 @@ function formatStatValue(value, meta) {
   return `${value.toFixed(1)}${meta.suffix}`;
 }
 
+const faqs = [
+  {
+    q: "Is ToolBox really 100% free to use?",
+    a: "Yes! All essential daily tools like PDF Merge, Split, Image Compressor, Calculators, Resume Builder, and Exam Resizers are completely free with zero ads and no signup required.",
+  },
+  {
+    q: "Are my files, PDFs and photos safe?",
+    a: "100% safe. ToolBox runs entirely client-side inside your browser sandbox. Your files and photos are never uploaded to any remote server or stored in the cloud.",
+  },
+  {
+    q: "What is included in the ₹99 Pro Access Pass?",
+    a: "The Pro Pass unlocks our heavy industrial & professional workstations: the 14-tool IT & Developer Office Suite, CNC & VMC Diagnostics, CA & Tax Master Suite, Advocate & Legal Master Suite, and ULTRON 3.0 AI assistant for 30 days.",
+  },
+  {
+    q: "Do I need to install any software or extensions?",
+    a: "No installation required! Everything works instantly across all devices — desktop, laptop, tablet, and mobile browsers.",
+  },
+];
+
 export default function Home() {
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
@@ -628,12 +647,8 @@ export default function Home() {
       className={`${inter.variable} font-sans min-h-screen bg-[#fbfbfd] dark:bg-[#040404] text-[#1d1d1f] dark:text-white antialiased overflow-x-hidden`}
     >
       <style jsx global>{`
-        .js-ready .reveal-up {
-          visibility: hidden;
+        .reveal-up {
           will-change: transform, opacity;
-        }
-        .js-ready .reveal-up.gsap-reveal-visible {
-          visibility: visible;
         }
         @keyframes marquee {
           0% { transform: translateX(0%); }
@@ -704,22 +719,22 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden pt-6 sm:pt-10 pb-8 sm:pb-12 px-4">
+      <section className="relative overflow-hidden pt-12 sm:pt-20 pb-10 sm:pb-16 px-4">
         <div ref={blobsRef} className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-blue-400/20 via-indigo-400/10 to-purple-400/15 blur-3xl" />
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center">
-          <div ref={heroBadgeRef} className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-4 sm:mb-5 text-[#1d1d1f]/70 dark:text-white/70 border border-black/[0.04]">
+          <div ref={heroBadgeRef} className="inline-flex items-center gap-2 bg-[#f5f5f7] dark:bg-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium mb-6 sm:mb-8 text-[#1d1d1f]/70 dark:text-white/70 border border-black/[0.04]">
             <span className="w-1.5 h-1.5 bg-[#30d158] rounded-full" />
             Trusted by {userCount > 0 ? `${userCount.toLocaleString()}+` : "2,450+"} users worldwide
           </div>
-          <h1 ref={heroH1Ref} className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-4 sm:mb-5">
+          <h1 ref={heroH1Ref} className="text-[36px] sm:text-[68px] font-semibold tracking-tight leading-[1.08] sm:leading-[1.05] mb-5 sm:mb-6">
             All your daily tools.
             <br />
             <span className="text-[#0071e3]">In one place.</span>
           </h1>
-          <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2">
+          <p ref={heroPRef} className="text-[16px] sm:text-[21px] text-[#6e6e73] dark:text-white/60 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
             CNC &amp; VMC Industrial Diagnostics, CA Taxes, IPC to BNS Legal Converter, resize exam photos, edit PDFs, convert formats, generate invoices, and get instant AI help —
             supervised live by our virtual office team. 100% private, no software install required.
           </p>
@@ -733,7 +748,7 @@ export default function Home() {
           </div>
 
           {/* Live Edge Firewall & Security Shield Pill */}
-          <div className="mt-6 sm:mt-8 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full border border-black/5 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm">
+          <div className="mt-8 sm:mt-10 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full border border-black/5 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm">
             <span className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -1012,6 +1027,38 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section id="faq" className="max-w-3xl mx-auto px-4 py-14 sm:py-20">
+        <h2 className="text-[28px] sm:text-5xl font-semibold tracking-tight text-center mb-10 sm:mb-12">
+          Frequently Asked Questions
+        </h2>
+        <div className="space-y-3">
+          {faqs.map((faq, i) => (
+            <details key={i} className="group bg-[#f5f5f7] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 rounded-2xl p-5 sm:p-6">
+              <summary className="flex justify-between items-center gap-4 cursor-pointer font-medium text-[14px] sm:text-[15px] tracking-tight list-none">
+                {faq.q}
+                <span className="text-[#6e6e73] dark:text-white/50 shrink-0 text-lg group-open:rotate-45 transition-transform">+</span>
+              </summary>
+              <p className="mt-3 text-[#6e6e73] dark:text-white/60 text-[13px] sm:text-[14px] leading-relaxed">{faq.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="max-w-6xl mx-auto px-4 pb-12">
+        <div className="bg-gradient-to-br from-[#0071e3] to-[#5856d6] rounded-[28px] sm:rounded-[40px] py-12 sm:py-16 px-6 text-center text-white shadow-xl shadow-blue-500/20">
+          <h2 className="text-[26px] sm:text-5xl font-semibold tracking-tight mb-4">Ready to simplify your daily tasks?</h2>
+          <p className="text-[15px] sm:text-[17px] opacity-90 mb-8">Join thousands of happy users. 100% private, no signup required.</p>
+          <a
+            href="#tools"
+            className="inline-block bg-white text-[#0071e3] px-7 sm:px-8 py-3 sm:py-3.5 rounded-full font-semibold text-[14px] sm:text-[15px] hover:bg-white/90 transition-colors shadow-lg"
+          >
+            Start Using Free →
+          </a>
+        </div>
+      </section>
+
       {/* Ultra-Clean Founder & Signature Footer */}
       <footer className="border-t border-black/[0.06] dark:border-white/[0.08] py-16 bg-[#fafafa] dark:bg-[#06070a] relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -1079,6 +1126,11 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>All 29+ Tools Live &amp; Operational</span>
+            </div>
+            <div className="flex items-center gap-4 font-medium">
+              <Link href="/privacy" className="hover:text-[#0071e3] transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-[#0071e3] transition-colors">Terms</Link>
+              <Link href="/contact" className="hover:text-[#0071e3] transition-colors">Contact</Link>
             </div>
             <p className="font-medium text-center sm:text-right">
               © {new Date().getFullYear()} ToolBox Platform • All rights reserved.

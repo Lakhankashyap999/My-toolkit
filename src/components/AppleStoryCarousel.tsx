@@ -142,18 +142,21 @@ export default function AppleStoryCarousel() {
               />
 
               {/* Bottom Subtle Gradient for Tap Feedback & Button Protection */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
               {/* Floating Bottom Launch Button (Apple Style) */}
-              <div className="relative z-10 p-5 sm:p-6 flex items-center justify-between">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-[11px] font-bold text-white/90 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+              <div className="relative z-10 p-5 sm:p-6 flex items-end justify-between">
+                <div>
+                  <span className="text-[11px] font-bold text-white/95 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 inline-block mb-1.5 shadow-sm">
                     {card.badge}
                   </span>
+                  <h3 className="text-white font-bold text-base sm:text-lg leading-tight drop-shadow-md">
+                    {card.title}
+                  </h3>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-slate-900 px-4 py-2 rounded-full shadow-lg hover:bg-white/90 transition-colors">
-                    Explore Suite
+                <div className="shrink-0 ml-3">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-slate-900 px-3.5 py-2 rounded-full shadow-lg hover:bg-white/90 transition-colors">
+                    Explore
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                     </svg>
