@@ -39,9 +39,28 @@ const TOOL_CATEGORIES = [
   "Media & Audio",
   "Resume & HR",
   "AI Assistant",
+  "Education & Languages",
 ];
 
 const tools = [
+  {
+    id: 103,
+    name: "DeutschReady — AI German Learning Platform",
+    category: "Education & Languages",
+    icon: "🇩🇪",
+    gradient: "from-rose-500 via-amber-500 to-indigo-600",
+    glow: "rgba(244,63,94,0.45)",
+    badge: "🇩🇪 NEW • A0 TO B2 AI PLATFORM",
+    price: "FREE",
+    desc: "AI-Powered German Platform for Indian Students & Job Seekers: 10-Level Progressive Doubt Ladder (❓ Samajh nahi aaya), 0.75x Slow Speaking Lab, Der/Die/Das Swiper & Real Germany Life Simulators.",
+    features: [
+      "A0 → B2 Structured Curriculum with Hindi Bridge",
+      "10-Level Progressive AI Doubt Solver Ladder",
+      "0.75x Slow Native German Audio & Speaking Lab",
+      "Germany Simulators: Bürgeramt, Bahn, Arzt, Supermarkt",
+    ],
+    path: "/deutschready",
+  },
   {
     id: 102,
     name: "IT & Developer Daily Office Suite",
