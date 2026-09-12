@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { UiLanguage, UserProgressState, UserActivity, ActiveSession } from '@/types';
+import { supabase } from '@/lib/supabaseClient';
 
 const STORAGE_KEY = 'deutschready_user_progress_v1';
-const SESSION_VALID_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 const DEFAULT_STATE: UserProgressState = {
   completedLessons: [], // Empty for fresh users!
@@ -22,71 +22,115 @@ const DEFAULT_STATE: UserProgressState = {
   activityHistory: [],
 };
 
+// Helper to reliably find any existing logged-in email from Toolbox
+export function findToolboxEmail(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const email =
+      localStorage.getItem('toolbox_email') ||
+      sessionStorage.getItem('toolbox_email') ||
+      localStorage.getItem('user_email');
+    if (email && email.trim() && email.includes('@')) {
+      return email.trim().toLowerCase();
+    }
+  } catch {}
+  return undefined;
+}
+
 export function useUserProgress() {
-  const [progress, setProgress] = useState<UserProgressState>(DEFAULT_STATE);
+  const [progress, setProgress] = useState<UserProgressState>(() => {
+    // Check synchronously during initialization
+    const existingEmail = findToolboxEmail();
+    return {
+      ...DEFAULT_STATE,
+      userEmail: existingEmail,
+    };
+  });
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Sync with toolbox_email and stored progress on mount
   useEffect(() => {
-    try {
-      // 1. Check toolbox auth
-      const storedToolboxEmail = localStorage.getItem('toolbox_email');
-      const loginTime = localStorage.getItem('toolbox_login_time');
-      let validEmail: string | undefined = undefined;
-
-      if (storedToolboxEmail) {
-        if (loginTime) {
-          const timeDiff = Date.now() - parseInt(loginTime, 10);
-          if (timeDiff < SESSION_VALID_MS) {
-            validEmail = storedToolboxEmail;
+    const loadDataForEmail = (email?: string) => {
+      try {
+        let initialData: Partial<UserProgressState> | null = null;
+        if (email) {
+          const emailSaved = localStorage.getItem(`deutschready_progress_${email.toLowerCase()}`);
+          if (emailSaved) {
+            try {
+              initialData = JSON.parse(emailSaved);
+            } catch {}
           }
-        } else {
-          validEmail = storedToolboxEmail;
         }
-      }
 
-      // 2. Load email-specific progress if available, otherwise general storage
-      let initialData: Partial<UserProgressState> | null = null;
-      if (validEmail) {
-        const emailSaved = localStorage.getItem(`deutschready_progress_${validEmail.toLowerCase()}`);
-        if (emailSaved) {
-          initialData = JSON.parse(emailSaved);
+        if (!initialData) {
+          const generalSaved = localStorage.getItem(STORAGE_KEY);
+          if (generalSaved) {
+            try {
+              initialData = JSON.parse(generalSaved);
+            } catch {}
+          }
         }
-      }
 
-      if (!initialData) {
-        const generalSaved = localStorage.getItem(STORAGE_KEY);
-        if (generalSaved) {
-          initialData = JSON.parse(generalSaved);
+        setProgress((prev) => {
+          const finalEmail = email || initialData?.userEmail || prev.userEmail || findToolboxEmail();
+          return {
+            ...prev,
+            ...(initialData || {}),
+            userEmail: finalEmail,
+          };
+        });
+      } catch (e) {
+        console.warn('Could not read user progress from localStorage', e);
+      }
+      setIsLoaded(true);
+    };
+
+    // 1. Check immediate synchronous email from Toolbox
+    const activeEmail = findToolboxEmail();
+    loadDataForEmail(activeEmail);
+
+    // 2. Listen to storage changes across tabs (e.g. if user logged into /account in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'toolbox_email' && e.newValue && e.newValue.includes('@')) {
+        const clean = e.newValue.trim().toLowerCase();
+        loadDataForEmail(clean);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // 3. Check Supabase session asynchronously in case user logged in via Google OAuth
+    try {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        const sbEmail = session?.user?.email;
+        if (sbEmail && sbEmail.includes('@')) {
+          const clean = sbEmail.trim().toLowerCase();
+          try {
+            localStorage.setItem('toolbox_email', clean);
+          } catch {}
+          loadDataForEmail(clean);
         }
-      }
+      }).catch(() => {});
+    } catch {}
 
-      if (initialData) {
-        setProgress((prev) => ({
-          ...prev,
-          ...initialData,
-          userEmail: validEmail || initialData?.userEmail,
-        }));
-      } else if (validEmail) {
-        setProgress((prev) => ({
-          ...prev,
-          userEmail: validEmail,
-        }));
-      }
-    } catch (e) {
-      console.warn('Could not read user progress from localStorage', e);
-    }
-    setIsLoaded(true);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const saveState = useCallback((newState: UserProgressState) => {
-    setProgress(newState);
+    const activeEmail = newState.userEmail || findToolboxEmail();
+    const toSave: UserProgressState = {
+      ...newState,
+      userEmail: activeEmail,
+    };
+
+    setProgress(toSave);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-      if (newState.userEmail) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      if (activeEmail) {
         localStorage.setItem(
-          `deutschready_progress_${newState.userEmail.toLowerCase()}`,
-          JSON.stringify(newState)
+          `deutschready_progress_${activeEmail.toLowerCase()}`,
+          JSON.stringify(toSave)
         );
       }
     } catch (e) {
@@ -107,6 +151,8 @@ export function useUserProgress() {
     }) => {
       setProgress((prev) => {
         const now = Date.now();
+        const activeEmail = prev.userEmail || findToolboxEmail();
+
         const activeSession: ActiveSession = {
           type: act.type,
           id: act.id,
@@ -127,7 +173,7 @@ export function useUserProgress() {
           timestamp: now,
         };
 
-        // Prepend to history, filter duplicates in top 3, max 40 items
+        // Prepend to history, filter duplicates in top 2, max 40 items
         const filteredHistory = (prev.activityHistory || []).filter(
           (h, idx) => !(h.path === act.path && idx < 2)
         );
@@ -135,15 +181,16 @@ export function useUserProgress() {
 
         const updated: UserProgressState = {
           ...prev,
+          userEmail: activeEmail,
           lastActiveSession: activeSession,
           activityHistory: updatedHistory,
         };
 
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-          if (updated.userEmail) {
+          if (activeEmail) {
             localStorage.setItem(
-              `deutschready_progress_${updated.userEmail.toLowerCase()}`,
+              `deutschready_progress_${activeEmail.toLowerCase()}`,
               JSON.stringify(updated)
             );
           }
@@ -167,7 +214,10 @@ export function useUserProgress() {
   const setUserEmail = useCallback(
     (email: string) => {
       const clean = email.trim().toLowerCase();
-      // Check if this email already had previous saved progress
+      try {
+        localStorage.setItem('toolbox_email', clean);
+      } catch {}
+
       let existingEmailProgress: Partial<UserProgressState> | null = null;
       try {
         const saved = localStorage.getItem(`deutschready_progress_${clean}`);
@@ -190,6 +240,7 @@ export function useUserProgress() {
     try {
       localStorage.removeItem('toolbox_email');
       localStorage.removeItem('toolbox_login_time');
+      supabase.auth.signOut().catch(() => {});
     } catch {}
     saveState({
       ...progress,

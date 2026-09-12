@@ -144,7 +144,10 @@ export default function DeutschNavbar() {
               {progress.userEmail ? (
                 <>
                   <UserCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span className="hidden xl:inline max-w-[90px] truncate">{progress.userEmail.split('@')[0]}</span>
+                  <span className="hidden sm:inline max-w-[120px] truncate text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                    {progress.userEmail.split('@')[0]}
+                  </span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
                 </>
               ) : (
                 <>
