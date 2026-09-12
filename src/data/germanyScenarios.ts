@@ -3,203 +3,319 @@ import { GermanyScenario } from '@/types';
 export const GERMANY_SCENARIOS: GermanyScenario[] = [
   {
     id: 'sc-1',
-    title: 'Bürgeramt: Die Anmeldung (City Registration)',
-    titleHindi: 'बर्गरअamt: शहर में पता रजिस्टर कराना',
+    title: 'Bürgeramt Anmeldung (City Registration)',
+    titleHindi: 'नगर निगम: पता पंजीकरण (Anmeldung)',
     category: 'anmeldung',
     level: 'A1',
     locationName: 'Bürgeramt Mitte, Berlin',
     culturalTips: [
-      'Germany mein land hone ke 14 din ke andar Anmeldung karana legal requirement hai.',
-      'Officer se hamesha "Sie" bol kar baat karein, galti se bhi "du" na bolein.',
-      'Saath mein "Wohnungsgeberbestätigung" (landlord ka certificate) aur Passport hona zaroori hai.'
+      'Germany aane ke 14 din ke andar Anmeldung karwana kanoonan zaroori hai.',
+      'Landlord se "Wohnungsgeberbestätigung" form pehle se sign karwa kar le jayein.',
+      'Officer ke aage hamesha "Sie" (Formal) use karein, "Du" bilkul nahi.'
     ],
     steps: [
       {
         id: 's1-step1',
-        speaker: 'Herr Müller',
-        role: 'Officer',
-        germanText: 'Guten Tag! Sie haben einen Termin für die Anmeldung?',
-        hindiTranslation: 'नमस्ते! क्या आपका पता पंजीकरण के लिए अपॉइंटमेंट है?',
-        englishTranslation: 'Good day! Do you have an appointment for registration?',
-        culturalNote: 'Appointments (Termin) are strictly verified at the entrance.',
-        userPrompt: 'Officer ko bataiye ki aapka 10:15 par appointment hai aur apna naam bolein:',
-        userPromptHindi: 'अधिकारी को बताएं कि आपका 10:15 का अपॉइंटमेंट है और अपना नाम बताएं:',
+        speaker: 'Herr Becker',
+        role: 'Beamter (Officer)',
+        germanText: 'Guten Tag. Bitte nehmen Sie Platz. Was kann ich für Sie tun?',
+        hindiTranslation: 'नमस्ते। कृपया बैठिए। मैं आपके लिए क्या कर सकता हूँ?',
+        englishTranslation: 'Good day. Please take a seat. What can I do for you?',
+        culturalNote: 'Formal reception. Eye contact banaye rakhein.',
+        userPrompt: 'State that you are here to register your new residential address.',
+        userPromptHindi: 'Officer ko bataiye ki aap apna naya address register karwane aaye hain:',
         options: [
           {
-            german: 'Guten Tag! Ja, mein Name ist Lakhan, Termin um 10:15 Uhr.',
-            hindi: 'नमस्ते! हाँ, मेरा नाम लाखन है, 10:15 बजे अपॉइंटमेंट है।',
+            german: 'Guten Tag. Ich möchte meinen Wohnsitz anmelden.',
+            hindi: 'नमस्ते। मैं अपना पता रजिस्टर करवाना चाहता हूँ।',
             isCorrect: true,
-            feedback: 'Perfect! Respectful, clear, and gives the required details.',
-            formalityCheck: 'polite_sie'
+            feedback: 'Sehr gut! "Ich möchte anmelden" polite aur perfectly formal hai.'
           },
           {
-            german: 'Hallo Bro! Ich bin hier für Anmeldung.',
-            hindi: 'हैलो ब्रो! मैं यहाँ रजिस्ट्रेशन के लिए हूँ।',
+            german: 'Hallo! Gib mir Anmeldung!',
+            hindi: 'हेलो! मुझे रजिस्ट्रेशन दे दो!',
             isCorrect: false,
-            feedback: 'Achtung! German government offices mein "Bro" ya casual greetings bilkul prohibited hain.',
-            formalityCheck: 'rude'
-          },
-          {
-            german: 'Haben Sie Zeit für mich?',
-            hindi: 'क्या आपके पास मेरे लिए समय है?',
-            isCorrect: false,
-            feedback: 'Bina Termin ke Bürgeramt mein entry nahi milti. Appointment mention karna zaroori hai.',
-            formalityCheck: 'casual_du'
+            feedback: 'Galat! Yeh rude aur informal lagta hai. Always use "Guten Tag" and "Ich möchte...".'
           }
         ]
       },
       {
         id: 's1-step2',
-        speaker: 'Herr Müller',
-        role: 'Officer',
-        germanText: 'Haben Sie Ihren Pass und die Wohnungsgeberbestätigung dabei?',
-        hindiTranslation: 'क्या आपके पास अपना पासपोर्ट और मकान मालिक का पुष्टि-पत्र है?',
+        speaker: 'Herr Becker',
+        role: 'Beamter (Officer)',
+        germanText: 'Haben Sie Ihren Reisepass und die Wohnungsgeberbestätigung dabei?',
+        hindiTranslation: 'क्या आपके पास आपका पासपोर्ट और मकान मालिक का सर्टिफिकेट है?',
         englishTranslation: 'Do you have your passport and landlord confirmation with you?',
-        culturalNote: 'Wohnungsgeberbestätigung is a mandatory signed document from your landlord.',
-        userPrompt: 'Aapke paas dono documents hain, documents dete hue bolein:',
-        userPromptHindi: 'आपके पास दोनों कागज़ हैं, देते हुए क्या कहेंगे:',
+        culturalNote: 'Bina landlord signature ke registration reject ho jata hai.',
+        userPrompt: 'Say that you have all documents ready and hand them over.',
+        userPromptHindi: 'Kahiye ki aapke paas sabhi documents hain aur unhe handover karein:',
         options: [
           {
-            german: 'Ja, bitte sehr. Hier sind mein Reisepass und das Dokument vom Vermieter.',
-            hindi: 'हाँ, यह लीजिये। यहाँ मेरा पासपोर्ट और मकान मालिक का दस्तावेज़ है।',
+            german: 'Ja, hier sind alle Unterlagen. Bitte sehr.',
+            hindi: 'हाँ, यहाँ सभी दस्तावेज़ हैं। यह लीजिए।',
             isCorrect: true,
-            feedback: 'Ausgezeichnet! "Bitte sehr" bol kar documents dena bahut polite mana jata hai.',
-            formalityCheck: 'polite_sie'
+            feedback: 'Ausgezeichnet! "Bitte sehr" bolkar documents dena respectful German etiquette hai.'
           },
           {
-            german: 'Nein, brauche ich das?',
-            hindi: 'नहीं, क्या इसकी ज़रूरत है?',
+            german: 'Nein, Vermieter hat keine Lust.',
+            hindi: 'नहीं, मकान मालिक का मन नहीं था।',
             isCorrect: false,
-            feedback: 'Is document ke bina Anmeldung reject ho jayegi!',
-            formalityCheck: 'casual_du'
+            feedback: 'Bina documents ke Anmeldung possible nahi hai.'
           }
         ]
       }
     ]
   },
+
   {
     id: 'sc-2',
-    title: 'Deutsche Bahn: Gleiswechsel & Verspätung',
-    titleHindi: 'ट्रेन स्टेशन: देरी और प्लेटफॉर्म बदलना',
+    title: 'Deutsche Bahn — Train Delay & Platform Change',
+    titleHindi: 'ट्रेन स्टेशन: देरी और प्लेटफॉर्म परिवर्तन',
     category: 'deutsche_bahn',
     level: 'A1',
-    locationName: 'Frankfurt (Main) Hauptbahnhof',
+    locationName: 'Frankfurt Hauptbahnhof',
     culturalTips: [
-      'Germany mein Deutsche Bahn trains mein delay (Verspätung) aam baat hai.',
-      'DB Navigator App hamesha phone mein install rakhein live updates ke liye.',
-      'Announcement dhyan se sunein: "Heute von Gleis..." ka matlab platform badal gaya hai!'
+      'DB trains mein delay (Verspätung) aam baat hai. DB Navigator app hamesha check karein.',
+      'Gleiswechsel ka matlab hota hai platform badalna. Announcement dhyan se sunein.'
     ],
     steps: [
       {
         id: 's2-step1',
-        speaker: 'Lautsprecher-Ansage',
-        role: 'Conductor',
-        germanText: 'Achtung an Gleis 4: ICE 573 nach München hat 25 Minuten Verspätung. Heute von Gleis 9!',
-        hindiTranslation: 'प्लेटफॉर्म 4 पर ध्यान दें: म्यूनिख जाने वाली ICE 573 ट्रेन 25 मिनट लेट है। आज प्लेटफॉर्म 9 से छूटेगी!',
-        englishTranslation: 'Attention on platform 4: ICE 573 to Munich is delayed by 25 minutes. Today from platform 9!',
-        culturalNote: 'Platform change is announced quickly. Watch the electronic boards.',
-        userPrompt: 'DB Info counter par officer se confirm karein ki nayi train kahan se jayegi:',
-        userPromptHindi: 'इन्फो काउंटर पर पूछें कि क्या ट्रेन सच में प्लेटफॉर्म 9 से जाएगी:',
+        speaker: 'Bahnhofsdurchsage',
+        role: 'Lautsprecher (Announcement)',
+        germanText: 'Achtung an Gleis 4: Der ICE 578 nach München hat heute circa 25 Minuten Verspätung.',
+        hindiTranslation: 'प्लेटफॉर्म 4 पर ध्यान दें: म्यूनिख जाने वाली ICE 578 आज लगभग 25 मिनट लेट है।',
+        englishTranslation: 'Attention at Platform 4: ICE 578 to Munich has approx. 25 minutes delay today.',
+        culturalNote: '"Verspätung" German train system ka sabse common word hai!',
+        userPrompt: 'Ask the DB service counter if you will catch your connecting train.',
+        userPromptHindi: 'DB counter par jaakar poochhein ki kya aapki connecting train chhut jayegi:',
         options: [
           {
-            german: 'Entschuldigung, fährt der Zug nach München wirklich von Gleis 9?',
-            hindi: 'माफ़ कीजिये, क्या म्यूनिख जाने वाली ट्रेन सच में प्लेटफॉर्म 9 से जा रही है?',
+            german: 'Entschuldigung, erreiche ich trotzdem meinen Anschlusszug?',
+            hindi: 'माफ़ कीजिए, क्या फिर भी मुझे मेरी कनेक्टिंग ट्रेन मिल पाएगी?',
             isCorrect: true,
-            feedback: 'Sehr gut! "Entschuldigung" se start karna polite German etiquette hai.',
-            formalityCheck: 'polite_sie'
+            feedback: 'Perfekt! "Anschlusszug" connecting train ke liye technical term hai.'
           },
           {
-            german: 'Warum ist der Zug so spät, man?!',
-            hindi: 'ट्रेन इतनी लेट क्यों है, यार?!',
+            german: 'Zug kaputt? Warum so spät?',
+            hindi: 'ट्रेन खराब है? इतना लेट क्यों?',
             isCorrect: false,
-            feedback: 'Officer par gussa hone se help nahi milegi. Polite rehna zaroori hai.',
-            formalityCheck: 'rude'
+            feedback: 'Unprofessional sound karta hai. Service desk par politely solution poochhein.'
+          }
+        ]
+      },
+      {
+        id: 's2-step2',
+        speaker: 'DB Mitarbeiter',
+        role: 'Service Desk',
+        germanText: 'Wahrscheinlich nicht. Aber Ihre Zugbindung ist aufgehoben. Sie können jeden nächsten Zug nehmen.',
+        hindiTranslation: 'शायद नहीं। लेकिन आपकी ट्रेन बाउंड्री हटा दी गई है। आप कोई भी अगली ट्रेन ले सकते हैं।',
+        englishTranslation: 'Probably not. But your ticket restriction is lifted. You can take any next train.',
+        culturalNote: '20+ min delay hone par aap bina extra charge doosri train le sakte hain.',
+        userPrompt: 'Thank the officer and ask from which track the next train departs.',
+        userPromptHindi: 'Dhanyavaad karein aur agle platform ka number poochhein:',
+        options: [
+          {
+            german: 'Vielen Dank! Von welchem Gleis fährt der nächste Zug ab?',
+            hindi: 'बहुत-बहुत धन्यवाद! अगली ट्रेन किस प्लेटफॉर्म से जाएगी?',
+            isCorrect: true,
+            feedback: 'Richtig! "Von welchem Gleis" platform poochne ka sahi tareeqa hai.'
+          },
+          {
+            german: 'Ok, bye.',
+            hindi: 'ठीक है, बाय।',
+            isCorrect: false,
+            feedback: 'German etiquette mein complete sentence aur "Vielen Dank" bolna zaroori hai.'
           }
         ]
       }
     ]
   },
+
   {
     id: 'sc-3',
-    title: 'Im Supermarkt: Die Kasse (Aldi / Lidl Checkout)',
-    titleHindi: 'सुपरमार्केट: कैश काउंटर पर तेज़ बातचीत',
+    title: 'Supermarkt Kasse & Pfand Return',
+    titleHindi: 'सुपरमार्केट: बिलिंग और बॉटल रीसायकल (Pfand)',
     category: 'supermarkt',
-    level: 'A0',
-    locationName: 'Rewe / Lidl, München',
+    level: 'A1',
+    locationName: 'Aldi Süd / Rewe, München',
     culturalTips: [
-      'German cashiers world ke fastest hote hain! Saaman turant bag mein daalna hota hai.',
-      'Plastiktüte (carry bag) free nahi hota, counter se khud utha kar khareedna padta hai.',
-      '"Pfand" bottles (beer/water bottles) machine mein daal kar voucher milta hai.'
+      'Germany mein plastic bottles aur cans wapas karke 25 cent "Pfand" refund milta hai.',
+      'Cashier scanning bahut tez hoti hai! Apne bags ready rakhein aur saaman jaldi pack karein.'
     ],
     steps: [
       {
         id: 's3-step1',
         speaker: 'Kassiererin',
-        role: 'Cashier',
-        germanText: 'Hallo! Brauchen Sie den Kassenbon? Zahlen Sie mit Karte oder Bar?',
-        hindiTranslation: 'नमस्ते! क्या आपको रसीद चाहिए? कार्ड से भुगतान करेंगे या नकद?',
-        englishTranslation: 'Hello! Do you need the receipt? Paying by card or cash?',
-        culturalNote: 'Cashiers routinely ask about receipt and payment method in one breath.',
-        userPrompt: 'Aap card se payment karna chahte hain aur receipt nahi chahiye. Kaise kahenge?',
-        userPromptHindi: 'आप कार्ड से पेमेंट करना चाहते हैं और रसीद नहीं चाहिए:',
+        role: 'Kassiererin (Cashier)',
+        germanText: 'Hallo! Haben Sie eine Payback-Karte? Brauchen Sie eine Tüte?',
+        hindiTranslation: 'नमस्ते! क्या आपके पास पेबैक कार्ड है? क्या आपको बैग चाहिए?',
+        englishTranslation: 'Hello! Do you have a loyalty card? Do you need a bag?',
+        culturalNote: 'Plastic bags free nahi hote, 20-30 cents cost karte hain.',
+        userPrompt: 'Say that you do not need a bag, and you want to pay by card.',
+        userPromptHindi: 'Kahiye ki aapko bag nahi chahiye, aur aap card se payment karenge:',
         options: [
           {
-            german: 'Mit Karte, bitte. Den Bon brauche ich nicht. Danke!',
-            hindi: 'कार्ड से, कृपया। रसीद की ज़रूरत नहीं है। धन्यवाद!',
+            german: 'Nein danke, ich habe eine eigene Tasche. Ich bezahle mit Karte, bitte.',
+            hindi: 'नहीं धन्यवाद, मेरे पास अपना बैग है। मैं कार्ड से भुगतान करूँगा।',
             isCorrect: true,
-            feedback: 'Wunderbar! Fast, natural German supermarkt conversation.',
-            formalityCheck: 'polite_sie'
+            feedback: 'Super! Eco-friendly aur clear communication.'
           },
           {
-            german: 'Ich habe kein Geld, tschüss!',
-            hindi: 'मेरे पास पैसा नहीं है, बाय!',
+            german: 'Geldkarte hier nimm.',
+            hindi: 'कार्ड यहाँ लो।',
             isCorrect: false,
-            feedback: 'Supermarket checkout par ye bilkul nahi bolna chahiye!',
-            formalityCheck: 'rude'
+            feedback: 'Grammar galat hai aur rude lagta hai. "Mit Karte, bitte" standard phrase hai.'
           }
         ]
       }
     ]
   },
+
   {
     id: 'sc-4',
-    title: 'Beim Arzt: Krankschreibung (Clinic & Sick Leave)',
-    titleHindi: 'डॉक्टर क्लिनिक: बीमारी बताना और मेडिकल लीव',
+    title: 'Beim Arzt (Doctor Appointment & Sick Leave)',
+    titleHindi: 'डॉक्टर क्लिनिक: लक्षण बताना और सिक लीव (AU)',
     category: 'arzt',
-    level: 'A1',
-    locationName: 'Hausarztpraxis Dr. Schmidt',
+    level: 'A2',
+    locationName: 'Hausarztpraxis Dr. Weber, Stuttgart',
     culturalTips: [
-      'Job ya university mein agar bimar ho jayein, to 3 din ke andar "AU-Bescheinigung" (Krankschreibung) submit karni hoti hai.',
-      'German clinics mein appointment (Termin) zaroori hota hai, emergency mein subah 8 baje "Akutsprechstunde" mein jana hota hai.'
+      'Bina appointment ke sirf acute emergency mein walk-in allowed hota hai.',
+      'Boss ko dikhane ke liye "Arbeitsunfähigkeitsbescheinigung" (AU) doctor se lena zaroori hai.'
     ],
     steps: [
       {
         id: 's4-step1',
-        speaker: 'Dr. Schmidt',
-        role: 'Doctor',
-        germanText: 'Guten Tag! Was fehlt Ihnen denn? Welche Symptome haben Sie?',
-        hindiTranslation: 'नमस्ते! आपको क्या परेशानी है? क्या लक्षण हैं?',
-        englishTranslation: 'Good day! What seems to be the problem? What symptoms do you have?',
-        culturalNote: '"Was fehlt Ihnen?" is the classic German doctor question for "What is bothering you?".',
-        userPrompt: 'Doctor ko bataiye ki kal raat se sir dard aur bukhar hai:',
-        userPromptHindi: 'डॉक्टर को बताएं कि कल रात से सिरदर्द और बुखार है:',
+        speaker: 'Dr. Weber',
+        role: 'Hausarzt (Doctor)',
+        germanText: 'Guten Tag Herr Sharma. Was fehlt Ihnen denn? Welche Beschwerden haben Sie?',
+        hindiTranslation: 'नमस्ते मिस्टर शर्मा। आपको क्या तकलीफ़ है? क्या लक्षण हैं?',
+        englishTranslation: 'Good day Mr. Sharma. What seems to be the problem? What symptoms do you have?',
+        culturalNote: 'Doctor ko apne symptoms exact din ke sath batayein.',
+        userPrompt: 'Explain that you have had a severe fever and sore throat for two days.',
+        userPromptHindi: 'Batayein ki do din se tez bukhar aur gale mein dard hai:',
         options: [
           {
-            german: 'Ich habe seit gestern Kopfschmerzen und hohes Fieber.',
-            hindi: 'मुझे कल से सिरदर्द और तेज़ बुखार है।',
+            german: 'Ich habe seit zwei Tagen hohes Fieber und starke Halsschmerzen.',
+            hindi: 'मुझे दो दिनों से तेज़ बुखार और गले में बहुत दर्द है।',
             isCorrect: true,
-            feedback: 'Klasse! "seit gestern" (since yesterday) + "Kopfschmerzen" (headache) is textbook medical German.',
-            formalityCheck: 'polite_sie'
+            feedback: 'Sehr gut! "Seit zwei Tagen" + Dativ medical consultation ka perfect sentence hai.'
           },
           {
-            german: 'Mein Körper ist kaputt.',
-            hindi: 'मेरा शरीर टूट चुका है।',
+            german: 'Mein Hals tot und warm.',
+            hindi: 'मेरा गला खत्म और गरम।',
             isCorrect: false,
-            feedback: '"Kaputt" machines ke liye use hota hai, bimari ke liye specific words use karein (Kopfschmerzen, Fieber).',
-            formalityCheck: 'casual_du'
+            feedback: 'Incorrect German. Use "Halsschmerzen" and "Fieber".'
+          }
+        ]
+      },
+      {
+        id: 's4-step2',
+        speaker: 'Dr. Weber',
+        role: 'Hausarzt (Doctor)',
+        germanText: 'Sie haben eine Mandelentzündung. Ich schreibe Sie für vier Tage krank. Brauchen Sie eine Bescheinigung für den Arbeitgeber?',
+        hindiTranslation: 'आपको टॉन्सिल इन्फेक्शन है। मैं आपको 4 दिन की सिक लीव दे रहा हूँ। क्या एम्प्लॉयर के लिए सर्टिफिकेट चाहिए?',
+        englishTranslation: 'You have tonsillitis. I will sign you off sick for 4 days. Do you need a certificate for the employer?',
+        userPrompt: 'Confirm that you need the sick certificate for your employer and ask about medication.',
+        userPromptHindi: 'Kahiye ki haan employer ke liye certificate chahiye aur dawa ke baare mein poochhein:',
+        options: [
+          {
+            german: 'Ja bitte, ich brauche die Arbeitsunfähigkeitsbescheinigung. Und brauche ich ein Rezept für die Apotheke?',
+            hindi: 'हाँ कृपया, मुझे सिक लीव सर्टिफिकेट चाहिए। और क्या मुझे फार्मेसी के लिए प्रिस्क्रिप्शन की ज़रूरत है?',
+            isCorrect: true,
+            feedback: 'Hervorragend! Professional terminology aur practical doubt.'
+          },
+          {
+            german: 'Gib mir Papier für Chef.',
+            hindi: 'बॉस के लिए कागज़ दो।',
+            isCorrect: false,
+            feedback: 'Disrespectful tone. Doctor se formal vocabulary mein request karein.'
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'sc-5',
+    title: 'Wohnungssuche (Apartment Viewing & Landlord)',
+    titleHindi: 'मकान ढूंढना: अपार्टमेंट देखना और मकान मालिक से बातचीत',
+    category: 'wohnung',
+    level: 'A2',
+    locationName: 'Wohnungsbesichtigung, Hamburg',
+    culturalTips: [
+      'Germany mein housing market bahut competitive hai. SCHUFA aur salary slips pehle se ready rakhein.',
+      'Apartment viewing (Besichtigung) par time se 5 minute pehle pahuchein.'
+    ],
+    steps: [
+      {
+        id: 's5-step1',
+        speaker: 'Frau Schneider',
+        role: 'Vermieterin (Landlord)',
+        germanText: 'Guten Tag! Schön, dass Sie pünktlich sind. Wie gefällt Ihnen die Wohnung?',
+        hindiTranslation: 'नमस्ते! अच्छा लगा कि आप समय पर आए। अपार्टमेंट आपको कैसा लगा?',
+        englishTranslation: 'Good day! Nice that you are on time. How do you like the flat?',
+        culturalNote: 'Landlord se first impression par hi deal depend karti hai.',
+        userPrompt: 'Express genuine interest and ask if heating is included in the utility costs.',
+        userPromptHindi: 'Kahiye ki apartment bahut pasand aaya aur poochhein ki kya heating charges include hain:',
+        options: [
+          {
+            german: 'Die Wohnung ist sehr hell und gefällt mir gut! Sind die Heizkosten in den Nebenkosten enthalten?',
+            hindi: 'अपार्टमेंट बहुत हवादार और अच्छा लगा! क्या हीटिंग के खर्चे उपयोगिता बिल में शामिल हैं?',
+            isCorrect: true,
+            feedback: 'Perfekt! Politeness + sharp practical awareness.'
+          },
+          {
+            german: 'Ganz okay. Gib mir Schlüssel sofort.',
+            hindi: 'ठीक-ठाक है। चाबी तुरंत दो।',
+            isCorrect: false,
+            feedback: 'Landlords aise attitude se instantly reject kar dete hain.'
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'sc-6',
+    title: 'Vorstellungsgespräch (Workplace & Ausbildung Interview)',
+    titleHindi: 'जॉब इंटरव्यू: अपनी योग्यता बताना और सवाल पूछना',
+    category: 'job_interview',
+    level: 'B1',
+    locationName: 'Klinikum München / IT Solutions GmbH',
+    culturalTips: [
+      'German interviewers straightforward answers expect karte hain bina kisi show-off ke.',
+      'Interview ke aakhir mein 1-2 practical sawal zaroor poochhein — ye interest show karta hai.'
+    ],
+    steps: [
+      {
+        id: 's6-step1',
+        speaker: 'Herr Hoffmann',
+        role: 'Personalchef (HR Manager)',
+        germanText: 'Guten Tag! Erzählen Sie mir bitte kurz über Ihren beruflichen Hintergrund und warum Sie in Deutschland arbeiten möchten.',
+        hindiTranslation: 'नमस्ते! कृपया संक्षेप में अपने बैकग्राउंड और जर्मनी में काम करने के कारण के बारे में बताइए।',
+        englishTranslation: 'Good day! Please tell me briefly about your background and why you want to work in Germany.',
+        culturalNote: 'Confidence ke sath German mein apni journey summarise karein.',
+        userPrompt: 'Introduce your qualification from India and your enthusiasm for German standards.',
+        userPromptHindi: 'Apni qualification batayein aur German work environment ke prati dedication express karein:',
+        options: [
+          {
+            german: 'Ich habe meine Ausbildung in Indien abgeschlossen und lerne intensiv Deutsch. Ich schätze das hohe professionelle Niveau in Deutschland sehr und möchte mich langfristig im Team einbringen.',
+            hindi: 'मैंने भारत में अपनी पढ़ाई पूरी की है और गहन जर्मन सीख रहा हूँ। मैं जर्मनी के उच्च पेशेवर स्तर की बहुत कद्र करता हूँ और टीम में लंबा योगदान देना चाहता हूँ।',
+            isCorrect: true,
+            feedback: 'Ausgezeichnet! Highly professional, culturally attuned and reassuring response.'
+          },
+          {
+            german: 'Ich will Geld verdienen und Visum haben.',
+            hindi: 'मुझे पैसे कमाने हैं और वीज़ा चाहिए।',
+            isCorrect: false,
+            feedback: 'Never mention visas or pure money in German job interviews. Focus on skills and teamwork.'
           }
         ]
       }
     ]
   }
 ];
+
+// Compatibility alias
+export const germanyScenarios = GERMANY_SCENARIOS;

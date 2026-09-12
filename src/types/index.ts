@@ -11,12 +11,13 @@ export interface VocabItem {
   plural?: string;
   english: string;
   hindi: string;
-  category: 'nouns' | 'verbs' | 'adjectives' | 'phrases' | 'bureaucracy';
+  category: string;
   level: CefrLevel;
-  exampleGerman: string;
-  exampleHindi: string;
-  memoryHook?: string; // Hindi/English mnemonic trick
+  exampleGerman?: string;
+  exampleHindi?: string;
+  memoryHook?: string;
   audioText?: string;
+  tags?: string[];
   lastReviewed?: number;
   repetitionCount?: number;
   interval?: number;
@@ -25,15 +26,29 @@ export interface VocabItem {
 
 export interface QuizQuestion {
   id: string;
-  type: 'multiple_choice' | 'fill_blank' | 'sentence_order' | 'gender_select' | 'listen_select';
+  type?: 'multiple_choice' | 'mcq' | 'fill_blank' | 'sentence_order' | 'gender_select' | 'listen_select';
   question: string;
   questionHindi?: string;
   options?: string[];
   correctAnswer: string | string[];
   explanationHindi: string;
-  explanationEnglish: string;
+  explanationEnglish?: string;
   hint?: string;
   grammarTopic: string;
+}
+
+export interface LessonSection {
+  title: string;
+  titleHindi: string;
+  explanation: string;
+  explanationHindi: string;
+  germanExamples: {
+    german: string;
+    hindi: string;
+    breakdown?: string;
+  }[];
+  proTip?: string;
+  commonMistakeForIndians?: string;
 }
 
 export interface LessonUnit {
@@ -47,19 +62,7 @@ export interface LessonUnit {
   estimatedMinutes: number;
   xpReward: number;
   topics: string[];
-  sections: {
-    title: string;
-    titleHindi: string;
-    explanation: string;
-    explanationHindi: string;
-    germanExamples: {
-      german: string;
-      hindi: string;
-      breakdown?: string;
-    }[];
-    proTip?: string;
-    commonMistakeForIndians?: string;
-  }[];
+  sections: LessonSection[];
   quiz: QuizQuestion[];
 }
 
@@ -94,30 +97,32 @@ export interface DoubtResponse {
   nextLevelHint: string;
 }
 
+export interface GermanyScenarioOption {
+  german: string;
+  hindi: string;
+  isCorrect: boolean;
+  feedback: string;
+  formalityCheck?: 'polite_sie' | 'casual_du' | 'rude';
+}
+
 export interface GermanyScenarioStep {
   id: string;
   speaker: string;
-  role: 'Officer' | 'Conductor' | 'Landlord' | 'Doctor' | 'Cashier' | 'Interviewer';
+  role: string;
   germanText: string;
   hindiTranslation: string;
   englishTranslation: string;
   culturalNote?: string;
   userPrompt: string;
   userPromptHindi: string;
-  options: {
-    german: string;
-    hindi: string;
-    isCorrect: boolean;
-    feedback: string;
-    formalityCheck?: 'polite_sie' | 'casual_du' | 'rude';
-  }[];
+  options: GermanyScenarioOption[];
 }
 
 export interface GermanyScenario {
   id: string;
   title: string;
   titleHindi: string;
-  category: 'anmeldung' | 'deutsche_bahn' | 'supermarkt' | 'arzt' | 'wohnung' | 'job_interview';
+  category: string;
   level: CefrLevel;
   locationName: string;
   culturalTips: string[];

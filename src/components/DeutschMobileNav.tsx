@@ -16,8 +16,8 @@ export default function DeutschMobileNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 block lg:hidden border-t border-neutral-200/80 bg-white/95 backdrop-blur-lg dark:border-neutral-800/80 dark:bg-neutral-950/95 pb-safe">
-      <div className="flex h-16 items-center justify-around px-2">
+    <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-40 block lg:hidden border-t border-neutral-200/90 bg-white/95 backdrop-blur-lg dark:border-neutral-800/90 dark:bg-neutral-950/95 pb-[max(env(safe-area-inset-bottom,0px),6px)] shadow-lg">
+      <div className="flex h-16 items-center justify-around px-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = pathname === tab.href || pathname?.startsWith(`${tab.href}/`);
@@ -25,20 +25,21 @@ export default function DeutschMobileNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center justify-center gap-1 py-1 px-3 text-xs font-medium transition-colors ${
+              aria-label={tab.label}
+              className={`flex flex-col items-center justify-center gap-1 py-1 px-2.5 min-w-[56px] min-h-[48px] rounded-2xl transition-all active:scale-95 ${
                 isActive
                   ? 'text-rose-600 dark:text-rose-400 font-bold'
                   : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
               }`}
             >
-              <div className={`p-1 rounded-full ${isActive ? 'bg-rose-50 dark:bg-rose-950/60' : ''}`}>
+              <div className={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-rose-50 dark:bg-rose-950/60' : ''}`}>
                 <Icon className="h-5 w-5" />
               </div>
-              <span className="text-[11px] tracking-tight">{tab.label}</span>
+              <span className="text-[10px] sm:text-[11px] font-semibold tracking-tight">{tab.label}</span>
             </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

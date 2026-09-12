@@ -1,79 +1,160 @@
+'use client';
+
 /**
- * Web Speech API utilities for native German pronunciation and Speech-to-Text evaluation
+ * iOS-Safe German Speech Engine
+ * Handles voice loading, iOS unlock, and slow-mode correctly
  */
 
-export function speakGerman(text: string, isSlow: boolean = false): Promise<void> {
+let voicesLoaded = false;
+let germanVoice: SpeechSynthesisVoice | null = null;
+
+function loadVoices(): Promise<SpeechSynthesisVoice[]> {
   return new Promise((resolve) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      resolve([]);
+      return;
+    }
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      resolve(voices);
+      return;
+    }
+    window.speechSynthesis.addEventListener('voiceschanged', function handler() {
+      window.speechSynthesis.removeEventListener('voiceschanged', handler);
+      resolve(window.speechSynthesis.getVoices());
+    });
+    // iOS fallback: resolve after 1.5s even if voiceschanged never fires
+    setTimeout(() => resolve(window.speechSynthesis.getVoices()), 1500);
+  });
+}
+
+async function getGermanVoice(): Promise<SpeechSynthesisVoice | null> {
+  if (germanVoice && voicesLoaded) return germanVoice;
+  const voices = await loadVoices();
+  voicesLoaded = true;
+  // Priority: de-DE > de > German named voice
+  germanVoice =
+    voices.find((v) => v.lang === 'de-DE' && v.localService) ||
+    voices.find((v) => v.lang === 'de-DE') ||
+    voices.find((v) => v.lang.startsWith('de')) ||
+    voices.find((v) => v.name.toLowerCase().includes('german')) ||
+    voices.find((v) => v.name.toLowerCase().includes('deutsch')) ||
+    null;
+  return germanVoice;
+}
+
+let currentUtterance: SpeechSynthesisUtterance | null = null;
+
+export function stopSpeaking() {
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  currentUtterance = null;
+}
+
+export async function speakGerman(text: string, isSlow: boolean = false): Promise<void> {
+  return new Promise(async (resolve) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      console.warn('SpeechSynthesis is not supported in this browser environment.');
       resolve();
       return;
     }
 
-    window.speechSynthesis.cancel(); // cancel any active speech
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    await new Promise((r) => setTimeout(r, 80)); // Small delay for cancel to flush
 
+    const voice = await getGermanVoice();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'de-DE';
-    utterance.rate = isSlow ? 0.65 : 0.88; // slower rate for beginners
-    utterance.pitch = 1.0;
+    currentUtterance = utterance;
 
-    // Try to find a native German voice
-    const voices = window.speechSynthesis.getVoices();
-    const germanVoice = voices.find(v => v.lang.startsWith('de') || v.name.includes('German') || v.name.includes('Deutsch'));
-    if (germanVoice) {
-      utterance.voice = germanVoice;
+    utterance.lang = 'de-DE';
+    // iOS Safari: rate 0.1-2.0 (but real useful range is 0.5-1.5)
+    utterance.rate = isSlow ? 0.7 : 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    if (voice) {
+      utterance.voice = voice;
     }
 
-    utterance.onend = () => resolve();
-    utterance.onerror = () => resolve();
+    const cleanup = () => {
+      currentUtterance = null;
+      resolve();
+    };
+
+    utterance.onend = cleanup;
+    utterance.onerror = cleanup;
+
+    // iOS Safari workaround: speechSynthesis pauses in background tabs
+    // Resume it before speaking
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
 
     window.speechSynthesis.speak(utterance);
+
+    // Safety timeout: resolve after max 30 seconds to prevent hanging
+    setTimeout(cleanup, 30000);
   });
 }
 
-export function comparePronunciation(spoken: string, target: string): {
+export function comparePronunciation(
+  spoken: string,
+  target: string
+): {
   accuracy: number;
   isMatch: boolean;
-  feedbackText: string;
+  feedbackHindi: string;
+  feedbackEnglish: string;
 } {
-  const cleanSpoken = spoken.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '').trim();
-  const cleanTarget = target.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '').trim();
+  const clean = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '')
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss')
+      .trim();
+
+  const cleanSpoken = clean(spoken);
+  const cleanTarget = clean(target);
 
   if (cleanSpoken === cleanTarget) {
     return {
       accuracy: 100,
       isMatch: true,
-      feedbackText: 'Perfekt! Ausgezeichnete Aussprache! (Exact match)'
+      feedbackHindi: '🎉 Perfekt! Bilkul sahi utparan (Exact match)!',
+      feedbackEnglish: 'Perfect pronunciation match!',
     };
   }
 
-  // Simple Levenshtein distance similarity
-  const maxLen = Math.max(cleanSpoken.length, cleanTarget.length);
-  if (maxLen === 0) return { accuracy: 100, isMatch: true, feedbackText: 'Sehr gut!' };
-
+  const targetWords = cleanTarget.split(/\s+/);
+  const spokenWords = cleanSpoken.split(/\s+/);
   let matches = 0;
-  const targetWords = cleanTarget.split(' ');
-  const spokenWords = cleanSpoken.split(' ');
 
-  for (const word of targetWords) {
-    if (spokenWords.includes(word)) {
+  for (const tw of targetWords) {
+    if (spokenWords.some((sw) => sw.includes(tw) || tw.includes(sw))) {
       matches++;
     }
   }
 
-  const wordAccuracy = Math.round((matches / targetWords.length) * 100);
-  const isMatch = wordAccuracy >= 70;
+  const accuracy = Math.min(100, Math.round((matches / targetWords.length) * 100));
+  const isMatch = accuracy >= 65;
 
-  let feedback = 'Schon gut! Thoda sa aur saaf bolo (Try slower with 0.75x audio)';
-  if (wordAccuracy >= 85) {
-    feedback = 'Sehr gut! Almost native accent!';
-  } else if (wordAccuracy < 50) {
-    feedback = 'Umlauts ya German sounds par dhyan do. Turtle audio suno aur repeat karo.';
+  let feedbackHindi = '';
+  let feedbackEnglish = '';
+
+  if (accuracy >= 85) {
+    feedbackHindi = '✅ Bahut accha! Almost native accent. Thodi practice aur karein.';
+    feedbackEnglish = 'Excellent! Near-native German pronunciation.';
+  } else if (accuracy >= 65) {
+    feedbackHindi = '👍 Kaafi accha! Umlauts (ä, ö, ü) aur SCH sound par focus karein. 0.75x slow audio suno.';
+    feedbackEnglish = 'Good attempt! Focus on German umlauts and special sounds.';
+  } else {
+    feedbackHindi = '🐢 Turtle audio suno aur ek-ek syllable ke saath repeat karo. Koi pressure nahi!';
+    feedbackEnglish = 'Keep practicing! Use turtle audio to hear each syllable clearly.';
   }
 
-  return {
-    accuracy: wordAccuracy,
-    isMatch,
-    feedbackText: feedback
-  };
+  return { accuracy, isMatch, feedbackHindi, feedbackEnglish };
 }

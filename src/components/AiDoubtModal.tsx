@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { HelpCircle, X, ArrowRight, CheckCircle2, AlertTriangle, Sparkles, BookOpen, Lightbulb, ShieldCheck } from 'lucide-react';
-import { DoubtResponse, UiLanguage } from '@/types';
+import { HelpCircle, X, ArrowRight, CheckCircle2, AlertTriangle, Sparkles, BookOpen, Lightbulb, ShieldCheck, ChevronUp } from 'lucide-react';
+import { DoubtResponse } from '@/types';
 import { useUserProgress } from '@/lib/progressStore';
-import AudioPlayerButton from './AudioPlayerButton';
 
 interface AiDoubtModalProps {
   isOpen: boolean;
@@ -21,7 +20,7 @@ export default function AiDoubtModal({
   topic,
   contextGerman,
   userAnswer,
-  correctAnswer
+  correctAnswer,
 }: AiDoubtModalProps) {
   const [level, setLevel] = useState(1);
   const [data, setData] = useState<DoubtResponse | null>(null);
@@ -42,13 +41,13 @@ export default function AiDoubtModal({
           userAnswer,
           correctAnswer,
           currentLevel: lvl,
-          language: progress.uiLanguage
-        })
+          language: progress.uiLanguage,
+        }),
       });
       const json = await res.json();
       setData(json);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -62,133 +61,137 @@ export default function AiDoubtModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, topic]);
 
+  // Close on Escape key
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
   const handleNextLevel = () => {
-    const nextLvl = Math.min(10, level + 1);
-    setLevel(nextLvl);
-    fetchExplanation(nextLvl);
+    const next = Math.min(10, level + 1);
+    setLevel(next);
+    fetchExplanation(next);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 my-8 overflow-hidden">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/80 px-6 py-4 dark:border-neutral-800 dark:bg-neutral-950/50">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500 text-white shadow-sm shadow-rose-500/30">
-              <Sparkles className="h-5 w-5" />
+    <div
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      {/* Sheet on mobile, modal on desktop */}
+      <div className="relative w-full sm:max-w-2xl rounded-t-3xl sm:rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 overflow-hidden max-h-[92vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/80 px-4 sm:px-6 py-3 sm:py-4 dark:border-neutral-800 dark:bg-neutral-950/50 shrink-0">
+          {/* Mobile drag handle */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700 sm:hidden" />
+
+          <div className="flex items-center gap-2.5 mt-2 sm:mt-0">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-500 text-white shadow-sm">
+              <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <span>AI Doubt Solver</span>
-                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-                  Level {level} of 10
+              <h3 className="font-bold text-neutral-900 dark:text-white text-sm flex items-center gap-2">
+                AI Doubt Solver
+                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+                  Level {level}/10
                 </span>
               </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Topic: <strong className="text-neutral-700 dark:text-neutral-300">{topic}</strong>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[200px] sm:max-w-sm">
+                {topic}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            aria-label="Close modal"
-            className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            aria-label="Close"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-neutral-400 hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Level Progress Indicator */}
-        <div className="flex w-full items-center gap-1 bg-neutral-100 px-6 py-2 dark:bg-neutral-950">
-          {Array.from({ length: 10 }).map((_, idx) => (
+        {/* Level Progress */}
+        <div className="flex items-center gap-1 bg-neutral-100 px-4 sm:px-6 py-2 dark:bg-neutral-950 shrink-0">
+          {Array.from({ length: 10 }).map((_, i) => (
             <div
-              key={idx}
+              key={i}
               className={`h-1.5 flex-1 rounded-full transition-all ${
-                idx + 1 <= level
-                  ? 'bg-rose-500 shadow-sm shadow-rose-500/50'
-                  : 'bg-neutral-200 dark:bg-neutral-800'
+                i + 1 <= level ? 'bg-rose-500' : 'bg-neutral-200 dark:bg-neutral-800'
               }`}
             />
           ))}
         </div>
 
-        {/* Modal Body */}
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-5">
+        {/* Body — scrollable */}
+        <div className="overflow-y-auto flex-1 px-4 sm:px-6 py-4 space-y-4">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-3 border-rose-500 border-t-transparent" />
-              <p className="text-sm font-medium text-neutral-500">
-                AI Simplification Engine is crafting Level {level} explanation...
-              </p>
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-rose-500 border-t-transparent" />
+              <p className="text-sm font-medium text-neutral-500">Level {level} explanation loading...</p>
             </div>
           ) : data ? (
             <>
               {/* Main Explanation */}
-              <div className="rounded-xl bg-neutral-50 p-4 border border-neutral-100 dark:bg-neutral-800/50 dark:border-neutral-800">
-                <h4 className="font-semibold text-neutral-900 text-sm mb-1.5 flex items-center gap-2 dark:text-neutral-100">
-                  <BookOpen className="h-4 w-4 text-rose-500" />
-                  <span>{data.title}</span>
+              <div className="rounded-2xl bg-neutral-50 p-4 border border-neutral-100 dark:bg-neutral-800/50 dark:border-neutral-800">
+                <h4 className="font-bold text-neutral-900 text-sm mb-2 flex items-center gap-2 dark:text-white">
+                  <BookOpen className="h-4 w-4 text-rose-500 shrink-0" />
+                  {data.title}
                 </h4>
                 <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
                   {data.explanation}
                 </p>
               </div>
 
-              {/* Hindi Analogy Bridge */}
+              {/* Hindi Bridge */}
               {data.hindiAnalogy && (
-                <div className="rounded-xl border border-amber-200/80 bg-amber-50/70 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
-                  <h4 className="font-bold text-amber-900 text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5 dark:text-amber-300">
-                    <Lightbulb className="h-4 w-4 text-amber-600" />
-                    <span>🇮🇳 Desi Mental Bridge (हिंदी से समझें)</span>
+                <div className="rounded-2xl border border-amber-200/80 bg-amber-50/70 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+                  <h4 className="font-bold text-amber-900 text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1.5 dark:text-amber-300">
+                    <Lightbulb className="h-4 w-4 text-amber-600 shrink-0" />
+                    🇮🇳 Desi Mental Bridge
                   </h4>
-                  <p className="text-sm font-medium text-amber-950 dark:text-amber-200">
-                    {data.hindiAnalogy}
-                  </p>
+                  <p className="text-sm font-medium text-amber-950 dark:text-amber-200">{data.hindiAnalogy}</p>
                 </div>
               )}
 
-              {/* Indian Learner Trap Identification */}
+              {/* Indian Mistake */}
               {data.whyIndiansMakeThisMistake && (
-                <div className="rounded-xl border border-rose-200/80 bg-rose-50/60 p-4 dark:border-rose-950/60 dark:bg-rose-950/30">
-                  <h4 className="font-bold text-rose-900 text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5 dark:text-rose-300">
-                    <AlertTriangle className="h-4 w-4 text-rose-600" />
-                    <span>Indian Learners Yahan Galti Kyu Karte Hain?</span>
+                <div className="rounded-2xl border border-rose-200/80 bg-rose-50/60 p-4 dark:border-rose-950/60 dark:bg-rose-950/30">
+                  <h4 className="font-bold text-rose-900 text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1.5 dark:text-rose-300">
+                    <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                    Indian Learners ki Common Galti
                   </h4>
-                  <p className="text-xs text-rose-950 dark:text-rose-200">
-                    {data.whyIndiansMakeThisMistake}
-                  </p>
+                  <p className="text-xs text-rose-950 dark:text-rose-200">{data.whyIndiansMakeThisMistake}</p>
                 </div>
               )}
 
-              {/* Visual Comparison Card */}
+              {/* Visual Comparison */}
               {data.visualComparison && (
-                <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">
-                    Side-by-Side Comparison
-                  </h4>
+                <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">Side-by-Side Comparison</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="rounded-lg bg-rose-50/80 p-3 border border-rose-100 dark:bg-rose-950/40 dark:border-rose-900/50">
-                      <div className="font-bold text-rose-700 dark:text-rose-300 mb-1">❌ Common Mistake</div>
-                      <code className="text-rose-900 dark:text-rose-200">{data.visualComparison.wrongExample}</code>
+                    <div className="rounded-xl bg-rose-50 p-3 border border-rose-100 dark:bg-rose-950/40 dark:border-rose-900/50">
+                      <div className="font-bold text-rose-700 mb-1 dark:text-rose-300">❌ Galat</div>
+                      <code className="text-rose-900 dark:text-rose-200 break-all">{data.visualComparison.wrongExample}</code>
                     </div>
-                    <div className="rounded-lg bg-emerald-50/80 p-3 border border-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-900/50">
-                      <div className="font-bold text-emerald-700 dark:text-emerald-300 mb-1">✅ German Correct Rule</div>
-                      <code className="text-emerald-900 dark:text-emerald-200 font-semibold">{data.visualComparison.correctExample}</code>
+                    <div className="rounded-xl bg-emerald-50 p-3 border border-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-900/50">
+                      <div className="font-bold text-emerald-700 mb-1 dark:text-emerald-300">✅ Sahi German</div>
+                      <code className="text-emerald-900 dark:text-emerald-200 font-bold break-all">{data.visualComparison.correctExample}</code>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Micro Quick Practice Question */}
+              {/* Quick Practice */}
               {data.quickPracticeQuestion && (
-                <div className="rounded-xl border-2 border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/30">
+                <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/30">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-2">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span>1-Step Mastery Check: Ab Try Karo!</span>
+                    <ShieldCheck className="h-4 w-4 shrink-0" />
+                    Quick Mastery Check
                   </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+                  <p className="text-sm font-bold text-neutral-900 dark:text-white mb-3">
                     {data.quickPracticeQuestion.question}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -199,9 +202,9 @@ export default function AiDoubtModal({
                         <button
                           key={idx}
                           onClick={() => setQuizSelected(idx)}
-                          className={`rounded-lg py-2 px-3 text-xs font-bold border transition-all ${
+                          className={`rounded-xl py-3 px-3 text-xs font-bold border transition-all min-h-[48px] ${
                             quizSelected === null
-                              ? 'border-neutral-200 bg-white text-neutral-800 hover:border-indigo-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200'
+                              ? 'border-neutral-200 bg-white hover:border-indigo-400 dark:border-neutral-700 dark:bg-neutral-800'
                               : isSelected
                               ? isCorrect
                                 ? 'border-emerald-500 bg-emerald-500 text-white'
@@ -218,7 +221,9 @@ export default function AiDoubtModal({
                   </div>
                   {quizSelected !== null && (
                     <p className="mt-3 text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                      {quizSelected === data.quickPracticeQuestion.correctIndex ? '🎉 Bilkul Sahi! ' : '💡 Yaad rakhein: '}
+                      {quizSelected === data.quickPracticeQuestion.correctIndex
+                        ? '🎉 Bilkul Sahi! '
+                        : '💡 Yaad rakhein: '}
                       {data.quickPracticeQuestion.explanation}
                     </p>
                   )}
@@ -228,30 +233,27 @@ export default function AiDoubtModal({
           ) : null}
         </div>
 
-        {/* Modal Footer (Ladder Escalation) */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-neutral-100 bg-neutral-50 px-6 py-4 dark:border-neutral-800 dark:bg-neutral-950">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center sm:text-left">
-            {level < 10
-              ? 'Abhi bhi confuse ho? AI isko aur aasan bhasha mein samjhayega.'
-              : 'Aap Level 10 tak pohoch gaye hain! Keep practicing.'}
+        {/* Footer */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-neutral-100 bg-neutral-50 px-4 sm:px-6 py-3 sm:py-4 dark:border-neutral-800 dark:bg-neutral-950 shrink-0">
+          <p className="text-xs text-neutral-500 text-center sm:text-left dark:text-neutral-400">
+            {level < 10 ? 'Abhi bhi confuse? AI aur aasan karega!' : '🎓 Aapne Level 10 complete kiya!'}
           </p>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {level < 10 && (
               <button
                 onClick={handleNextLevel}
                 disabled={loading}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-neutral-800 active:scale-95 disabled:opacity-50 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-3 text-xs font-bold text-white hover:bg-neutral-800 active:scale-95 disabled:opacity-50 min-h-[44px] dark:bg-white dark:text-neutral-900"
               >
-                <span>Aur Aasan Bhasha Mein Samjhao (Level {level + 1})</span>
+                Aur Aasan Bhasha (Level {level + 1})
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             )}
             <button
               onClick={onClose}
-              className="rounded-xl border border-neutral-300 px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="rounded-xl border border-neutral-300 px-4 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-100 min-h-[44px] dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
-              Theek Hai, Samajh Gaya!
+              Theek Hai ✓
             </button>
           </div>
         </div>
