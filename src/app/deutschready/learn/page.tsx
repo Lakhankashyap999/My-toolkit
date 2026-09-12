@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { BookOpen, CheckCircle2, Clock, Sparkles, ArrowRight, Filter } from 'lucide-react';
 import { CURRICULUM_DATA } from '@/data/curriculum';
 import { useUserProgress } from '@/lib/progressStore';
+import { TRANSLATIONS } from '@/lib/i18n';
 import { CefrLevel } from '@/types';
 
 export default function LearnPage() {
   const { progress } = useUserProgress();
+  const t = TRANSLATIONS[progress.uiLanguage] || TRANSLATIONS.hinglish;
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
 
   const levels = ['all', 'A0', 'A1', 'A2', 'B1', 'B2'];
@@ -27,14 +29,17 @@ export default function LearnPage() {
       <div className="rounded-3xl bg-gradient-to-r from-neutral-900 via-neutral-800 to-rose-950 p-6 sm:p-10 text-white shadow-xl">
         <div className="flex items-center gap-2 text-rose-400 text-xs font-bold uppercase tracking-wider mb-2">
           <BookOpen className="h-4 w-4" />
-          <span>CEFR Structured Curriculum (A0 → B2)</span>
+          <span>CEFR Structured {t.curriculum} (A0 → B2)</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-          German Learning Roadmap
+          {t.curriculum} — German Learning Roadmap
         </h1>
         <p className="mt-2 text-xs sm:text-sm text-neutral-300 max-w-2xl leading-relaxed">
-          Step-by-step master karein. Har unit ke andar audio pronunciation, Hindi grammar connection (कारक / लिंग), 
-          aur har concept ke sath <span className="text-rose-400 font-bold">10-level AI Doubt Solver (&ldquo;❓ Samajh nahi aaya&rdquo;)</span> maujood hai!
+          {progress.uiLanguage === 'german'
+            ? 'Schritt für Schritt meistern. Jede Einheit enthält Audio-Aussprache, Grammatik und KI-Zweifel-Löser.'
+            : progress.uiLanguage === 'english'
+            ? 'Step by step mastery. Each unit has audio pronunciation, grammar connection, and 10-level AI Doubt Solver.'
+            : 'Step-by-step master karein. Har unit mein audio pronunciation, Hindi grammar connection, aur 10-level AI Doubt Solver maujood hai!'}
         </p>
 
         {/* Progress Pill */}

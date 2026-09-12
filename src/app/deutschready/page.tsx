@@ -1,21 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { 
-  ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  XCircle, 
-  Volume2, 
-  Dumbbell, 
-  Mic, 
-  Compass, 
-  BookmarkCheck, 
-  ShieldCheck, 
-  HelpCircle, 
+import {
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  XCircle,
+  Dumbbell,
+  Mic,
+  Compass,
+  BookmarkCheck,
+  ShieldCheck,
+  HelpCircle,
   Zap,
   TrendingUp,
-  HeartHandshake
 } from 'lucide-react';
 import { useUserProgress } from '@/lib/progressStore';
 import { TRANSLATIONS } from '@/lib/i18n';
@@ -27,7 +25,7 @@ export default function HomePage() {
   return (
     <div className="space-y-16 sm:space-y-24">
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative overflow-hidden pt-10 pb-14 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8 text-center">
         {/* Subtle background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 h-[350px] w-[550px] rounded-full bg-gradient-to-tr from-rose-500/15 via-amber-500/15 to-indigo-500/15 blur-3xl" />
 
@@ -35,22 +33,20 @@ export default function HomePage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50/80 px-4 py-1.5 text-xs font-bold text-rose-700 shadow-sm dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 mb-6">
             <Sparkles className="h-3.5 w-3.5 text-rose-500" />
-            <span>Bharat ke Students aur Professionals ke liye</span>
+            <span>{t.heroBadge}</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-neutral-900 dark:text-white leading-[1.15]">
-            German Seekho Apni Bhasha Mein.{' '}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-neutral-900 dark:text-white leading-[1.1]">
+            {t.tagline}{' '}
             <span className="bg-gradient-to-r from-rose-600 via-amber-600 to-indigo-600 bg-clip-text text-transparent">
-              Zero Se B2 Tak.
+              {t.taglineSpan}
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="mt-6 text-base sm:text-xl text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto leading-relaxed">
-            Coaching fees ke <strong>₹60,000–₹1,20,000 bachao</strong>. 
-            AI Doubt Solver (<code className="text-xs bg-neutral-200 px-1.5 py-0.5 rounded dark:bg-neutral-800">❓ Samajh nahi aaya</code>), 
-            0.75x Slow Speaking Lab, aur Real Germany Life Simulators ke saath <strong>100% confidence paao</strong>.
+          <p className="mt-6 text-base sm:text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto leading-relaxed">
+            {t.subtagline}
           </p>
 
           {/* Action CTAs */}
@@ -74,20 +70,20 @@ export default function HomePage() {
           {/* Micro Trust Stats */}
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto text-left border-t border-neutral-200/80 pt-6 dark:border-neutral-800">
             <div>
-              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">A0 → B2</div>
-              <div className="text-xs text-neutral-500 font-medium">CEFR Structured Path</div>
+              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">{t.stat1}</div>
+              <div className="text-xs text-neutral-500 font-medium">{t.stat1sub}</div>
             </div>
             <div>
-              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">10 Levels</div>
-              <div className="text-xs text-neutral-500 font-medium">Progressive Doubt Ladder</div>
+              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">{t.stat2}</div>
+              <div className="text-xs text-neutral-500 font-medium">{t.stat2sub}</div>
             </div>
             <div>
-              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">0.75x Slow</div>
-              <div className="text-xs text-neutral-500 font-medium">Native Audio Training</div>
+              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">{t.stat3}</div>
+              <div className="text-xs text-neutral-500 font-medium">{t.stat3sub}</div>
             </div>
             <div>
-              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">₹0 Fees</div>
-              <div className="text-xs text-neutral-500 font-medium">Accessible to Everyone</div>
+              <div className="text-2xl font-extrabold text-neutral-900 dark:text-white">{t.stat4}</div>
+              <div className="text-xs text-neutral-500 font-medium">{t.stat4sub}</div>
             </div>
           </div>
         </div>
@@ -97,62 +93,73 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white">
-            ChatGPT ya Traditional Coaching se <span className="text-rose-600">Behtar Kyun Hai?</span>
+            {t.whyTitle}{' '}
+            <span className="text-rose-600">{t.whyTitleSpan}</span>
           </h2>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-            Kyun generic AI aur mehenge institutes Indian learners ko dimaagi roop se confuse kar dete hain:
+            {t.whySubtitle}
           </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse rounded-3xl overflow-hidden border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="overflow-x-auto rounded-3xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-950/60 text-xs font-bold uppercase tracking-wider text-neutral-500">
-                <th className="p-4 sm:p-5">Feature / Problem</th>
-                <th className="p-4 sm:p-5 text-neutral-400">Traditional Coaching</th>
-                <th className="p-4 sm:p-5 text-neutral-400">ChatGPT / Generic AI</th>
+                <th className="p-4 sm:p-5">{t.tableFeature}</th>
+                <th className="p-4 sm:p-5 text-neutral-400">{t.colCoaching}</th>
+                <th className="p-4 sm:p-5 text-neutral-400">{t.colChatgpt}</th>
                 <th className="p-4 sm:p-5 bg-rose-50/50 text-rose-700 font-black dark:bg-rose-950/40 dark:text-rose-300">
-                  DeutschReady Platform
+                  {t.colUs}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 text-xs sm:text-sm font-medium">
               <tr>
-                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">Fees / Cost</td>
+                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">{t.tableFees}</td>
                 <td className="p-4 sm:p-5 text-rose-600 font-semibold">₹60,000 - ₹1,20,000+</td>
-                <td className="p-4 sm:p-5 text-neutral-600">$20/month</td>
+                <td className="p-4 sm:p-5 text-neutral-600 dark:text-neutral-400">$20/month</td>
                 <td className="p-4 sm:p-5 bg-rose-50/30 font-bold text-emerald-600 dark:bg-rose-950/20">
                   100% Free Core Access
                 </td>
               </tr>
               <tr>
-                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">Doubt Explanation</td>
-                <td className="p-4 sm:p-5 text-neutral-500">Teacher gets impatient</td>
-                <td className="p-4 sm:p-5 text-neutral-500">Boring 500-word essay</td>
+                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">{t.tableDoubt}</td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">
+                  {progress.uiLanguage === 'german' ? 'Lehrer wird ungeduldig' : progress.uiLanguage === 'english' ? 'Teacher gets impatient' : 'Teacher gets impatient'}
+                </td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">
+                  {progress.uiLanguage === 'german' ? 'Langweiliger 500-Wort-Aufsatz' : progress.uiLanguage === 'english' ? 'Boring 500-word essay' : 'Boring 500-word essay'}
+                </td>
                 <td className="p-4 sm:p-5 bg-rose-50/30 font-bold text-rose-700 dark:bg-rose-950/20 dark:text-rose-300">
                   10-Level Progressive Doubt Ladder (Hinglish Analogy)
                 </td>
               </tr>
               <tr>
-                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">Active Muscle Memory</td>
-                <td className="p-4 sm:p-5 text-neutral-500">Paper homework</td>
-                <td className="p-4 sm:p-5 text-neutral-500">❌ Only passive text reading</td>
+                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">{t.tablePractice}</td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">
+                  {progress.uiLanguage === 'german' ? 'Papierhausaufgaben' : 'Paper homework'}
+                </td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">
+                  <span className="flex items-center gap-1"><XCircle className="h-4 w-4 text-rose-500 shrink-0" />
+                    {progress.uiLanguage === 'german' ? 'Nur passiver Text' : progress.uiLanguage === 'english' ? 'Only passive text reading' : 'Only passive text reading'}
+                  </span>
+                </td>
                 <td className="p-4 sm:p-5 bg-rose-50/30 font-bold text-rose-700 dark:bg-rose-950/20 dark:text-rose-300">
                   Der/Die/Das Swiper &amp; V2 Word Order Arranger
                 </td>
               </tr>
               <tr>
-                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">Pronunciation &amp; Audio</td>
-                <td className="p-4 sm:p-5 text-neutral-500">1 hour group class</td>
-                <td className="p-4 sm:p-5 text-neutral-500">Fast robotic robot voice</td>
+                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">{t.tableAudio}</td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">1 hour group class</td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">Fast robotic voice</td>
                 <td className="p-4 sm:p-5 bg-rose-50/30 font-bold text-rose-700 dark:bg-rose-950/20 dark:text-rose-300">
                   0.75x Slow Turtle Audio + Mic Syllable Feedback
                 </td>
               </tr>
               <tr>
-                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">Real Germany Survival</td>
-                <td className="p-4 sm:p-5 text-neutral-500">Textbook only</td>
-                <td className="p-4 sm:p-5 text-neutral-500">Prompt engineering required</td>
+                <td className="p-4 sm:p-5 font-bold text-neutral-900 dark:text-white">{t.tableGermany}</td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">Textbook only</td>
+                <td className="p-4 sm:p-5 text-neutral-500 dark:text-neutral-400">Prompt engineering required</td>
                 <td className="p-4 sm:p-5 bg-rose-50/30 font-bold text-rose-700 dark:bg-rose-950/20 dark:text-rose-300">
                   Interactive RPG: Anmeldung, Bahn, Arzt, Supermarkt
                 </td>
@@ -166,9 +173,9 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
-            6 Powerful Workstations Built for Rapid Fluency
+            {t.featuresTitle}
           </h2>
-          <p className="text-sm text-neutral-500 mt-1">Har ek feature real-life confidence build karne ke liye design kiya gaya hai.</p>
+          <p className="text-sm text-neutral-500 mt-1">{t.featuresSub}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -181,10 +188,14 @@ export default function HomePage() {
               10-Level Progressive Doubt Ladder
             </h3>
             <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              Jab bhi samajh na aaye, &ldquo;❓ Samajh nahi aaya&rdquo; click karo. AI level-by-level aasan bhasha, Hindi analogy (कारक bridge) aur mini-quizzes ke zariye doubt clear karega.
+              {progress.uiLanguage === 'german'
+                ? 'Immer wenn Sie verwirrt sind, klicken Sie auf "❓ Noch Fragen?". Die KI erklärt Schritt für Schritt auf Einfachem.'
+                : progress.uiLanguage === 'english'
+                ? 'Whenever confused, click "❓ Still confused?". AI explains step-by-step in simple language with Hindi analogies.'
+                : 'Jab bhi samajh na aaye, "❓ Samajh nahi aaya" click karo. AI level-by-level aasan bhasha, Hindi analogy aur mini-quizzes ke zariye doubt clear karega.'}
             </p>
             <Link href="/deutschready/learn" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline">
-              Try a Lesson ➔
+              {t.startLearning} ➔
             </Link>
           </div>
 
@@ -197,10 +208,14 @@ export default function HomePage() {
               Der/Die/Das Arena &amp; Article Rescue
             </h3>
             <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              Tinder-style swipe karke articles yaad karo. Agar 3 baar galti hui, to &ldquo;Article Rescue&rdquo; instant shortcut endings batayega (-ung, -heit = 100% DIE).
+              {progress.uiLanguage === 'german'
+                ? 'Swipe-Spiel zum Artikel-Lernen. Bei 3 Fehlern zeigt "Artikel-Rettung" sofortige Suffixregeln.'
+                : progress.uiLanguage === 'english'
+                ? 'Tinder-style swipe game to memorise articles. After 3 mistakes, "Article Rescue" shows instant suffix shortcuts (-ung = DIE).'
+                : 'Tinder-style swipe karke articles yaad karo. Agar 3 baar galti hui, to "Article Rescue" instant shortcut endings batayega.'}
             </p>
             <Link href="/deutschready/practice" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline">
-              Start Swiping ➔
+              {progress.uiLanguage === 'german' ? 'Üben ➔' : 'Start Swiping ➔'}
             </Link>
           </div>
 
@@ -213,10 +228,14 @@ export default function HomePage() {
               German V2 Sentence Builder
             </h3>
             <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              German grammar ka golden rule: Verb hamesha Position 2 par aayega! Interactive chips arrange karein aur syntax police ke alert se galti sudharein.
+              {progress.uiLanguage === 'german'
+                ? 'Goldene Regel: Das Verb steht immer an 2. Position! Interaktive Wort-Chips anordnen und Fehler korrigieren.'
+                : progress.uiLanguage === 'english'
+                ? 'Golden rule: Verb always at position 2! Arrange interactive word chips and get corrected by the V2 police alert.'
+                : 'German grammar ka golden rule: Verb hamesha Position 2 par aayega! Interactive chips arrange karein aur syntax police ke alert se galti sudharein.'}
             </p>
             <Link href="/deutschready/practice" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline">
-              Build Sentences ➔
+              {progress.uiLanguage === 'german' ? 'Sätze üben ➔' : 'Build Sentences ➔'}
             </Link>
           </div>
 
@@ -226,13 +245,17 @@ export default function HomePage() {
               <Mic className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-              Speaking Lab &amp; 0.75x Slow Audio
+              {t.speakingLab} &amp; 0.75x Slow Audio
             </h3>
             <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              Umlauts (ä, ö, ü) aur CH/SCH ke sounds clear karein. Turtle audio suno aur mic mein bol kar pronunciation check karo bina kisi dar ke.
+              {progress.uiLanguage === 'german'
+                ? 'Umlauts (ä, ö, ü) und CH/SCH Sounds üben. Langsames Audio hören und mit dem Mikrofon wiederholen.'
+                : progress.uiLanguage === 'english'
+                ? 'Clear umlauts (ä, ö, ü) and CH/SCH sounds. Hear turtle audio and record yourself — no judgement.'
+                : 'Umlauts (ä, ö, ü) aur CH/SCH ke sounds clear karein. Turtle audio suno aur mic mein bol kar pronunciation check karo bina kisi dar ke.'}
             </p>
             <Link href="/deutschready/speak" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:underline">
-              Test Voice ➔
+              {progress.uiLanguage === 'german' ? 'Sprechen ➔' : 'Test Voice ➔'}
             </Link>
           </div>
 
@@ -242,13 +265,17 @@ export default function HomePage() {
               <Compass className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-              Real Germany Life Simulator
+              {progress.uiLanguage === 'german' ? 'Deutschland-Leben Simulator' : progress.uiLanguage === 'english' ? 'Real Germany Life Simulator' : 'Real Germany Life Simulator'}
             </h3>
             <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              Bürgeramt Anmeldung, Deutsche Bahn train delay, Supermarket checkout, aur Doctor clinic ke interactive dialogues pehle hi master karo.
+              {progress.uiLanguage === 'german'
+                ? 'Bürgeramt, Deutsche Bahn, Supermarkt und Arzt — interactive Dialoge vorab meistern.'
+                : progress.uiLanguage === 'english'
+                ? 'Master Bürgeramt, Deutsche Bahn delays, Supermarket checkout, and Doctor clinic before you arrive.'
+                : 'Bürgeramt Anmeldung, Deutsche Bahn train delay, Supermarket checkout, aur Doctor clinic ke interactive dialogues pehle hi master karo.'}
             </p>
             <Link href="/deutschready/germany-life" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:underline">
-              Enter Simulator ➔
+              {progress.uiLanguage === 'german' ? 'Simulator öffnen ➔' : 'Enter Simulator ➔'}
             </Link>
           </div>
 
@@ -258,13 +285,17 @@ export default function HomePage() {
               <BookmarkCheck className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-              Mera Kamzor Vocab (SRS Engine)
+              {t.wordsIForget}
             </h3>
             <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              Jo words aap bhoolte hain, wo automatically &ldquo;Words I Keep Forgetting&rdquo; bucket mein chale jate hain taaki daily 5-minute revision ho sake.
+              {progress.uiLanguage === 'german'
+                ? 'Wörter, die Sie vergessen, wandern automatisch in die "Schwierige Wörter"-Liste für tägliche 5-Minuten-Wiederholung.'
+                : progress.uiLanguage === 'english'
+                ? 'Words you forget automatically move to the "Words I Keep Forgetting" bucket for daily 5-minute spaced repetition.'
+                : 'Jo words aap bhoolte hain, wo automatically "Words I Keep Forgetting" bucket mein chale jate hain taaki daily 5-minute revision ho sake.'}
             </p>
             <Link href="/deutschready/vocab" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline">
-              Review Words ➔
+              {progress.uiLanguage === 'german' ? 'Wortschatz ➔' : 'Review Words ➔'}
             </Link>
           </div>
         </div>
@@ -277,12 +308,10 @@ export default function HomePage() {
             <ShieldCheck className="h-5 w-5" />
           </div>
           <h4 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
-            Ethical Education &amp; Legal Disclaimers
+            {t.disclaimerTitle}
           </h4>
           <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-            DeutschReady ek independent German learning platform hai. Hum kisi bhi official examination body 
-            (Goethe-Institut, Telc, ÖSD) se affiliated nahi hain. Hum 100% original educational curriculum provide karte hain. 
-            Koi bhi fake visa, job, ya exam pass guarantee nahi di jati — aapki mehnat aur hamare tools se aapka result banega.
+            {t.disclaimerText}
           </p>
           <div className="mt-4 flex items-center justify-center gap-4 text-xs font-semibold text-neutral-500">
             <Link href="/deutschready/disclaimer" className="hover:text-rose-600">Disclaimer</Link>
