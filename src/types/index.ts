@@ -129,6 +129,26 @@ export interface GermanyScenario {
   steps: GermanyScenarioStep[];
 }
 
+export interface ActiveSession {
+  type: 'lesson' | 'scenario' | 'vocab' | 'speaking' | 'practice';
+  id: string;
+  title: string;
+  detail?: string;
+  path: string;
+  step?: number;
+  totalSteps?: number;
+  timestamp: number;
+}
+
+export interface UserActivity {
+  id: string;
+  type: 'lesson' | 'scenario' | 'vocab' | 'speaking' | 'practice';
+  title: string;
+  detail: string;
+  path: string;
+  timestamp: number;
+}
+
 export interface UserProgressState {
   completedLessons: string[];
   xp: number;
@@ -140,4 +160,7 @@ export interface UserProgressState {
   difficultWords: string[];
   uiLanguage: UiLanguage;
   audioSlowMode: boolean;
+  userEmail?: string;
+  lastActiveSession?: ActiveSession | null;
+  activityHistory?: UserActivity[];
 }

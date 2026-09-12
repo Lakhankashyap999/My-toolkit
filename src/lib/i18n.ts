@@ -26,6 +26,26 @@ export const TRANSLATIONS: Record<UiLanguage, Record<string, string>> = {
     vocab: 'Vocab & SRS',
     progress: 'Mastery Tracker',
     cheatSheet: '⚡ Cheat Sheet',
+
+    // Unit Actions & Status
+    startLesson: 'Lesson Shuru Karein',
+    reviewLesson: 'Review Karein',
+    mastered: 'Master Ho Gaya! 🎉',
+
+    // Resume Notification
+    resumeTitle: 'Wahin se Shuru Karein?',
+    resumeDesc: 'Aapne pichli baar yahan choda tha:',
+    resumeBtn: '▶️ Wahin Se Shuru Karein',
+    startNewBtn: '🔄 Naya Shuru Karein',
+
+    // Activity & Account
+    recentActivity: 'Meri Activity',
+    loginToSync: 'Login karke Progress Sync Karein',
+    verifiedWithEmail: 'Toolbox Verified Account',
+    noActivityYet: 'Abhi koi activity nahi hai. Koi lesson ya practice shuru karein!',
+    revisit: 'Wapas Jayein',
+    logout: 'Log Out',
+
     // Stats
     stat1: 'A0 → B2',
     stat1sub: 'CEFR Structured Path',
@@ -35,17 +55,21 @@ export const TRANSLATIONS: Record<UiLanguage, Record<string, string>> = {
     stat3sub: 'Native Audio Training',
     stat4: '₹0 Fees',
     stat4sub: 'Sabke liye accessible',
+
     // Why section
     whyTitle: 'ChatGPT ya Traditional Coaching se',
     whyTitleSpan: 'Behtar Kyun Hai?',
     whySubtitle: 'Kyun generic AI aur mehenge institutes Indian learners ko confuse kar dete hain:',
+
     // Features section
     featuresTitle: '6 Powerful Workstations Built for Rapid Fluency',
     featuresSub: 'Har ek feature real-life confidence build karne ke liye design kiya gaya hai.',
+
     // Disclaimer
     disclaimerTitle: 'Ethical Education & Legal Disclaimers',
     disclaimerText: 'DeutschReady ek independent German learning platform hai. Hum kisi bhi official examination body (Goethe-Institut, Telc, ÖSD) se affiliated nahi hain. Hum 100% original educational curriculum provide karte hain. Koi bhi fake visa, job, ya exam pass guarantee nahi di jati — aapki mehnat aur hamare tools se aapka result banega.',
     disclaimerNotice: 'Independent education platform. Not affiliated with Goethe-Institut or Telc. No visa or job guarantee.',
+
     // Table
     tableFeature: 'Feature / Problem',
     tableFees: 'Fees / Cost',
@@ -82,6 +106,26 @@ export const TRANSLATIONS: Record<UiLanguage, Record<string, string>> = {
     vocab: 'Vocab & SRS',
     progress: 'Mastery Tracker',
     cheatSheet: '⚡ Cheat Sheet',
+
+    // Unit Actions & Status
+    startLesson: 'Start Lesson',
+    reviewLesson: 'Review Lesson',
+    mastered: 'Mastered! 🎉',
+
+    // Resume Notification
+    resumeTitle: 'Resume where you left off?',
+    resumeDesc: 'You last worked on:',
+    resumeBtn: '▶️ Resume Now',
+    startNewBtn: '🔄 Start Fresh',
+
+    // Activity & Account
+    recentActivity: 'Recent Activity',
+    loginToSync: 'Login to Sync Progress',
+    verifiedWithEmail: 'Toolbox Verified Account',
+    noActivityYet: 'No activity yet. Start your first lesson or practice module!',
+    revisit: 'Revisit',
+    logout: 'Log Out',
+
     // Stats
     stat1: 'A0 → B2',
     stat1sub: 'CEFR Structured Path',
@@ -91,17 +135,21 @@ export const TRANSLATIONS: Record<UiLanguage, Record<string, string>> = {
     stat3sub: 'Native Audio Training',
     stat4: '₹0 Fees',
     stat4sub: 'Accessible to Everyone',
+
     // Why section
     whyTitle: 'Why Better than ChatGPT',
     whyTitleSpan: 'or Traditional Coaching?',
     whySubtitle: 'Why generic AI and expensive institutes fail Indian German learners:',
+
     // Features section
     featuresTitle: '6 Powerful Workstations Built for Rapid Fluency',
     featuresSub: 'Every feature is designed to build real-life German confidence.',
+
     // Disclaimer
     disclaimerTitle: 'Ethical Education & Legal Disclaimers',
     disclaimerText: 'DeutschReady is an independent German learning platform. We are not affiliated with any official examination body (Goethe-Institut, Telc, ÖSD). We provide 100% original educational curriculum. No fake visa, job, or exam pass guarantee is given — your results depend on your effort and our tools.',
     disclaimerNotice: 'Independent education platform. Not affiliated with Goethe-Institut or Telc. No visa or job guarantee.',
+
     // Table
     tableFeature: 'Feature / Problem',
     tableFees: 'Fees / Cost',
@@ -138,6 +186,26 @@ export const TRANSLATIONS: Record<UiLanguage, Record<string, string>> = {
     vocab: 'Wortschatz',
     progress: 'Fortschritt',
     cheatSheet: '⚡ Spickzettel',
+
+    // Unit Actions & Status
+    startLesson: 'Lektion starten',
+    reviewLesson: 'Wiederholen',
+    mastered: 'Gemeistert! 🎉',
+
+    // Resume Notification
+    resumeTitle: 'Dort weitermachen, wo Sie aufgehört haben?',
+    resumeDesc: 'Sie waren zuletzt bei:',
+    resumeBtn: '▶️ Jetzt fortsetzen',
+    startNewBtn: '🔄 Neu anfangen',
+
+    // Activity & Account
+    recentActivity: 'Letzte Aktivitäten',
+    loginToSync: 'Anmelden zur Synchronisation',
+    verifiedWithEmail: 'Toolbox-Konto verifiziert',
+    noActivityYet: 'Noch keine Aktivitäten. Starten Sie Ihre erste Lektion!',
+    revisit: 'Wiederholen',
+    logout: 'Abmelden',
+
     // Stats
     stat1: 'A0 → B2',
     stat1sub: 'CEFR-Strukturierter Pfad',
@@ -147,17 +215,21 @@ export const TRANSLATIONS: Record<UiLanguage, Record<string, string>> = {
     stat3sub: 'Muttersprachliches Audio',
     stat4: '₹0 Gebühren',
     stat4sub: 'Für alle zugänglich',
+
     // Why section
     whyTitle: 'Warum besser als ChatGPT',
     whyTitleSpan: 'oder traditionelle Kurse?',
     whySubtitle: 'Warum generische KI und teure Institute bei indischen Deutschlernenden scheitern:',
+
     // Features section
     featuresTitle: '6 leistungsstarke Arbeitsstationen für schnelle Sprachbeherrschung',
     featuresSub: 'Jede Funktion ist darauf ausgelegt, echtes Deutsch-Selbstvertrauen aufzubauen.',
+
     // Disclaimer
     disclaimerTitle: 'Ethische Bildung & Rechtliche Hinweise',
     disclaimerText: 'DeutschReady ist eine unabhängige Deutschlernplattform. Wir sind nicht mit offiziellen Prüfungsorganisationen (Goethe-Institut, Telc, ÖSD) verbunden. Wir bieten 100% originelle Bildungsinhalte. Keine Garantie für Visum, Job oder Prüfungserfolg wird gegeben.',
     disclaimerNotice: 'Unabhängige Lernplattform. Keine Verbindung zum Goethe-Institut oder Telc.',
+
     // Table
     tableFeature: 'Merkmal / Problem',
     tableFees: 'Kosten / Gebühren',

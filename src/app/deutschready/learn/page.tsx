@@ -109,16 +109,28 @@ export default function LearnPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
-                  {unit.titleHindi}
-                </h3>
-                <p className="text-xs sm:text-sm font-semibold text-neutral-500 dark:text-neutral-400">
-                  {unit.title}
-                </p>
-
-                <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                  {unit.descriptionHindi}
-                </p>
+                {progress.uiLanguage === 'hinglish' ? (
+                  <>
+                    <h3 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
+                      {unit.titleHindi}
+                    </h3>
+                    <p className="text-xs sm:text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                      {unit.title}
+                    </p>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                      {unit.descriptionHindi}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
+                      {unit.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                      {unit.description}
+                    </p>
+                  </>
+                )}
 
                 {/* Topics Tag List */}
                 <div className="flex flex-wrap gap-1.5 pt-2">
@@ -138,7 +150,7 @@ export default function LearnPage() {
                 {isCompleted ? (
                   <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="h-5 w-5" />
-                    <span>Mastered!</span>
+                    <span>{t.mastered}</span>
                   </div>
                 ) : null}
 
@@ -150,7 +162,7 @@ export default function LearnPage() {
                       : 'bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900'
                   }`}
                 >
-                  <span>{isCompleted ? 'Review Lesson' : 'Start Lesson'}</span>
+                  <span>{isCompleted ? t.reviewLesson : t.startLesson}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>

@@ -17,8 +17,10 @@ import {
 } from 'lucide-react';
 import { CURRICULUM_DATA } from '@/data/curriculum';
 import { useUserProgress } from '@/lib/progressStore';
+import { useEffect } from 'react';
 import AudioPlayerButton from '@/components/AudioPlayerButton';
 import AiDoubtModal from '@/components/AiDoubtModal';
+import { TRANSLATIONS } from '@/lib/i18n';
 
 export default function LessonPage() {
   const params = useParams();
@@ -26,7 +28,8 @@ export default function LessonPage() {
   const lessonId = params?.id as string;
   const unit = CURRICULUM_DATA.find((u) => u.id === lessonId);
 
-  const { markLessonComplete } = useUserProgress();
+  const { markLessonComplete, recordActivity, progress } = useUserProgress();
+  const t = TRANSLATIONS[progress.uiLanguage] || TRANSLATIONS.hinglish;
 
   // Active Doubt Modal State
   const [doubtOpen, setDoubtOpen] = useState(false);
@@ -36,6 +39,20 @@ export default function LessonPage() {
   // Quiz State
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+
+  // Record activity in real-time when student enters the lesson
+  useEffect(() => {
+    if (unit) {
+      const isHinglish = progress.uiLanguage === 'hinglish';
+      recordActivity({
+        type: 'lesson',
+        id: unit.id,
+        title: isHinglish ? unit.titleHindi : unit.title,
+        detail: `${unit.level} • Unit ${unit.unitNumber}`,
+        path: `/deutschready/lesson/${unit.id}`,
+      });
+    }
+  }, [unit, recordActivity, progress.uiLanguage]);
 
   if (!unit) {
     return (
@@ -62,6 +79,13 @@ export default function LessonPage() {
   const handleFinishQuiz = () => {
     setQuizSubmitted(true);
     markLessonComplete(unit.id, unit.xpReward);
+    recordActivity({
+      type: 'lesson',
+      id: unit.id,
+      title: `${progress.uiLanguage === 'hinglish' ? unit.titleHindi : unit.title} (Quiz Complete)`,
+      detail: `+${unit.xpReward} XP earned`,
+      path: `/deutschready/lesson/${unit.id}`,
+    });
     try {
       confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
     } catch (e) {}
@@ -76,7 +100,7 @@ export default function LessonPage() {
           className="inline-flex items-center gap-2 text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Curriculum Par Wapas Jayein</span>
+          <span>← {t.curriculum}</span>
         </Link>
 
         <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-300">
@@ -86,15 +110,28 @@ export default function LessonPage() {
 
       {/* Lesson Banner */}
       <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white">
-          {unit.titleHindi}
-        </h1>
-        <p className="mt-1 text-base font-semibold text-neutral-500 dark:text-neutral-400">
-          {unit.title}
-        </p>
-        <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
-          {unit.descriptionHindi}
-        </p>
+        {progress.uiLanguage === 'hinglish' ? (
+          <>
+            <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white">
+              {unit.titleHindi}
+            </h1>
+            <p className="mt-1 text-base font-semibold text-neutral-500 dark:text-neutral-400">
+              {unit.title}
+            </p>
+            <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              {unit.descriptionHindi}
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white">
+              {unit.title}
+            </h1>
+            <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              {unit.description}
+            </p>
+          </>
+        )}
       </div>
 
       {/* Theory & Grammar Sections */}
@@ -110,10 +147,18 @@ export default function LessonPage() {
                 <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
                   Part {sIdx + 1}
                 </span>
-                <h2 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
-                  {section.titleHindi}
-                </h2>
-                <p className="text-xs text-neutral-400 font-medium">{section.title}</p>
+                {progress.uiLanguage === 'hinglish' ? (
+                  <>
+                    <h2 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
+                      {section.titleHindi}
+                    </h2>
+                    <p className="text-xs text-neutral-400 font-medium">{section.title}</p>
+                  </>
+                ) : (
+                  <h2 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
+                    {section.title}
+                  </h2>
+                )}
               </div>
 
               {/* THE GAME-CHANGING AI DOUBT SOLVER BUTTON */}
@@ -122,13 +167,13 @@ export default function LessonPage() {
                 className="flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 active:scale-95 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300"
               >
                 <HelpCircle className="h-4 w-4" />
-                <span>❓ Samajh nahi aaya</span>
+                <span>{t.doubtLadderBtn}</span>
               </button>
             </div>
 
             {/* Explanation Content */}
             <div className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-800 leading-relaxed whitespace-pre-line border border-neutral-100 dark:bg-neutral-950/50 dark:border-neutral-800 dark:text-neutral-200">
-              {section.explanationHindi}
+              {progress.uiLanguage === 'hinglish' ? section.explanationHindi : (section.explanation || section.explanationHindi)}
             </div>
 
             {/* German Examples with Audio Playback */}

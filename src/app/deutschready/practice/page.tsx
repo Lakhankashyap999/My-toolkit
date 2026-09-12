@@ -1,13 +1,27 @@
 'use client';
 
-import { useState } from 'react';
-import { Dumbbell, Zap, Layers, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Dumbbell, Zap, Layers } from 'lucide-react';
 import { VOCABULARY_DATA } from '@/data/vocabulary';
 import DerDieDasTrainer from '@/components/DerDieDasTrainer';
 import SentenceBuilder from '@/components/SentenceBuilder';
+import { useUserProgress } from '@/lib/progressStore';
+import { TRANSLATIONS } from '@/lib/i18n';
 
 export default function PracticePage() {
   const [activeTab, setActiveTab] = useState<'gender' | 'sentence'>('gender');
+  const { recordActivity, progress } = useUserProgress();
+  const t = TRANSLATIONS[progress.uiLanguage] || TRANSLATIONS.hinglish;
+
+  useEffect(() => {
+    recordActivity({
+      type: 'practice',
+      id: `practice-${activeTab}`,
+      title: activeTab === 'gender' ? 'Der/Die/Das Swiper Trainer' : 'V2 Sentence Word Order Builder',
+      detail: activeTab === 'gender' ? 'Article memorization workout' : 'Syntax & word order drill',
+      path: '/deutschready/practice',
+    });
+  }, [activeTab, recordActivity]);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -15,13 +29,21 @@ export default function PracticePage() {
       <div className="text-center max-w-xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-300">
           <Dumbbell className="h-3.5 w-3.5" />
-          <span>Daily Active Practice Arena</span>
+          <span>{t.practice}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white">
-          Active Muscle Memory Workstation
+          {progress.uiLanguage === 'german'
+            ? 'Aktives Sprach-Muskelgedächtnis'
+            : progress.uiLanguage === 'english'
+            ? 'Active Muscle Memory Workstation'
+            : 'Active Muscle Memory Workstation'}
         </h1>
         <p className="text-xs sm:text-sm text-neutral-500">
-          Sirf theory padhne se bhasha nahi aati. Daily 5–10 minute in interactive tools par workout karein!
+          {progress.uiLanguage === 'german'
+            ? 'Nur Grammatik lesen reicht nicht. Täglich 5–10 Minuten mit diesen interaktiven Tools trainieren!'
+            : progress.uiLanguage === 'english'
+            ? 'Reading rules alone is not enough. Spend 5–10 minutes daily with interactive workouts!'
+            : 'Sirf theory padhne se bhasha nahi aati. Daily 5–10 minute in interactive tools par workout karein!'}
         </p>
       </div>
 
@@ -48,14 +70,14 @@ export default function PracticePage() {
                 : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
             }`}
           >
-            <Zap className="h-4 w-4 text-rose-500" />
-            <span>German V2 Sentence Builder</span>
+            <Zap className="h-4 w-4 text-emerald-500" />
+            <span>V2 Sentence Builder</span>
           </button>
         </div>
       </div>
 
-      {/* Active Arena */}
-      <div className="mt-6">
+      {/* Content */}
+      <div className="mt-4">
         {activeTab === 'gender' ? (
           <DerDieDasTrainer vocabulary={VOCABULARY_DATA} />
         ) : (
