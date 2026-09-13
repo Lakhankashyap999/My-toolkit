@@ -19,11 +19,13 @@ import {
   History,
   UserCheck,
   ShieldCheck,
+  Heart,
 } from 'lucide-react';
 import { useUserProgress } from '@/lib/progressStore';
 import { TRANSLATIONS } from '@/lib/i18n';
 import { UiLanguage } from '@/types';
 import ActivityDrawer from './ActivityDrawer';
+import MissionSnapModal from './MissionSnapModal';
 
 export default function DeutschNavbar() {
   const pathname = usePathname();
@@ -31,6 +33,7 @@ export default function DeutschNavbar() {
   const t = TRANSLATIONS[progress.uiLanguage] || TRANSLATIONS.hinglish;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activityDrawerOpen, setActivityDrawerOpen] = useState(false);
+  const [missionModalOpen, setMissionModalOpen] = useState(false);
 
   const navLinks = [
     { href: '/deutschready/learn', label: t.curriculum, icon: BookOpen },
@@ -157,6 +160,16 @@ export default function DeutschNavbar() {
               )}
             </button>
 
+            {/* Our Mission Button */}
+            <button
+              onClick={() => setMissionModalOpen(true)}
+              title="Our Mission: Free German Education"
+              className="hidden lg:flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50/80 px-2.5 py-1.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 min-h-[32px] sm:min-h-[36px] shrink-0 transition-colors cursor-pointer"
+            >
+              <Heart className="h-3 w-3 text-rose-500 fill-rose-500 shrink-0" />
+              <span>Mission</span>
+            </button>
+
             {/* Language Selector — hidden below md */}
             <div className="relative hidden md:flex items-center shrink-0">
               <select
@@ -221,6 +234,18 @@ export default function DeutschNavbar() {
                 )}
               </button>
 
+              {/* Mobile: Our Mission */}
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  setMissionModalOpen(true);
+                }}
+                className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-rose-700 bg-rose-50/60 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 min-h-[48px]"
+              >
+                <Heart className="h-5 w-5 text-rose-500 fill-rose-500 shrink-0" />
+                <span>Our Mission (100% Free Learning)</span>
+              </button>
+
               {/* Mobile: XP + Language row */}
               <div className="flex items-center justify-between px-2 pt-2 mt-1 border-t border-neutral-100 dark:border-neutral-800">
                 <Link
@@ -265,6 +290,12 @@ export default function DeutschNavbar() {
       <ActivityDrawer
         isOpen={activityDrawerOpen}
         onClose={() => setActivityDrawerOpen(false)}
+      />
+
+      {/* Mission Snap Modal */}
+      <MissionSnapModal
+        isOpen={missionModalOpen}
+        onClose={() => setMissionModalOpen(false)}
       />
     </>
   );

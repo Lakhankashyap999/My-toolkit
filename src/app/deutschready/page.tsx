@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -14,13 +16,32 @@ import {
   HelpCircle,
   Zap,
   TrendingUp,
+  Heart,
 } from 'lucide-react';
 import { useUserProgress } from '@/lib/progressStore';
 import { TRANSLATIONS } from '@/lib/i18n';
+import MissionSnapModal from '@/components/MissionSnapModal';
 
 export default function HomePage() {
+  const router = useRouter();
   const { progress } = useUserProgress();
   const t = TRANSLATIONS[progress.uiLanguage] || TRANSLATIONS.hinglish;
+
+  const [missionModalOpen, setMissionModalOpen] = useState(false);
+  const [targetUrl, setTargetUrl] = useState('/deutschready/learn');
+
+  // When user clicks any tool or "Start Learning", show Mission note if not seen
+  const handleToolClick = (e: React.MouseEvent, url: string) => {
+    try {
+      const seen = localStorage.getItem('deutschready_mission_seen');
+      if (!seen) {
+        e.preventDefault();
+        setTargetUrl(url);
+        setMissionModalOpen(true);
+        return;
+      }
+    } catch {}
+  };
 
   return (
     <div className="space-y-16 sm:space-y-24">
@@ -30,11 +51,17 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 h-[350px] w-[550px] rounded-full bg-gradient-to-tr from-rose-500/15 via-amber-500/15 to-indigo-500/15 blur-3xl" />
 
         <div className="mx-auto max-w-4xl">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50/80 px-4 py-1.5 text-xs font-bold text-rose-700 shadow-sm dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 mb-6">
-            <Sparkles className="h-3.5 w-3.5 text-rose-500" />
-            <span>{t.heroBadge}</span>
-          </div>
+          {/* Heartfelt Mission Badge Trigger */}
+          <button
+            onClick={() => {
+              setTargetUrl('/deutschready/learn');
+              setMissionModalOpen(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50/90 px-4 py-1.5 text-xs font-bold text-rose-700 shadow-sm hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 mb-6 cursor-pointer transition-all active:scale-95"
+          >
+            <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500" />
+            <span>{t.heroBadge} • 🤝 Our Mission</span>
+          </button>
 
           {/* Main Headline */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-neutral-900 dark:text-white leading-[1.1]">
@@ -53,7 +80,8 @@ export default function HomePage() {
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <Link
               href="/deutschready/learn"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-8 py-4 text-base font-bold text-white shadow-lg hover:bg-neutral-800 active:scale-98 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+              onClick={(e) => handleToolClick(e, '/deutschready/learn')}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-8 py-4 text-base font-bold text-white shadow-lg hover:bg-neutral-800 active:scale-98 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-all cursor-pointer"
             >
               <span>{t.startLearning}</span>
               <ArrowRight className="h-5 w-5" />
@@ -61,7 +89,8 @@ export default function HomePage() {
 
             <Link
               href="/deutschready/placement-test"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl border border-neutral-300 bg-white px-6 py-4 text-base font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 active:scale-98 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              onClick={(e) => handleToolClick(e, '/deutschready/placement-test')}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl border border-neutral-300 bg-white px-6 py-4 text-base font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 active:scale-98 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all cursor-pointer"
             >
               <span>{t.placementTest}</span>
             </Link>
@@ -194,7 +223,11 @@ export default function HomePage() {
                 ? 'Whenever confused, click "❓ Still confused?". AI explains step-by-step in simple language with Hindi analogies.'
                 : 'Jab bhi samajh na aaye, "❓ Samajh nahi aaya" click karo. AI level-by-level aasan bhasha, Hindi analogy aur mini-quizzes ke zariye doubt clear karega.'}
             </p>
-            <Link href="/deutschready/learn" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline">
+            <Link
+              href="/deutschready/learn"
+              onClick={(e) => handleToolClick(e, '/deutschready/learn')}
+              className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline"
+            >
               {t.startLearning} ➔
             </Link>
           </div>
@@ -214,7 +247,11 @@ export default function HomePage() {
                 ? 'Tinder-style swipe game to memorise articles. After 3 mistakes, "Article Rescue" shows instant suffix shortcuts (-ung = DIE).'
                 : 'Tinder-style swipe karke articles yaad karo. Agar 3 baar galti hui, to "Article Rescue" instant shortcut endings batayega.'}
             </p>
-            <Link href="/deutschready/practice" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline">
+            <Link
+              href="/deutschready/practice"
+              onClick={(e) => handleToolClick(e, '/deutschready/practice')}
+              className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
+            >
               {progress.uiLanguage === 'german' ? 'Üben ➔' : 'Start Swiping ➔'}
             </Link>
           </div>
@@ -234,7 +271,11 @@ export default function HomePage() {
                 ? 'Golden rule: Verb always at position 2! Arrange interactive word chips and get corrected by the V2 police alert.'
                 : 'German grammar ka golden rule: Verb hamesha Position 2 par aayega! Interactive chips arrange karein aur syntax police ke alert se galti sudharein.'}
             </p>
-            <Link href="/deutschready/practice" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline">
+            <Link
+              href="/deutschready/practice"
+              onClick={(e) => handleToolClick(e, '/deutschready/practice')}
+              className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
+            >
               {progress.uiLanguage === 'german' ? 'Sätze üben ➔' : 'Build Sentences ➔'}
             </Link>
           </div>
@@ -254,7 +295,11 @@ export default function HomePage() {
                 ? 'Clear umlauts (ä, ö, ü) and CH/SCH sounds. Hear turtle audio and record yourself — no judgement.'
                 : 'Umlauts (ä, ö, ü) aur CH/SCH ke sounds clear karein. Turtle audio suno aur mic mein bol kar pronunciation check karo bina kisi dar ke.'}
             </p>
-            <Link href="/deutschready/speak" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:underline">
+            <Link
+              href="/deutschready/speak"
+              onClick={(e) => handleToolClick(e, '/deutschready/speak')}
+              className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:underline"
+            >
               {progress.uiLanguage === 'german' ? 'Sprechen ➔' : 'Test Voice ➔'}
             </Link>
           </div>
@@ -274,7 +319,11 @@ export default function HomePage() {
                 ? 'Master Bürgeramt, Deutsche Bahn delays, Supermarket checkout, and Doctor clinic before you arrive.'
                 : 'Bürgeramt Anmeldung, Deutsche Bahn train delay, Supermarket checkout, aur Doctor clinic ke interactive dialogues pehle hi master karo.'}
             </p>
-            <Link href="/deutschready/germany-life" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:underline">
+            <Link
+              href="/deutschready/germany-life"
+              onClick={(e) => handleToolClick(e, '/deutschready/germany-life')}
+              className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:underline"
+            >
               {progress.uiLanguage === 'german' ? 'Simulator öffnen ➔' : 'Enter Simulator ➔'}
             </Link>
           </div>
@@ -294,7 +343,11 @@ export default function HomePage() {
                 ? 'Words you forget automatically move to the "Words I Keep Forgetting" bucket for daily 5-minute spaced repetition.'
                 : 'Jo words aap bhoolte hain, wo automatically "Words I Keep Forgetting" bucket mein chale jate hain taaki daily 5-minute revision ho sake.'}
             </p>
-            <Link href="/deutschready/vocab" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline">
+            <Link
+              href="/deutschready/vocab"
+              onClick={(e) => handleToolClick(e, '/deutschready/vocab')}
+              className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline"
+            >
               {progress.uiLanguage === 'german' ? 'Wortschatz ➔' : 'Review Words ➔'}
             </Link>
           </div>
@@ -322,6 +375,13 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Mission Snap Modal with Thanos Particle Disintegration */}
+      <MissionSnapModal
+        isOpen={missionModalOpen}
+        onClose={() => setMissionModalOpen(false)}
+        onProceed={() => router.push(targetUrl)}
+      />
     </div>
   );
 }
