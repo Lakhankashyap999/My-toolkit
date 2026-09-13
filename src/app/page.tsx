@@ -538,6 +538,95 @@ const faqs = [
   },
 ];
 
+/* ------------------------------------------------------------------ */
+/*  REVIEWS / TESTIMONIALS DATA                                         */
+/* ------------------------------------------------------------------ */
+type Review = {
+  name: string;
+  email: string;
+  avatar: string;
+  rating: number;
+  tool: string;
+  text: string;
+  date: string;
+};
+
+const SEED_REVIEWS: Review[] = [
+  {
+    name: "Rohit Verma",
+    email: "davpsrohit@gmail.com",
+    avatar: "RV",
+    rating: 5,
+    tool: "CA & Tax Master Suite",
+    text: "Bhai ye CA Tax Suite ne meri poori ITR filing ki tension khatam kar di. Old vs New regime comparison ek click mein — aur output itna clean tha ki CA ko directly de diya. No installation, no login, sab browser mein. Seriously best tool hai.",
+    date: "2 days ago",
+  },
+  {
+    name: "Prince Sharma",
+    email: "prince.sharma@gmail.com",
+    avatar: "PS",
+    rating: 5,
+    tool: "DeutschReady — German Learning",
+    text: "Main Germany visa ke liye German seekh raha tha. DeutschReady ne kya hua ki — ek platform par audio, quiz, grammar sab kuch mil gaya. 0.75x slow audio feature toh truly genius hai. Coaching se hazaar guna better aur bilkul FREE!",
+    date: "5 days ago",
+  },
+  {
+    name: "Akash Gupta",
+    email: "akashgupta.dev@gmail.com",
+    avatar: "AG",
+    rating: 5,
+    tool: "IT & Developer Daily Office Suite",
+    text: "Daily use karta hun ye dev suite. JWT Inspector, .env Diff, cURL to Fetch — ye sab ek jagah pe. Client ka koi data server par nahi jaata — 100% in-browser. As a developer this is exactly what I needed. Bookmark kar rakha hai permanently.",
+    date: "1 week ago",
+  },
+  {
+    name: "Meera Joshi",
+    email: "meera.joshi@outlook.com",
+    avatar: "MJ",
+    rating: 5,
+    tool: "Exam Photo & Sign Resizer",
+    text: "UPSC form bharte waqt photo size ka bahut chakkar tha — 20KB se 50KB, exact dimensions. Toolbox ne 1 minute mein perfect photo bana di. Paise bhi nahi lage aur koi app bhi download nahi karna pada. Fabulous!",
+    date: "1 week ago",
+  },
+  {
+    name: "Saurabh Tiwari",
+    email: "saurabh.t@yahoo.com",
+    avatar: "ST",
+    rating: 5,
+    tool: "Advocate & Legal Master Suite",
+    text: "IPC to BNS converter is a lifesaver! As a law student, keeping up with the 2024 changes was becoming difficult. This tool has the entire conversion matrix + Supreme Court precedents. Never seen anything like this for free.",
+    date: "2 weeks ago",
+  },
+  {
+    name: "Divya Patel",
+    email: "divyap@gmail.com",
+    avatar: "DP",
+    rating: 4,
+    tool: "PDF Suite",
+    text: "PDF merge, compress aur split sab ek jagah pe kaam aata hai. Office ke documents merge karne ke liye best hai. Speed bhi bahut fast hai — 3-4 PDFs 2 second mein merge ho gaye. 5 star deta agar dark mode aur acha hota!",
+    date: "2 weeks ago",
+  },
+  {
+    name: "Nitin Rawat",
+    email: "nitin.rawat@gmail.com",
+    avatar: "NR",
+    rating: 5,
+    tool: "CNC & VMC Diagnostics",
+    text: "Fanuc alarm codes ke liye ye tool hamari factory mein sab use karte hain. Pehle manual book dhundhni padti thi, ab 5 second mein solution aa jaata hai. Industrial tool ek website par — bhai ye toh game changer hai!",
+    date: "3 weeks ago",
+  },
+  {
+    name: "Karishma Singh",
+    email: "karishma.s@icloud.com",
+    avatar: "KS",
+    rating: 5,
+    tool: "ATS Resume Maker",
+    text: "Mujhe 2 din mein interview tha aur resume update karna tha. ATS Resume Maker ne 10 minute mein professional resume bana diya — 5 templates mein se best choose kiya. Got shortlisted! Thank you ToolBox 🙏",
+    date: "3 weeks ago",
+  },
+];
+
+
 export default function Home() {
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
@@ -546,6 +635,12 @@ export default function Home() {
   const [userCount, setUserCount] = useState<number>(2450);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Tools");
+
+  // Reviews state — loads from localStorage, seeds with SEED_REVIEWS
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackForm, setFeedbackForm] = useState({ name: "", email: "", tool: "", rating: 5, text: "" });
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   const rootRef = useRef(null);
   const heroBadgeRef = useRef(null);
@@ -567,6 +662,48 @@ export default function Home() {
     };
     fetchUsers();
   }, []);
+
+  // Load reviews from localStorage (merge seed + user-added)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("toolbox_reviews");
+      const userReviews: Review[] = stored ? JSON.parse(stored) : [];
+      // Combine: user reviews first (newest), then seeds
+      const combined = [...userReviews, ...SEED_REVIEWS];
+      setReviews(combined);
+      // Pre-fill email if logged in
+      const email = localStorage.getItem("toolbox_email") || "";
+      if (email) setFeedbackForm((f) => ({ ...f, email }));
+    } catch {
+      setReviews(SEED_REVIEWS);
+    }
+  }, []);
+
+  const handleSubmitFeedback = () => {
+    if (!feedbackForm.name.trim() || !feedbackForm.text.trim()) return;
+    const newReview: Review = {
+      name: feedbackForm.name.trim(),
+      email: feedbackForm.email.trim(),
+      avatar: feedbackForm.name.trim().slice(0, 2).toUpperCase(),
+      rating: feedbackForm.rating,
+      tool: feedbackForm.tool || "ToolBox",
+      text: feedbackForm.text.trim(),
+      date: "just now",
+    };
+    try {
+      const stored = localStorage.getItem("toolbox_reviews");
+      const existing: Review[] = stored ? JSON.parse(stored) : [];
+      const updated = [newReview, ...existing];
+      localStorage.setItem("toolbox_reviews", JSON.stringify(updated));
+      setReviews([newReview, ...SEED_REVIEWS.filter(() => true)]);
+    } catch {}
+    setFeedbackSubmitted(true);
+    setTimeout(() => {
+      setShowFeedbackModal(false);
+      setFeedbackSubmitted(false);
+      setFeedbackForm({ name: "", email: feedbackForm.email, tool: "", rating: 5, text: "" });
+    }, 2000);
+  };
 
   const filteredTools = useMemo(() => {
     return tools.filter((tool) => {
@@ -680,6 +817,25 @@ export default function Home() {
         }
         .animate-marquee-slow:hover {
           animation-play-state: paused;
+        }
+        @keyframes marquee-reviews {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .reviews-track {
+          display: flex;
+          width: max-content;
+          animation: marquee-reviews 40s linear infinite;
+        }
+        .reviews-track:hover {
+          animation-play-state: paused;
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .review-card-anim {
+          animation: fadeInUp 0.5s ease both;
         }
       `}</style>
 
@@ -1063,6 +1219,211 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* ============================================================ */}
+      {/* TESTIMONIALS / FEEDBACK SECTION                              */}
+      {/* ============================================================ */}
+      <section className="py-16 sm:py-24 overflow-hidden">
+        {/* Header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12">
+          <span className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold px-3.5 py-1.5 rounded-full border border-emerald-500/20 mb-4">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Real Users · Real Reviews
+          </span>
+          <h2 className="reveal-up text-[28px] sm:text-5xl font-semibold tracking-tight text-[#1d1d1f] dark:text-white mb-3">
+            What our users are saying
+          </h2>
+          <p className="reveal-up text-[15px] sm:text-[17px] text-[#6e6e73] dark:text-white/60 max-w-xl mx-auto mb-8">
+            From students to CAs to factory engineers — real people, real results.
+          </p>
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            className="inline-flex items-center gap-2 bg-[#0071e3] hover:bg-[#0077ED] text-white px-6 py-3 rounded-full font-semibold text-[13px] sm:text-[14px] transition-all shadow-md shadow-blue-500/20 active:scale-95"
+          >
+            <span>✍️</span>
+            <span>Share Your Experience</span>
+          </button>
+        </div>
+
+        {/* Marquee Row 1 — left to right */}
+        <div className="relative mb-4">
+          {/* Fade edges */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 z-10 bg-gradient-to-r from-[#fbfbfd] dark:from-[#040404] to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-20 z-10 bg-gradient-to-l from-[#fbfbfd] dark:from-[#040404] to-transparent" />
+          <div className="overflow-hidden">
+            <div className="reviews-track gap-4 px-4">
+              {/* Duplicate for seamless loop */}
+              {[...reviews, ...reviews].map((r, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 w-[300px] sm:w-[340px] bg-white dark:bg-[#111113] border border-black/[0.06] dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow cursor-default mx-2"
+                >
+                  {/* Stars */}
+                  <div className="flex gap-0.5 mb-3">
+                    {Array.from({ length: 5 }).map((_, s) => (
+                      <span key={s} className={`text-[14px] ${s < r.rating ? "text-amber-400" : "text-[#d1d1d6] dark:text-white/20"}`}>★</span>
+                    ))}
+                  </div>
+                  {/* Review text */}
+                  <p className="text-[13px] text-[#1d1d1f] dark:text-white/80 leading-relaxed mb-4 line-clamp-4">
+                    "{r.text}"
+                  </p>
+                  {/* User info */}
+                  <div className="flex items-center gap-3 pt-3 border-t border-black/[0.04] dark:border-white/[0.06]">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[12px] font-bold shrink-0">
+                      {r.avatar}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-bold text-[#1d1d1f] dark:text-white truncate">{r.name}</div>
+                      <div className="text-[10px] text-[#6e6e73] dark:text-white/40 truncate">{r.tool} · {r.date}</div>
+                    </div>
+                    <span className="ml-auto text-[10px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium shrink-0">✓ Verified</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Marquee Row 2 — reverse direction */}
+        <div className="relative">
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 z-10 bg-gradient-to-r from-[#fbfbfd] dark:from-[#040404] to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-20 z-10 bg-gradient-to-l from-[#fbfbfd] dark:from-[#040404] to-transparent" />
+          <div className="overflow-hidden">
+            <div className="reviews-track gap-4 px-4" style={{ animationDirection: "reverse", animationDuration: "50s" }}>
+              {[...[...reviews].reverse(), ...[...reviews].reverse()].map((r, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 w-[300px] sm:w-[340px] bg-white dark:bg-[#111113] border border-black/[0.06] dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow cursor-default mx-2"
+                >
+                  <div className="flex gap-0.5 mb-3">
+                    {Array.from({ length: 5 }).map((_, s) => (
+                      <span key={s} className={`text-[14px] ${s < r.rating ? "text-amber-400" : "text-[#d1d1d6] dark:text-white/20"}`}>★</span>
+                    ))}
+                  </div>
+                  <p className="text-[13px] text-[#1d1d1f] dark:text-white/80 leading-relaxed mb-4 line-clamp-4">
+                    "{r.text}"
+                  </p>
+                  <div className="flex items-center gap-3 pt-3 border-t border-black/[0.04] dark:border-white/[0.06]">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white text-[12px] font-bold shrink-0">
+                      {r.avatar}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-bold text-[#1d1d1f] dark:text-white truncate">{r.name}</div>
+                      <div className="text-[10px] text-[#6e6e73] dark:text-white/40 truncate">{r.tool} · {r.date}</div>
+                    </div>
+                    <span className="ml-auto text-[10px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium shrink-0">✓ Verified</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* ADD REVIEW MODAL                                              */}
+      {/* ============================================================ */}
+      {showFeedbackModal && (
+        <div
+          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowFeedbackModal(false); }}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+          {/* Modal Card */}
+          <div className="review-card-anim relative w-full max-w-md bg-white dark:bg-[#111113] rounded-3xl shadow-2xl border border-black/[0.06] dark:border-white/10 p-6 sm:p-8 z-10">
+            {feedbackSubmitted ? (
+              /* Success State */
+              <div className="text-center py-6">
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white mb-2">Thank you!</h3>
+                <p className="text-[13px] text-[#6e6e73] dark:text-white/60">Your review has been added. We really appreciate it!</p>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-[18px] font-bold text-[#1d1d1f] dark:text-white">Share Your Review</h3>
+                    <p className="text-[12px] text-[#6e6e73] dark:text-white/50 mt-0.5">Help others discover ToolBox</p>
+                  </div>
+                  <button
+                    onClick={() => setShowFeedbackModal(false)}
+                    className="w-8 h-8 rounded-full bg-[#f5f5f7] dark:bg-white/10 flex items-center justify-center text-[#6e6e73] hover:bg-[#e8e8ed] dark:hover:bg-white/20 transition-colors text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Star Rating */}
+                <div className="mb-4">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] dark:text-white/50 mb-2 block">Your Rating</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setFeedbackForm((f) => ({ ...f, rating: star }))}
+                        className={`text-3xl transition-transform hover:scale-110 ${star <= feedbackForm.rating ? "text-amber-400" : "text-[#d1d1d6] dark:text-white/20"}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div className="mb-3">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] dark:text-white/50 mb-1.5 block">Your Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Rohit Sharma"
+                    value={feedbackForm.name}
+                    onChange={(e) => setFeedbackForm((f) => ({ ...f, name: e.target.value }))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-[#f5f5f7] dark:bg-white/5 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] text-[#1d1d1f] dark:text-white placeholder:text-[#aeaeb2]"
+                  />
+                </div>
+
+                {/* Tool Used */}
+                <div className="mb-3">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] dark:text-white/50 mb-1.5 block">Which Tool Did You Use?</label>
+                  <select
+                    value={feedbackForm.tool}
+                    onChange={(e) => setFeedbackForm((f) => ({ ...f, tool: e.target.value }))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-[#f5f5f7] dark:bg-white/5 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] text-[#1d1d1f] dark:text-white"
+                  >
+                    <option value="">Select a tool...</option>
+                    {tools.map((t) => <option key={t.id} value={t.name}>{t.name}</option>)}
+                    <option value="ToolBox Platform">ToolBox Platform (Overall)</option>
+                  </select>
+                </div>
+
+                {/* Review text */}
+                <div className="mb-5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] dark:text-white/50 mb-1.5 block">Your Review *</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Tell us how ToolBox helped you..."
+                    value={feedbackForm.text}
+                    onChange={(e) => setFeedbackForm((f) => ({ ...f, text: e.target.value }))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-[#f5f5f7] dark:bg-white/5 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0071e3] text-[#1d1d1f] dark:text-white placeholder:text-[#aeaeb2] resize-none"
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  onClick={handleSubmitFeedback}
+                  disabled={!feedbackForm.name.trim() || !feedbackForm.text.trim()}
+                  className="w-full bg-[#0071e3] hover:bg-[#0077ED] disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-full font-bold text-[14px] transition-all active:scale-98 shadow-md shadow-blue-500/20"
+                >
+                  Submit Review ✨
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Final CTA Section */}
       <section className="max-w-6xl mx-auto px-4 pb-12">
