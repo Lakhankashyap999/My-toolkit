@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import DeutschNavbar from '@/components/DeutschNavbar';
 import DeutschMobileNav from '@/components/DeutschMobileNav';
 import ResumeBanner from '@/components/ResumeBanner';
+import NewUserMissionGate from '@/components/NewUserMissionGate';
 
 export const metadata: Metadata = {
   title: 'DeutschReady — AI German Learning Platform | MyToolboxs',
@@ -20,6 +21,7 @@ export default function DeutschReadyLayout({
         {children}
       </main>
       <ResumeBanner />
+      <NewUserMissionGate />
       <DeutschMobileNav />
     </div>
   );

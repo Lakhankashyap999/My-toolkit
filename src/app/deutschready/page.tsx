@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -23,25 +22,9 @@ import { TRANSLATIONS } from '@/lib/i18n';
 import MissionSnapModal from '@/components/MissionSnapModal';
 
 export default function HomePage() {
-  const router = useRouter();
   const { progress } = useUserProgress();
   const t = TRANSLATIONS[progress.uiLanguage] || TRANSLATIONS.hinglish;
-
   const [missionModalOpen, setMissionModalOpen] = useState(false);
-  const [targetUrl, setTargetUrl] = useState('/deutschready/learn');
-
-  // When user clicks any tool or "Start Learning", show Mission note if not seen
-  const handleToolClick = (e: React.MouseEvent, url: string) => {
-    try {
-      const seen = localStorage.getItem('deutschready_mission_seen');
-      if (!seen) {
-        e.preventDefault();
-        setTargetUrl(url);
-        setMissionModalOpen(true);
-        return;
-      }
-    } catch {}
-  };
 
   return (
     <div className="space-y-16 sm:space-y-24">
@@ -53,10 +36,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-4xl">
           {/* Heartfelt Mission Badge Trigger */}
           <button
-            onClick={() => {
-              setTargetUrl('/deutschready/learn');
-              setMissionModalOpen(true);
-            }}
+            onClick={() => setMissionModalOpen(true)}
             className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50/90 px-4 py-1.5 text-xs font-bold text-rose-700 shadow-sm hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 mb-6 cursor-pointer transition-all active:scale-95"
           >
             <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500" />
@@ -80,7 +60,6 @@ export default function HomePage() {
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <Link
               href="/deutschready/learn"
-              onClick={(e) => handleToolClick(e, '/deutschready/learn')}
               className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-8 py-4 text-base font-bold text-white shadow-lg hover:bg-neutral-800 active:scale-98 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-all cursor-pointer"
             >
               <span>{t.startLearning}</span>
@@ -89,7 +68,6 @@ export default function HomePage() {
 
             <Link
               href="/deutschready/placement-test"
-              onClick={(e) => handleToolClick(e, '/deutschready/placement-test')}
               className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl border border-neutral-300 bg-white px-6 py-4 text-base font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 active:scale-98 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all cursor-pointer"
             >
               <span>{t.placementTest}</span>
@@ -225,7 +203,6 @@ export default function HomePage() {
             </p>
             <Link
               href="/deutschready/learn"
-              onClick={(e) => handleToolClick(e, '/deutschready/learn')}
               className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline"
             >
               {t.startLearning} ➔
@@ -249,7 +226,6 @@ export default function HomePage() {
             </p>
             <Link
               href="/deutschready/practice"
-              onClick={(e) => handleToolClick(e, '/deutschready/practice')}
               className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
             >
               {progress.uiLanguage === 'german' ? 'Üben ➔' : 'Start Swiping ➔'}
@@ -273,7 +249,6 @@ export default function HomePage() {
             </p>
             <Link
               href="/deutschready/practice"
-              onClick={(e) => handleToolClick(e, '/deutschready/practice')}
               className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
             >
               {progress.uiLanguage === 'german' ? 'Sätze üben ➔' : 'Build Sentences ➔'}
@@ -297,7 +272,6 @@ export default function HomePage() {
             </p>
             <Link
               href="/deutschready/speak"
-              onClick={(e) => handleToolClick(e, '/deutschready/speak')}
               className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:underline"
             >
               {progress.uiLanguage === 'german' ? 'Sprechen ➔' : 'Test Voice ➔'}
@@ -321,7 +295,6 @@ export default function HomePage() {
             </p>
             <Link
               href="/deutschready/germany-life"
-              onClick={(e) => handleToolClick(e, '/deutschready/germany-life')}
               className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:underline"
             >
               {progress.uiLanguage === 'german' ? 'Simulator öffnen ➔' : 'Enter Simulator ➔'}
@@ -345,7 +318,6 @@ export default function HomePage() {
             </p>
             <Link
               href="/deutschready/vocab"
-              onClick={(e) => handleToolClick(e, '/deutschready/vocab')}
               className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline"
             >
               {progress.uiLanguage === 'german' ? 'Wortschatz ➔' : 'Review Words ➔'}
@@ -380,7 +352,6 @@ export default function HomePage() {
       <MissionSnapModal
         isOpen={missionModalOpen}
         onClose={() => setMissionModalOpen(false)}
-        onProceed={() => router.push(targetUrl)}
       />
     </div>
   );
