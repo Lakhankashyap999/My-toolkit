@@ -5,13 +5,21 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ToolBoxs - All Daily Tools in One Place",
+  title: "ToolBox — All Your Daily Tools in One Place",
   description:
-    "Edit PDFs, create resumes, compress images, and more — free, fast, and no signup required.",
+    "Edit PDFs, create resumes, compress images, CA Tax Suite, Legal Tools, CNC Diagnostics, DeutschReady German Learning — free, fast, 100% in-browser.",
   icons: {
-    icon: "/favimage.png.png", // ye line add karo
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/favicon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/favicon.svg",
   },
 };
+
 
 export default function RootLayout({
   children,
